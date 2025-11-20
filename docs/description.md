@@ -14,7 +14,7 @@ function generateUUIDFromString(input, salt = '') {
   const ls = '89ab'
   const r = (t) => ls[(combinedInput.length + t) % ls.length]
   // 构造成标准 UUID v4 格式：xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-  const uuid = `${base.substring(0, 8)}-${base.substring(8, 12)}-4${base.substring(12, 15)}-8${r(1)}${r(2)}${r(3)}-${base.substring(18, 32)}`
+  const uuid = `${base.substring(0, 8)}-${base.substring(8, 12)}-4${base.substring(12, 15)}-8${r(1)}${r(2)}${r(3)}-${base.substring(18, 30)}`
   return uuid;
 }
 ```
