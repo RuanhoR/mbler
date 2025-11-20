@@ -1,0 +1,36 @@
+{
+  "name": "mbler",
+  "version": "0.0.4.1",
+  "description": "一个针对Minecraft JavaScript API 的lib库，让你的附加包版本管理更简单",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RuanhoR/mbler.git"
+  },
+  "keywords": [
+    "Minecraft",
+    "build"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "./lib/start/index.js",
+  "scripts": {
+    "cli": "node bin/mbler.js",
+    "build": "node bin/minify.js"
+  },
+  "dependencies": {
+    "@babel/generator": "7.28.5",
+    "@babel/parser": "7.28.5",
+    "@babel/traverse": "7.28.5",
+    "chokidar": "^4.0.3",
+    "dayjs": "1.11.18",
+    "mime-types": "3.0.1",
+    "terser": "5.44.0",
+    "typescript": "^5.9.3"
+  },
+  "bin": {
+    "mbler": "bin/mbler.js"
+  }
+}

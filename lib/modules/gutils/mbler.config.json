@@ -1,0 +1,12 @@
+{
+  "name": "gutils",
+  "description": "t",
+  "version": "0.0.1",
+  "type": "scriptsDes",
+  "script": {
+    "main": "./index.js",
+    "dependencies": [
+      "gutils"
+    ]
+  }
+}

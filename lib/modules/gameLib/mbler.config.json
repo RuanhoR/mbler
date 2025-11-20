@@ -1,0 +1,16 @@
+{
+  "name": "GameLib",
+  "description": "test",
+  "version": "0.0.1",
+  "type": "scriptsDes",
+  "script": {
+    "main": "./src/index.js",
+    "dependencies":{ 
+      "gutils": "inner"
+    }
+  },
+  "mcVersion": [
+    "1.21.10",
+    "1.21.120"
+  ]
+}

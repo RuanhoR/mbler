@@ -1,0 +1,17 @@
+name: Sync GitHub to Gitee
+on:
+  push:
+    branches:
+      - main
+jobs:
+  mirror:
+    name: Gitee
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mirror GitHub repo to Gitee
+        uses: wearerequired/git-mirror-action@master
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        with:
+          source-repo: git@github.com:RuanhoR/mbler.git
+          destination-repo: git@gitee.com:n304sc-haoran/mcbe-addon-bulider.git
