@@ -11,8 +11,8 @@
 
 然后，克隆仓库
 ```bash
-git clone https://gitee.com/n304sc-haoran/mcbe-addon-bulider.git
-cd mcbe-addon-bulider
+git clone https://gitee.com/n304sc-haoran/mbler.git
+cd mbler
 ```
 接下来，你就可以用node运行
 ** mbler **

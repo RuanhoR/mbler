@@ -7,8 +7,8 @@
 - Node.js 与 npm
 - Git
 ```bash
-git clone https://gitee.com/n304sc-haoran/mcbe-addon-bulider.git
-cd mcbe-addon-bulider
+git clone https://gitee.com/n304sc-haoran/mbler.git
+cd mbler
 npm install 
 npm link  # 若失败，请运行 bash install.sh
 ```
@@ -27,4 +27,4 @@ mbler init
 
 ### 发布平台
 [github](https://github.com/RuanhoR/mbler)  
-[gitee](https://gitee.com/n304sc-haoran/mcbe-addon-bulider) 
+[gitee](https://gitee.com/n304sc-haoran/mbler) 

@@ -19,8 +19,8 @@
 - Git
 
 ```bash
-git clone https://gitee.com/n304sc-haoran/mcbe-addon-bulider.git
-cd mcbe-addon-bulider
+git clone https://gitee.com/n304sc-haoran/mbler.git
+cd mbler
 npm install 
 npm link  # 若失败，请运行 bash install.sh
 ```

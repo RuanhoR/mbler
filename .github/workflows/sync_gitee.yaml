@@ -14,4 +14,4 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
           source-repo: git@github.com:RuanhoR/mbler.git
-          destination-repo: git@gitee.com:n304sc-haoran/mcbe-addon-bulider.git
+          destination-repo: git@gitee.com:n304sc-haoran/mbler.git
