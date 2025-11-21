@@ -69,6 +69,7 @@ class App {
       editArea.style.left = `${clamped}%`;
       editArea.style.width = `${100 - clamped}%`;
     };
+    setWidths(20);
     const handleStart = (e) => {
       isDragging = true;
       scrollBar.style.width = "8px";

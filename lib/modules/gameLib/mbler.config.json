@@ -5,7 +5,7 @@
   "type": "scriptsDes",
   "script": {
     "main": "./src/index.js",
-    "dependencies":{ 
+     "dependencies":{ 
       "gutils": "inner"
     }
   },

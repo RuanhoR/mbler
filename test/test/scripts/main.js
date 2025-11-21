@@ -1,12 +1,11 @@
 import {
-  GameLib
-} from "gameLib" // 虚拟包名，打包时替换
-import {
-  config
-} from './config.js'
-console.log('Hello world')
-new GameLib(true)
-  .event
-  .PlayerAdd((e) =>
-    e.player.sendMessage(config.h.toString())
-  )
+  initSAPIGame
+} from "create-game"
+initSAPIGame({
+    debugMode: true, //debugMode开关
+    onEnd: onEnd, //执行/game end时触发
+    hub: Hub, //玩家执行/hub时触发
+    onJoin(p) {
+      console.log('player join')
+    },
+});

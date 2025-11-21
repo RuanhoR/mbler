@@ -1,0 +1,14 @@
+{
+  "name": "create-game",
+  "description": "create game fast",
+  "git": "gitee.com/ykxyx666_admin/sapi-game.git",
+  "version": "0.0.1",
+  "type": "scriptsDes",
+  "script": {
+    "main": "./main.js"
+  },
+  "mcVersion": [
+    "1.21.10",
+    "1.21.120"
+  ]
+}

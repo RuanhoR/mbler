@@ -60,7 +60,6 @@ body {
   z-index: 1;
   caret-color: green;
   background-color: var(--input-color);
-  color: black;
   position: absolute
 }
 
@@ -70,7 +69,8 @@ body {
   pointer-events: none
 }
 
-.editInput,.highlight {
+.editInput,
+.highlight span {
   font-family: 'Monaco','Consolas','Courier New',monospace;
   font-size: 14px;
   line-height: 1.5;

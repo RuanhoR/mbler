@@ -5,13 +5,11 @@
   "mcVersion": "1.21.100",
   "script": {
     "ui": true,
+    "UseBeta": true,
     "main": "main.js",
     "dependencies": {
-      "gameLib": "inner"
+      "create-game": "inner"
     }
-  },
-  "subpack": {
-    "pack-id": "显示的名称"
   },
   "minify": true,
   "outdir": "/storage/emulated/0/Android/data/com.mojang.minecraftpe/files/games/com.mojang/development_behavior_packs/BP_test/"

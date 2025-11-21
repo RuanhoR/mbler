@@ -58,7 +58,7 @@ const processFile = async (relativeFilePath) => {
       await fs.mkdir(distDir, {
         recursive: true
       });
-      await fs.writeFile(distFilePath, outputCode, 'utf-8');
+      fs.writeFile(distFilePath, outputCode, 'utf-8');
     } else if (ext === "json") {
       let result = '';
       try {
@@ -71,14 +71,14 @@ const processFile = async (relativeFilePath) => {
       await fs.mkdir(distDir, {
         recursive: true
       });
-      await fs.writeFile(distFilePath, result, 'utf-8');
+      fs.writeFile(distFilePath, result, 'utf-8');
     } else {
       const distFilePath = path.join(base, 'dist', relativeFilePath);
       const distDir = path.dirname(distFilePath);
       await fs.mkdir(distDir, {
         recursive: true
       });
-      await fs.writeFile(distFilePath, code, 'utf-8');
+      fs.writeFile(distFilePath, code, 'utf-8');
     }
   } catch (err) {
     console.error(`处理文件失败 [${relativeFilePath}]:`, err.message);
