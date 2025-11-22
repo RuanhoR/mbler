@@ -1,168 +1,185 @@
-# 用 mbler 创建你的第一个Minecraft行为包
-提示: 
-** 在仓库里面有 test 这个文件夹，你可以参考这个文件夹里面的配置来编写你的项目 ** 
-**建议所有的 json 都不要写注释**
-### 第一步
-打开终端，请确保你已经安装以下包 :  
- - nodejs 的 node 和 npm
- - git  
+# 使用 mbler 创建你的第一个 Minecraft 行为包
 
-这里不需要我说的，自己根据运行环境搜教程去
+简介
+- 本指南演示如何使用 mbler 快速创建并管理一个 Minecraft 行为包（Behavior Pack）。文档示例基于仓库自带的 test 示例，建议参考 test 文件夹了解完整配置与目录结构。
+- 说明：JSON 标准不允许注释，文档中演示的 JSON 示例已去掉注释；若你在编辑过程中希望保留说明，请使用 README 或单独的注释文件。
 
-然后，克隆仓库
+先决条件
+- Node.js（包含 npm）已安装。
+- Git 已安装并能正常使用。
+- 如果你想直接运行仓库代码，需要克隆本项目；若仓库有镜像（例如 Gitee），可按需选择。
+
+获取代码
+推荐使用 GitHub 仓库：
 ```bash
-git clone https://gitee.com/n304sc-haoran/mbler.git
+git clone https://github.com/RuanhoR/mbler.git
 cd mbler
 ```
-接下来，你就可以用node运行
-** mbler **
-在你的终端上了  
+（仓库在其他平台有镜像时也可使用 Gitee 的克隆链接）
 
-比如
+安装与运行（开发阶段）
+有两种常见方式在本地运行 mbler：
+
+1) 直接用 Node 运行（快速调试）
 ```bash
 node index.js
 ```
-你也可以用
+
+2) 全局链接（推荐用于经常使用命令行工具的情况）
+在仓库根目录运行：
 ```bash
 npm link
-# 如果这一段不行，运行这一段
+```
+此命令会把本地包链接为全局命令（在其他目录可直接使用 mbler）。若 npm link 无效，可尝试运行仓库提供的脚本：
+```bash
 bash install.sh
 ```
-链接到终端的
-** mbler **
-命令，快捷启动  
-如果你想更新，就
+
+更新仓库（获取最新特性）
 ```bash
 git pull
 ```
-来拉取最新版本，使用最新特性  
-现在，我们在终端上安装了本项目，接下来，就是创建项目了  
 
-### 创建项目
+创建项目（初始化）
+- 在你想创建项目的目录下新建一个文件夹，或直接在当前目录执行初始化命令。
+- 注意：`-c` 选项并不是用来“创建”目录的，它用于切换/设置 mbler 的工作目录（即告诉 mbler 在哪个目录执行后续操作）。下面给出正确的用法示例。
 
-在任意目录创建一个文件夹  
-在终端输入
+切换工作目录（-c）
+将 mbler 的工作目录切换到指定路径（支持相对或绝对路径）：
 ```bash
-# 这里默认你已经进行了 npm link 所以直接用mbler命令
-mbler -c <你创建的文件夹的路径，相对或绝对均可>
+mbler -c <目标目录路径>
+```
+示例：
+```bash
+# 切换到已存在目录 myproject
+mbler -c ./myproject
+```
+
+创建/初始化项目（init）
+在目标工作目录执行初始化交互流程：
+```bash
 mbler init
 ```
-然后，就会询问一些基本设置  
-可以参考 test 项目来修改这个配置  
-** 目前支持 typescript **
-下面是示例配置介绍
+
+结合使用示例
+如果你想在一个新目录中初始化项目，可以先创建目录并切换工作目录，再运行 init：
+```bash
+mkdir myproject
+mbler -c ./myproject
+mbler init
+```
+或者（传统方式）直接切换到目录再 init：
+```bash
+mkdir myproject
+cd myproject
+mbler init
+```
+
+配置说明（示例 mbler.config.json）
+下面是一个示例（注意：JSON 不带行内注释）：
+
 ```json
 {
-  "name": "test",  // 名称
-  "description": "test",  // 描述
-  "version": "0.1.1",  // 版本
-  "mcVersion": "1.21.100",  // 支持的Mc版本，必填，依据此推断Sapi版本
+  "name": "test",
+  "description": "示例项目",
+  "version": "0.1.1",
+  "mcVersion": "1.21.100",
   "script": {
-    "ui": true,  // 是否用mcbe的@minecraft/ui模块，启用该模块相当于有ui部分的逻辑
-    "main": "main.js",  // 主脚本
-    "UseBeta": true, // 是否使用beta版本 script api
+    "ui": true,
+    "main": "main.js",
+    "UseBeta": true,
     "dependencies": {
-      "gameLib": "inner"  // 依赖，gameLib是内置的
-      // 格式: <包名>: <源> ，源可以为git仓库链接或 inner : 内置
+      "gameLib": "inner"
     }
   },
-  "subpack": { // 子包，对应 manifest.json 的subapck
-  // 也就是添加包的时候设置页面
-  // 在 /subpack/pack-id 里面放文件，和外面结构一样
+  "subpack": {
     "pack-id": "显示的名称"
   },
-  "minify": true, // 是否进行代码压缩，目前压缩包含JSON和JavaScript的
-  "outdir": "<输出目录，建议写绝对路径>"
+  "minify": true,
+  "outdir": "/absolute/path/to/output"
 }
 ```
-对比一下 mcbe 的原生配置
-```json
-{
-  "format_version": 2,
-  "header": {
-    "description": "作者:KarZex,汉化:B站Minecraft菠萝君",
-    "name": "[菠萝汉化]§g拔刀剑V3.2",
-    "min_engine_version": [1, 21, 60 ],
-    "uuid": "534fa891-c8a4-46fa-816b-94d70f63bfd4",
-    "version": [1, 21, 60]
-  },
-  "modules": [
-    {
-      "description": "Data Module",
-      "type": "data",
-      "uuid": "4f62761d-c0d4-4a5b-a2bc-4f0cfe31a47c",
-      "version": [1, 0, 0]
-    },
-    {
-      "description": "Script API Module",
-      "language": "javascript",
-      "type": "script",
-      "uuid": "68d538a2-71a5-41c7-8405-0e1eb60b9037",
-      "version": [1, 0, 0],
-      "entry": "scripts/bladeMain.js"
-    }
-  ],
-  "capabilities": ["script_eval"],
-  "dependencies": [
-    {
-      "module_name": "@minecraft/server",
-      "version": "1.13.0"
-    },
-    {
-      "module_name": "@minecraft/server-ui",
-      "version": "1.2.0"
-    }
-  ]
-}
 
-```
-明显原生繁琐，选项少  
-依赖操作 : 
+字段说明
+- name: 项目名称。
+- description: 描述。
+- version: 版本号。
+- mcVersion: 目标 Minecraft 版本（必填），用于推断 Script API 版本。
+- script.ui: 是否启用 @minecraft/ui（如启用则包含 UI 相关逻辑）。
+- script.main: 主脚本入口文件（相对于脚本目录）。
+- script.UseBeta: 是否启用 Beta 版 Script API。
+- script.dependencies: 依赖声明，格式为 "<包名>": "<源>"。源可以是 git 链接、本地路径或 "inner"（内置）。
+- subpack: 子包声明，对应 manifest.json 的 subpack 配置，子包内容放在 /subpack/<pack-id>。
+- minify: 是否对输出进行压缩（目前压缩 JSON 与 JavaScript）。
+- outdir: 输出目录，推荐使用绝对路径以避免相对路径混淆。
+
+关于依赖（install / add / remove）
+- 从指定来源安装依赖（例如 git 或本地路径）：
 ```bash
-# 从指定地方安装依赖
-mbler install <git的ssh或https链接 | 本地路径>
-# 在工作目录添加依赖
-mbler add <依赖的包名>
-# 在工作目录删除依赖
-mbler remove <依赖的包名>
+mbler install <git-or-local-path>
 ```
-创建依赖 : [依赖创建](./create-des.md)  
-
-注意 : 文件目录下有package.json，但不需要你npm install  
-因为我们只有编译typescript时用到node_modules  
-并且由于项目结构关系，编译时先要预整理项目结构，我们并不能直接编译typescript  
-所以，我们在第二部，复制package.json，在编译目录再自动npm install  
-
-### 附页
-**mbler的项目结构 : **
-
+- 在工作目录中添加已知依赖（package 名称）：
+```bash
+mbler add <package-name>
 ```
- project
-  | package.json # 让npm识别，不需要npm install
-  | mbler.config.json 
-  | scripts
-    | *.js | *.json
-  | res
-    | pack_icon.png
-    | items
-      | *.json # 和原版一样
-    | entities
-      | *.json # 和原版一样
-    | recipes
-      | *.json # 和原版一样
-    | animation_controllers
-      | *.json # 和原版一样
-    | spawn_rules
-      | *.json # 和原版一样
-    | functions
-      | *.mcfunction # 和原版一样
-    | loot_tables
-      | *.json # 和原版一样
-    | blocks
-      | *.json # 和原版一样
-    | texts
-      | *.lang #和原版一样
-  | subpack
-    | * # 在 mbler.config.json 里面声明
-      | # 和上层一样的结构，只不过少了 mbler.config.json 和subpacks (你在想子包的子包？原版不支持)
+- 删除工作目录中的依赖：
+```bash
+mbler remove <package-name>
 ```
+
+创建自定义依赖
+- 如需创建一个可被 mbler 管理的依赖包，详见：docs/create-des.md（仓库内链接）。
+
+package.json 与构建说明
+- 项目目录下会存在 package.json，用于 npm 识别，但在本地开发时通常不需要你运行全局 npm install。
+- 构建流程会在临时/输出目录复制 package.json，再在该目录执行 npm install（如果需要编译 TypeScript 才会安装依赖）。
+- 因项目需要先整理项目结构才可正确编译 TypeScript，所以不要直接在源目录运行 npm install 来进行构建。
+
+快速工作流推荐
+1. 使用 mbler init 创建项目骨架或复制 test 示例（在目标工作目录下执行 init）。
+2. 本地开发脚本与资源（res、scripts 等）。
+3. 运行 mbler build（或项目提供的构建命令）生成输出到 outdir。
+4. 将输出放入 Minecraft 的 behavior/resource pack 进行测试。
+
+项目结构（示例）
+```
+project
+ ├─ package.json            # npm 识别用（不必在源目录 npm install）
+ ├─ mbler.config.json
+ ├─ scripts
+ │  └─ *.js | *.json
+ ├─ res
+ │  ├─ pack_icon.png
+ │  ├─ items
+ │  │  └─ *.json
+ │  ├─ entities
+ │  │  └─ *.json
+ │  ├─ recipes
+ │  │  └─ *.json
+ │  ├─ animation_controllers
+ │  │  └─ *.json
+ │  ├─ spawn_rules
+ │  │  └─ *.json
+ │  ├─ functions
+ │  │  └─ *.mcfunction
+ │  ├─ loot_tables
+ │  │  └─ *.json
+ │  ├─ blocks
+ │  │  └─ *.json
+ │  └─ texts
+ │     └─ *.lang
+ └─ subpack
+    └─ <pack-id>
+       └─ (同上结构，需在 mbler.config.json 中声明)
+```
+
+调试与常见问题
+- JSON 注释问题：请勿在实际 JSON 文件中写注释，编辑器内可用 .jsonc 在本地临时注释，但最终提交给 mbler 的文件必须为合法 JSON。
+- npm link 无效：确认你在仓库根目录执行了 npm link，并且系统 PATH 中包含全局 npm bin。可用 `which mbler`（Linux/macOS）或 `where mbler`（Windows）确认链接是否生效。
+- TypeScript 编译失败：构建流程会在构建目录再执行 npm install 并编译；如果本地缺少依赖或版本不匹配，请检查 mbler.config.json 中的配置与 package.json 的依赖版本。
+- 运行时报错找不到模块：确认 script.main 指定的入口存在且在构建时被正确拷贝到输出目录。
+
+扩展阅读与资源
+- 示例项目：仓库根目录的 test 文件夹（参考其配置与结构）。
+- 依赖创建说明：[创建依赖](./create-des.md)
+- 如需查看源码实现（API 与行为），请在 lib/ 目录下查阅相关模块或翻阅相关教程
