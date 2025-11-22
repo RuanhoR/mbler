@@ -1,0 +1,31 @@
+import { EntityComponentTypes } from "@minecraft/server";
+import { PlayerGroupSet } from "../../gamePlayer/groupSet.js";
+import { GameComponent, GameState } from "../../main.js";
+export interface EntityInteractionBlockerOptions {
+    /** 被限制的玩家组 */
+    groupSet: PlayerGroupSet;
+    /**
+     * 可选：要阻止交互的实体 ID 列表。
+     * 若不设置或为空，则阻止与所有实体交互。
+     */
+    entityIds?: string[];
+    /**
+     * 可选：要阻止的实体组件类型。
+     * 若设置，则仅阻止拥有该组件的实体。
+     */
+    entityComponentTypes?: EntityComponentTypes[];
+    /**
+     * 可选：是否给玩家提示（默认 true）
+     */
+    showMessage?: boolean;
+    /**
+     * 可选：提示信息
+     */
+    message?: string;
+}
+/**
+ * 通用实体交互阻止组件
+ */
+export declare class EntityInteractionBlocker extends GameComponent<GameState, EntityInteractionBlockerOptions> {
+    onAttach(): void;
+}

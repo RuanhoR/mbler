@@ -48,3 +48,4 @@ mbler init
 - [创建第一个项目](./create-project.md)
 - [命令参考](./command.md)
 - [创建依赖](./create-des.md)
+- [内置依赖说明](./inner-say.md)

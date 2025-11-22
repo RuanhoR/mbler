@@ -6,11 +6,11 @@
   "script": {
     "ui": true,
     "UseBeta": true,
-    "main": "main.js",
+    "main": "main",
     "dependencies": {
       "create-game": "inner"
     }
   },
-  "minify": true,
+  "minify": false,
   "outdir": "/storage/emulated/0/Android/data/com.mojang.minecraftpe/files/games/com.mojang/development_behavior_packs/BP_test/"
 }

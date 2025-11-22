@@ -6,7 +6,7 @@
   "script": {
     "ui": true,
     "lang": "ts",
-    "main": "main.js",
+    "main": "main",
     "dependencies": {
       "gameLib": "inner"
     }

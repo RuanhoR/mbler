@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "type": "scriptsDes",
   "script": {
-    "main": "./main.js"
+    "main": "./src/main.js"
   },
   "mcVersion": [
     "1.21.10",
