@@ -8,7 +8,7 @@
     "UseBeta": true,
     "main": "main",
     "dependencies": {
-      "create-game": "inner"
+      "gameLib": "inner"
     }
   },
   "minify": false,
