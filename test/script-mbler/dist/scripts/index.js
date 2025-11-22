@@ -1,0 +1,1 @@
+console.log("console in ts minecraft");export{};

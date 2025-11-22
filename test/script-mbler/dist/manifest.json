@@ -1,0 +1,61 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "test",
+    "description": "test",
+    "uuid": "9f86d081-884c-47d6-89ab-2feaa0c55ad0",
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      100
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "06cb539c-6a32-4d6f-8ab8-a62a76946055",
+      "description": "MBLER Generated @2025-11-22 15:34:03",
+      "version": [
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/main.js",
+      "uuid": "56a7910d-2a6c-413d-889a-907d39d72626",
+      "version": [
+        0,
+        1,
+        1
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.1.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    }
+  ],
+  "capabilities": [
+    "script_eval"
+  ],
+  "subpack": [
+    {
+      "folder_name": "pack-id",
+      "name": "显示的名称",
+      "memory_tier": 1
+    }
+  ]
+}
