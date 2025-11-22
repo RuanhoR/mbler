@@ -2,7 +2,7 @@
   "name": "test",
   "description": "test",
   "version": "0.1.1",
-  "mcVersion": "1.21.100",
+  "mcVersion": "1.21.120",
   "script": {
     "ui": true,
     "UseBeta": true,
