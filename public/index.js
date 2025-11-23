@@ -33,6 +33,9 @@ textarea.addEventListener('scroll', function syncScroll() {
   highFolder.scrollTop = textarea.scrollTop;
   highFolder.scrollLeft = textarea.scrollLeft;
 });
+const saveBtn = create('button')
+saveBtn.innerText = "保存"
+edit.appendChild(saveBtn)
 edit.appendChild(textarea);
 edit.appendChild(highFolder);
 // 挂载到页面
