@@ -8,11 +8,11 @@
       ],
       "format": {
         "server": "2.3.0",
-        "server_ui": "2.1.0"
+        "server_ui": "2.0.0"
       },
       "beta": {
         "server": "2.4.0-beta",
-        "server_ui": "2.4.0-beta"
+        "server_ui": "2.1.0-beta"
       }
     },
     {
