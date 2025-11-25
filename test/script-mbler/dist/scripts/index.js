@@ -1,1 +1,1 @@
-console.log("console in ts minecraft");export{};
+console.log("console in ts minecraft")
