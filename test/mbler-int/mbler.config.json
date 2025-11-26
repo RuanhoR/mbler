@@ -1,12 +1,11 @@
 {
-  "name": "test",
-  "description": "test",
-  "version": "0.1.1",
+  "name": "无尽袋子",
+  "description": "一个袋子装无限的单种物品",
   "mcVersion": "1.21.120",
+  "version": "0.0.1",
   "script": {
+    "main": "index",
     "ui": true,
-    "UseBeta": true,
-    "main": "main",
     "dependencies": {
       "gameLib": "inner"
     }
