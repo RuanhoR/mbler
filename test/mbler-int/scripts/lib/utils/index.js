@@ -45,6 +45,7 @@ export class utils {
         const remNum = RemoveNum >= 64 ? 64 : Math.max(RemoveNum, item.amount) - Math.min(RemoveNum, item.amount)
         item.amount = remNum;
         RemoveNum -= remNum
+        inventory.setItem(i, item);
       }
     }
   }

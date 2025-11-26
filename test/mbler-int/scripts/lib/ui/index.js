@@ -39,8 +39,7 @@ class ItemBagUI extends baseUi {
           this.openAddItemForm(player, itemOnHand);
           break;
         case 1:
-          // 取出物品功能待实现
-          player.sendMessage("取出物品功能暂未开放");
+          this.hanlerTakeOutItems(player, itemOnHand);
           break;
         default:
           player.sendMessage("请选择存入或取出");
@@ -56,7 +55,7 @@ class ItemBagUI extends baseUi {
       callback: ({
         formValues
       }) => {
-        const TakeOutCount = formValues;
+        const TakeOutCount = formValues[0];
         player.rumCommand(`give @s ${lore.name} ${TakeOutCount}`)
         lore.count = lore.count - TakeOutCount;
         itemOnHand.setLore(lore.parseArr())
