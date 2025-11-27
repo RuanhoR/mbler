@@ -13,16 +13,8 @@
       }
     ],
     "pattern": [
-      [
-        "A",
-        null,
-        null
-      ],
-      [
-        "A",
-        "B",
-        null
-      ]
+      "A  ",
+      "AB "
     ],
     "key": {
       "A": {
