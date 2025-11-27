@@ -12,11 +12,12 @@ class ItemBagUI extends baseUi {
    * 打开主菜单：存入物品 / 取出物品
    */
   openHomeForm(player, itemOnHand) {
+    const lore = new Lore(itemOnHand);
     const form = this.game.createForm("Action", {
       title: "菜单",
       layout: [{
           type: "label",
-          param: ["无尽袋子 - 菜单"]
+          param: [`无尽袋子 - 菜单\n物品 : ${lore.name} , 数量 : ${lore.count}`]
         },
         {
           type: "button",
@@ -52,16 +53,17 @@ class ItemBagUI extends baseUi {
     this.selectionNum({
       min: 1,
       max: lore.count,
+      tit: lore.name,
       callback: ({
         formValues
       }) => {
         const TakeOutCount = formValues[0];
-        player.rumCommand(`give @s ${lore.name} ${TakeOutCount}`)
+        player.runCommand(`give @s ${lore.name} ${TakeOutCount}`)
         lore.count = lore.count - TakeOutCount;
         itemOnHand.setLore(lore.parseArr())
         utils.setMainHand(player, itemOnHand);
       },
-      lastUi: () => this.openHomeForm(player, itemInHand)
+      lastUi: () => this.openHomeForm(player, itemOnHand)
     }, player)
   }
   /**

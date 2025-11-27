@@ -1,0 +1,39 @@
+{
+  "format_version": "1.21",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "mbler_int:recipes_mang_one_int"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "unlock": [
+      {
+        "item": "minecraft:leather"
+      }
+    ],
+    "pattern": [
+      [
+        "A",
+        null,
+        null
+      ],
+      [
+        "A",
+        "B",
+        null
+      ]
+    ],
+    "key": {
+      "A": {
+        "item": "minecraft:leather"
+      },
+      "B": {
+        "item": "minecraft:stick"
+      }
+    },
+    "result": {
+      "item": "mbler_int:mang_one_int"
+    }
+  }
+}

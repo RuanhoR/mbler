@@ -8,7 +8,6 @@ const useItem = ({
   itemStack: item
 }) => {
   if (!player.typeId.includes('player')) return;
-  console.log(typeof scriptUi.openHomeForm)
   if (item.typeId === "mbler_int:mang_one_int")
     scriptUi.openHomeForm(player, item)
 }
