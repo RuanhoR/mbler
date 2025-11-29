@@ -8,33 +8,48 @@ import {
   Lore
 } from "./Lore";
 class ItemBagUI extends baseUi {
+  initLayout() {
+    this.layouts = this.game.regLayout({
+        regIds: ["Home", "NumSelect", "showInNoFound"],
+        Home: {
+          title: "菜单",
+          layout: [{
+              type: "label",
+              param: [`无尽袋子 - 菜单\n物品 : ${lore.name} , 数量 : ${lore.count}`]
+            },
+            {
+              type: "button",
+              param: ["存入物品"]
+            },
+            {
+              type: "button",
+              param: ["取出物品"]
+            },
+          ],
+        },
+        NumSelect: {
+          title: "选择数量",
+          layout: []
+        },
+        showInNoFound: {
+          title: "请选择要存入的物品",
+          layout: [{
+            type: "label",
+            param: ["点击你想要存放的物品"]
+          }],
+        }
+      )
+    }
+  }
   /**
    * 打开主菜单：存入物品 / 取出物品
    */
   openHomeForm(player, itemOnHand) {
     const lore = new Lore(itemOnHand);
-    const form = this.game.createForm("Action", {
-      title: "菜单",
-      layout: [{
-          type: "label",
-          param: [`无尽袋子 - 菜单\n物品 : ${lore.name} , 数量 : ${lore.count}`]
-        },
-        {
-          type: "button",
-          param: ["存入物品"]
-        },
-        {
-          type: "button",
-          param: ["取出物品"]
-        },
-      ],
-    });
-
-    form.show(player).then(({
-      selection,
-      canceled
+    const form = this.game.createForm("Action", this.layouts[0]);
+    form.show(player, true).onCommit(({
+      selection
     }) => {
-      if (canceled) return;
       switch (selection) {
         case 0:
           this.openAddItemForm(player, itemOnHand);
@@ -109,13 +124,7 @@ class ItemBagUI extends baseUi {
    * 当物品无法自动识别时，让用户从列表中手动选择要存入的物品
    */
   showInNoData(player, placeholderLore, itemOnHand) {
-    const form = this.game.createForm("Action", {
-      title: "请选择要存入的物品",
-      layout: [{
-        type: "label",
-        param: ["点击你想要存放的物品"]
-      }],
-    });
+    const form = this.game.createForm("Action", this.layouts[2]);
     const inventoryData = utils.getAllPlayerInt(player);
     const itemButtons = [];
     const itemKeys = [];
@@ -183,21 +192,15 @@ class ItemBagUI extends baseUi {
     } = {},
     player
   ) {
-    this.game
-      .createForm("Modal", {
-        title: "选择数量",
-        layout: [{
-          type: "slider",
-          param: [tit, min, max]
-        }],
+    const form = this.game
+      .createForm("Modal", this.layouts[1])
+      .addLayout({
+        type: "slider",
+        param: [tit, min, max]
       })
-      .show(player)
-      .then((response) => {
-        if (response.canceled) {
-          return lastUi();
-        }
-        callback(response);
-      });
+    form.show(player, true)
+      .onCancel(lastUi)
+      .onCommit(callback)
   }
 }
 
