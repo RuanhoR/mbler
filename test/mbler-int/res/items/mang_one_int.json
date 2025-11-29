@@ -13,7 +13,7 @@
       },
       "minecraft:max_stack_size": 1,
       "minecraft:stacked_by_data": true,
-      "minecraft:icon": "",  // 待做
+      "minecraft:icon": "iconMangOneIntMbler",
       "minecraft:display_name": {
         "value": "无尽袋子 \n能存入无限的单种物品 右键打开"
       }

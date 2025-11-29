@@ -10,43 +10,43 @@ import {
 class ItemBagUI extends baseUi {
   initLayout() {
     this.layouts = this.game.regLayout({
-        regIds: ["Home", "NumSelect", "showInNoFound"],
-        Home: {
-          title: "菜单",
-          layout: [{
-              type: "label",
-              param: [`无尽袋子 - 菜单\n物品 : ${lore.name} , 数量 : ${lore.count}`]
-            },
-            {
-              type: "button",
-              param: ["存入物品"]
-            },
-            {
-              type: "button",
-              param: ["取出物品"]
-            },
-          ],
-        },
-        NumSelect: {
-          title: "选择数量",
-          layout: []
-        },
-        showInNoFound: {
-          title: "请选择要存入的物品",
-          layout: [{
-            type: "label",
-            param: ["点击你想要存放的物品"]
-          }],
-        }
-      )
-    }
+      regIds: ["Home", "NumSelect", "showInNoFound"],
+      Home: {
+        title: "菜单",
+        layout: [{
+            type: "button",
+            param: ["存入物品"]
+          },
+          {
+            type: "button",
+            param: ["取出物品"]
+          },
+        ],
+      },
+      NumSelect: {
+        title: "选择数量",
+        layout: []
+      },
+      showInNoFound: {
+        title: "请选择要存入的物品",
+        layout: [{
+          type: "label",
+          param: ["点击你想要存放的物品"]
+        }]
+      }
+    })
   }
   /**
    * 打开主菜单：存入物品 / 取出物品
    */
   openHomeForm(player, itemOnHand) {
+    if (!this.layouts) this.initLayout();
     const lore = new Lore(itemOnHand);
     const form = this.game.createForm("Action", this.layouts[0]);
+    form.addLayout({
+      type: "label",
+      param: [`无尽袋子 - 菜单\n物品 : ${lore.name} , 数量 : ${lore.count}`]
+    })
     form.show(player, true).onCommit(({
       selection
     }) => {
@@ -194,13 +194,13 @@ class ItemBagUI extends baseUi {
   ) {
     const form = this.game
       .createForm("Modal", this.layouts[1])
-      .addLayout({
-        type: "slider",
-        param: [tit, min, max]
-      })
-    form.show(player, true)
-      .onCancel(lastUi)
-      .onCommit(callback)
+    form.addLayout({
+      type: "slider",
+      param: [tit, min, max]
+    })
+    const show = form.show(player, true)
+    show.onCancel(lastUi)
+    show.onCommit(callback);
   }
 }
 
