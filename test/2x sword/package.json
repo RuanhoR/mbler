@@ -1,0 +1,13 @@
+{
+  "name": "双倍剑",
+  "description": "打生物会再生成一个的奇葩剑",
+  "version": "0.0.2",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "mbler dev",
+    "build": "mbler build"
+  },
+  "dependencies": {}
+}

@@ -32,5 +32,10 @@
   },
   "bin": {
     "mbler": "bin/mbler.js"
+  },
+  "exports": {
+    "./build": "./lib/build/index.js",
+    "./git-repo": "./lib/git/index.js",
+    "./utils": "./lib/utils/index.js"
   }
 }

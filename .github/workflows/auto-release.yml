@@ -1,5 +1,6 @@
 name: Release on Tag
-
+permissions:
+  contents: write
 on:
   push:
     tags:

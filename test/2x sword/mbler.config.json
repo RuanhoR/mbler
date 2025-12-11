@@ -1,0 +1,12 @@
+{
+  "name": "双倍剑",
+  "description": "打生物会再生成一个的奇葩剑",
+  "mcVersion": "1.21.80",
+  "version": "0.0.2",
+  "script": {
+    "main": "index",
+    "ui": true
+  },
+  "minify": false,
+  "outdir": "/storage/emulated/0/Android/data/com.mojang.minecraftpe/files/games/com.mojang/development_behavior_packs/test/"
+}
