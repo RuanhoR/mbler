@@ -30,6 +30,16 @@
     "terser": "5.44.0",
     "typescript": "^5.9.3"
   },
+  "files": [
+    "lib",
+    "test",
+    "docs",
+    "public",
+    "bin"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "bin": {
     "mbler": "bin/mbler.js"
   },

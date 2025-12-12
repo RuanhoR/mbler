@@ -1,0 +1,7 @@
+{
+  "name": "",
+  "description": "",
+  "version": "0.0.1",
+  "module": "commjs",
+  "main": "./index.js"
+}
