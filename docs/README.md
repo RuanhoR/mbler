@@ -49,3 +49,4 @@ mbler init
 - [命令参考](./command.md)
 - [创建依赖](./create-des.md)
 - [内置依赖说明](./inner-say.md)
+- [创建初始模板体](./create-initializer.md)

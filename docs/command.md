@@ -24,7 +24,8 @@
 | dev | `mbler dev` | — | 开启开发模式：监听源码变更并实时编译/构建（便于本地调试）。 |
 | recache | `mbler recache` | — | 重置缓存 |
 | help | `mbler help <命令名>` | — | 查看该命令的帮助 |
-| lang | `mbler lang <语言名>` | — | 切换语 |
+| lang | `mbler lang <语言名>` | — | 切换语言 |
+| create | `mbler create <git repo | dir | npm package>` | — | 按模板脚本进行初始化，类似 `npm create` |
 常用示例
 
 - 切换/查看工作目录

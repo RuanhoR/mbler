@@ -8,7 +8,11 @@
 准备工作
 - 熟悉创建项目的流程：参见 docs/create-project.md。
 - 需要 Git 用于发布到远端仓库（GitHub/Gitee/GitLab 等）。
-
+速写交互式方法
+```bash
+# 在mbler项目根目录运行
+mbler create ./test/des
+```
 配置（推荐放在仓库根目录的 mbler.config.json）
 下面给出一个合法的 JSON 示例（注意：JSON 不允许注释）：
 
