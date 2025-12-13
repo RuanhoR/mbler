@@ -1,0 +1,12 @@
+{
+  "name": "mbler/test mbler-int",
+  "description": "能存无数物品的袋子 ！",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "dev": "mbler dev",
+    "build": "mbler build"
+  }
+}
