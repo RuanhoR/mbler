@@ -11,7 +11,7 @@
 | 命令 | 用法 | 别名 | 说明 |
 | --- | --- | --- | --- |
 | checkout | `mbler checkout <PATH \| null>` | `-c` | 设置或查看工作目录。传入 `null` 时显示当前工作目录；传入目录路径则切换到该目录（支持相对/绝对路径）。 |
-| build | `mbler build` | `bulid` | 打包当前工作目录（构建行为包/资源）。 |
+| build | `mbler build` | --- | 打包当前工作目录（构建行为包/资源）。 |
 | init | `mbler init` | `-i` | 在当前工作目录初始化项目骨架（交互式）。 |
 | version | `mbler version` | — | 显示当前工作目录项目的版本（package 或 mbler 配置中的版本）。 |
 | v | `mbler v` | `-v` | 显示 mbler 工具自身的版本。 |
@@ -22,7 +22,9 @@
 | remove | `mbler remove <package-name>` | — | 从当前工作目录配置中删除依赖声明（不删除已安装包）。 |
 | uninstall | `mbler uninstall <package-name>` | — | 删除已安装的依赖包（从依赖仓库中移除）。 |
 | dev | `mbler dev` | — | 开启开发模式：监听源码变更并实时编译/构建（便于本地调试）。 |
-
+| recache | `mbler recache` | — | 重置缓存 |
+| help | `mbler help <命令名>` | — | 查看该命令的帮助 |
+| lang | `mbler lang <语言名>` | — | 切换语 |
 常用示例
 
 - 切换/查看工作目录
@@ -41,13 +43,16 @@ mbler -c
 cd ./myproject && mbler -c ./
 mbler init
 ```
-
-- 构建与清理
+- 切换语言
+```bash
+# 切换到简体中文，其他的还有 en_US 英语 , zh_TW 繁体
+mbler lang zh_CN
+mbler help lang
+```
+- 构建
 ```bash
 # 构建当前工作目录
 mbler build
-# 清理构建产物，build时会自动清理一般不需要手动清理
-mbler clean
 ```
 
 - 安装与管理依赖
