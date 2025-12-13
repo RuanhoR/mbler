@@ -45,8 +45,8 @@ mbler init
 ```
 - 切换语言
 ```bash
-# 切换到简体中文，其他的还有 en_US 英语 , zh_TW 繁体
-mbler lang zh_CN
+# 切换到简体中文，其他的还有 en 英语 
+mbler lang zh
 mbler help lang
 ```
 - 构建
