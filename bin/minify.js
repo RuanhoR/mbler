@@ -10,7 +10,7 @@ const fs = require('node:fs/promises');
 const base = path.join(__dirname, "./../");
 
 // 排除的目录名（比如 .git、.DS_Store 等，可根据需要扩展）
-const excludedDirs = ['.git', ".DS_Store", ".github"];
+const excludedDirs = ['.git', ".DS_Store", ".github", "docs"];
 
 function isExcludedDir(targetPath) {
   const dirs = targetPath.split(path.sep);
