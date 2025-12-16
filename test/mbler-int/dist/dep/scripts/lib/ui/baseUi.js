@@ -1,0 +1,1 @@
+export class baseUi{game;constructor(s){this.game=s}}

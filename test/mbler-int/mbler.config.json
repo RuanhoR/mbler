@@ -11,5 +11,9 @@
     }
   },
   "minify": true,
-  "outdir": "/storage/emulated/0/Android/data/com.mojang.minecraftpe/files/games/com.mojang/development_behavior_packs/BP_test/"
+  "outdir": {
+    "resources": "./dist/res",
+    "behavior": "./dist/dep",
+    "dist": "./dist.mcaddon"
+  }
 }
