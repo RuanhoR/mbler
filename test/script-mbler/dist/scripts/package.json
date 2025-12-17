@@ -1,1 +1,0 @@
-{"name":"test","description":"Hello world","version":"0.0.1","engines":{"node":">=16.0.0"},"scripts":{"dev":"mbler dev","build":"mbler build"},"dependencies":{"@minecraft/server":"2.1.0"}}

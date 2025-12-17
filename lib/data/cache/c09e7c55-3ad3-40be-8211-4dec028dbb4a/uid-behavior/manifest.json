@@ -1,0 +1,54 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "无尽袋子",
+    "description": "一个袋子装无限的单种物品",
+    "uuid": "26c70663-464c-4557-89ab-85efab5eeda8",
+    "version": [
+      0,
+      0,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      120
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "26c70663-464c-4557-89ab-85efab5eeda8",
+      "description": "From Mbler",
+      "version": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/index.js",
+      "uuid": "e7cdfd4d-dd19-4191-889a-397330470d11",
+      "version": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.3.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    }
+  ],
+  "capabilities": [
+    "script_eval"
+  ]
+}

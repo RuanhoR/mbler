@@ -7,7 +7,8 @@
   },
   "scripts": {
     "dev": "mbler dev",
-    "build": "mbler build"
+    "build": "MBLER_BUILD_MODULE=dist mbler build",
+    "dev-build": "MBLER_BUILD_MODULE=dev mbler build"
   },
   "dependencies": {
     "@minecraft/server": "2.1.0"
