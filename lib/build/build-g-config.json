@@ -1,5 +1,12 @@
 {
-  "DataId": "04694048561ef",
+  "resources": {
+    "header": "48793164",
+    "module": "ab43f7cb"
+  },
+  "data": {
+    "header": "7604691",
+    "module": "bcd46f7a"
+  },
   "ScriptId": "4654236ace4",
   "PackageFile": "mbler.config.json"
 }

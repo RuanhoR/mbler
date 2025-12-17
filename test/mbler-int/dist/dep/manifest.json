@@ -3,7 +3,7 @@
   "header": {
     "name": "无尽袋子",
     "description": "一个袋子装无限的单种物品",
-    "uuid": "26c70663-464c-4557-89ab-85efab5eeda8",
+    "uuid": "74c02175-7904-446e-889a-335d2a9c868c",
     "version": [
       0,
       0,
@@ -18,7 +18,7 @@
   "modules": [
     {
       "type": "data",
-      "uuid": "26c70663-464c-4557-89ab-85efab5eeda8",
+      "uuid": "e8e80bdf-6634-4885-89ab-e1cc43bbbaf5",
       "description": "From Mbler",
       "version": [
         0,
