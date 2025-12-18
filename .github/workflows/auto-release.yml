@@ -39,4 +39,4 @@ jobs:
               dist.zip - 压缩后版本，体积减小 5~10mb
               SourceCode - 自动生成的源码
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
