@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "一个针对Minecraft JavaScript API 的lib库，让你的附加包版本管理更简单",
   "repository": {
     "type": "git",

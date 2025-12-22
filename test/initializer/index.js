@@ -1,3 +1,4 @@
+require("./test.js")
 exports.main = function({
   work
 }) {
