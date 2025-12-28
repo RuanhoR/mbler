@@ -24,6 +24,7 @@
     "@babel/generator": "7.28.5",
     "@babel/parser": "7.28.5",
     "@babel/traverse": "7.28.5",
+    "@minecraft/server": "^2.4.0",
     "adm-zip": "^0.5.16",
     "chokidar": "^4.0.3",
     "dayjs": "1.11.18",
