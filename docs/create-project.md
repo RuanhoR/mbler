@@ -180,7 +180,8 @@ project
  ├─ resources
  ├── mcbe原生资源包结构，除了不需要包含 manifest.json(自动配置/生成)
 ```
-
+## 其他
+ - 如果在`scripts`文件夹里写json，那么可以在js里面用 `import {data as xxx} from "相对路径"` 导入数据，mbler会处理期间关系(原生mc不支持导入json)
 ## 调试与常见问题
 - JSON 注释问题：请勿在实际 JSON 文件中写注释，编辑器内可用 .jsonc 在本地临时注释，但最终提交给 mbler 的文件必须为合法 JSON。
 - npm link 无效：确认你在仓库根目录执行了 npm link，并且系统 PATH 中包含全局 npm bin。可用 `which mbler`（Linux/macOS）或 `where mbler`（Windows）确认链接是否生效。
