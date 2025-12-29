@@ -48,6 +48,7 @@
   "exports": {
     "./build": "./lib/build/index.js",
     "./git-repo": "./lib/git/index.js",
+    "./mcx": "./lib/mcx/export/inc.js",
     "./utils": "./lib/utils/index.js"
   }
 }

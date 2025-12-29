@@ -4,7 +4,7 @@
   "mcVersion": "1.21.120",
   "version": "0.0.1",
   "script": {
-    "main": "index",
+    "main": "index.js",
     "ui": true,
     "dependencies": {
       "gameLib": "inner"
