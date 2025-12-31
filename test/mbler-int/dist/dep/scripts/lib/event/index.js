@@ -1,1 +1,0 @@
-import ui from"./../ui/index";import{world}from"@minecraft/server";let scriptUi;const useItem=({source:e,itemStack:t})=>{e.typeId.includes("player")&&"mbler_int:mang_one_int"===t.typeId&&scriptUi.openHomeForm(e,t)},regEvent=e=>{world.afterEvents.itemUse.subscribe(useItem),scriptUi=new ui(e)};export{regEvent};

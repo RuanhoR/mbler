@@ -1,1 +1,0 @@
-import{regEvent}from"./lib/event/index";import{GameLib}from"./node_modules/gameLib/src/index.js";const game=new GameLib(!0);regEvent(game);
