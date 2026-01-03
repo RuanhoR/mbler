@@ -1,4 +1,4 @@
-module.exports = {
+{
   "help": "MBLER\nMinecraft Bedrock Edition\nAddon Bulider In Nodejs\nnodejs build tools on bedrock version of minecraft\nSolve the problem of checking documents everywhere to configure api version\nUsage: node index.js [command]\n* You can also omit the node prefix after npm link link\nCommands: dev, install, build, init, version, -v, web_edit, clean, checkout, -c, -i, v, create, recache, lang\nHelp command:\n  help\n    Show help information\n    The second parameter is the name of the command to be queried or empty\n    Alias: -h, -help\n git https://github.com/RuanhoR/mbler/",
   "config_invalid": "Non-GameLib projects",
   "err_bulid": "Build error",
