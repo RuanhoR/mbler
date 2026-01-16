@@ -18,13 +18,10 @@
 - Node.js 与 npm
 - Git
 
-```bash
-git clone https://gitee.com/n304sc-haoran/mbler.git
-cd mbler
-npm install 
-npm link  # 若失败，请运行 bash install.sh
-```
-
+推荐使用 GitHub 仓库：
+从 [这里](https://github.com/RuanhoR/mbler/releases) 选择版本下载，到达这个目录(使用命令行cd)，运行`npm link`  
+也可使用 Gitee 的克隆链接或github镜像站，可能速度更快  
+本项目目前迁移`typescript`，你也可以直接运行`tsc`进行构建
 安装成功后，你可以直接使用：
 ```bash
 # 获取版本

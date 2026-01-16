@@ -11,46 +11,22 @@
 
 ## 获取代码
 推荐使用 GitHub 仓库：
-```bash
-git clone https://github.com/RuanhoR/mbler.git
-cd mbler
-```
-仓库也可使用 Gitee 的克隆链接或github镜像站，可能速度更快  
-如gh-proxy github镜像
-```bash
-git clone https://gh-proxy.com/https://github.com/RuanhoR/mbler.git
-cd mbler
-```
-gitee镜像
-```bash
-git clone https://gitee.com/n304sc-haoran/mbler.git
-cd mbler
-```
-
+从 [这里](https://github.com/RuanhoR/mbler/releases) 选择版本下载，到达这个目录(使用命令行cd)，运行`npm link`  
+也可使用 Gitee 的克隆链接或github镜像站，可能速度更快  
+本项目目前迁移`typescript`，你也可以直接运行`tsc`进行构建
 ## 安装与运行（开发阶段）
-有两种常见方式在本地运行 mbler：
-
-1) 直接用 Node 运行（快速调试）
-```bash
-node index.js
-```
-
-2) 全局链接（推荐用于经常使用命令行工具的情况）
+有两种常见方式在本地运行 mbler：全局链接（推荐用于经常使用命令行工具的情况）
 在仓库根目录运行：
 ```bash
 npm link
 ```
-此命令会把本地包链接为全局命令（在其他目录可直接使用 mbler）。若 npm link 无效，可尝试运行仓库提供的脚本：
-```bash
-bash install.sh
-```
-
+此命令会把本地包链接为全局命令（在其他目录可直接使用 mbler）。
 更新仓库（获取最新特性）
 ```bash
 git pull
 ```
 ## 食用
-
+按以下教程进行使用！
 ### 创建项目（初始化）
 - 在你想创建项目的目录下新建一个文件夹，或直接在当前目录执行初始化命令。
 - 注意：`-c` 选项并不是用来“创建”目录的，它用于切换/设置 mbler 的工作目录（即告诉 mbler 在哪个目录执行后续操作）。下面给出正确的用法示例。
