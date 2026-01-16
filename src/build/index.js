@@ -199,7 +199,7 @@ class Build extends baseBuild {
     }
   }
   async compileTypeScriptUnified() {
-    const tempMod = new(require("os").tmpdir());
+    const tempMod = new Temp(require("os").tmpdir());
     await tempMod.init();
     const tempDir = tempMod.dir;
     try {

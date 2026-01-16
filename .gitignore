@@ -1,7 +1,7 @@
 # Nodejs 依赖
 node_modules/
 /test2/node_modules/
-/dist
+dist
 
 # 运行数据
 /lib/data/path.db

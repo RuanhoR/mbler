@@ -1,97 +1,97 @@
-#!/usr/bin/env node
-
+const {
+  execSync
+} = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const {
   minify
 } = require('terser');
-const path = require('node:path');
-const fs = require('node:fs/promises');
-
-// 配置 base 目录（脚本所在目录的上一级）
-const base = path.join(__dirname, "./../");
-
-// 排除的目录名（比如 .git、.DS_Store 等，可根据需要扩展）
-const excludedDirs = ['.git', ".DS_Store", ".github", "docs"];
-
-function isExcludedDir(targetPath) {
-  const dirs = targetPath.split(path.sep);
-  return excludedDirs.some(dir => dirs.includes(dir));
+fs.rmSync(path.join(__dirname, "../dist"), {
+  recursive: true,
+  force: true
+})
+try {
+  execSync('tsc', {
+    stdio: 'inherit'
+  });
+  console.log('TypeScript 编译完成！');
+} catch (error) {
+  console.error('TypeScript 编译失败:', error.message);
 }
-const processDir = async (relativeDir) => {
-  const fullPath = path.join(base, relativeDir);
-  try {
-    const stat = await fs.stat(fullPath);
+const distDir = path.resolve(__dirname, './../dist');
+console.log(`🔍 扫描目录: ${distDir}`);
+if (!fs.existsSync(distDir)) {
+  console.error('dist 目录不存在:', distDir);
+  process.exit(1);
+}
+const jsFiles = [];
+
+function scanDirectory(directory) {
+  const files = fs.readdirSync(directory);
+  files.forEach(file => {
+    const fullPath = path.join(directory, file);
+    const stat = fs.statSync(fullPath);
+
     if (stat.isDirectory()) {
-      const files = await fs.readdir(fullPath);
-      if (isExcludedDir(relativeDir)) {
-        console.log(`[跳过目录] ${relativeDir}`);
-        return;
-      }
-      let run = [];
-      for (const file of files) {
-        const nextRelativePath = path.join(relativeDir, file);
-        run.push(processDir(nextRelativePath)); // 递归处理下一层
-      }
-      await Promise.all(run);
-    } else if (stat.isFile()) {
-      await processFile(relativeDir); // 处理文件
+      scanDirectory(fullPath); // 递归扫描子目录
+    } else if (file.endsWith('.js') && !file.endsWith('.min.js')) {
+      jsFiles.push(fullPath);
     }
-  } catch (err) {
-    console.error(`无法处理路径 [${fullPath}]:`, err.message);
-  }
-};
-const processFile = async (relativeFilePath) => {
-  const fullPath = path.join(base, relativeFilePath);
-  const ext = path.extname(relativeFilePath).slice(1);
-  const code = await fs.readFile(fullPath, 'utf-8');
-  try {
-    if (['mjs', 'cjs', 'js'].includes(ext)) {
-      // 尝试压缩 JS 文件
-      let result = {};
-      try {
-        result = await minify(code);
-      } catch (err) {
-        console.warn(`[Terser 压缩失败] ${relativeFilePath} ${err.stack}`);
+  });
+}
+scanDirectory(distDir);
+if (jsFiles.length === 0) {
+  console.log('没有找到需要压缩的 JS 文件');
+  process.exit(0);
+}
+console.log(`${jsFiles.length} 个 JS 文件需要压缩`);
+// 3. 使用 Terser 压缩每个 JS 文件
+async function minifyJsFiles() {
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const filePath of jsFiles) {
+    try {
+      // 读取原始 JS 文件
+      const originalCode = fs.readFileSync(filePath, 'utf8');
+      const result = await minify(originalCode, {
+        compress: {
+          drop_console: false,
+          dead_code: true,
+          drop_debugger: true
+        },
+        mangle: true,
+        format: {
+          comments: false // 移除注释
+        }
+      });
+      if (result.error) {
+        throw new Error(result.error);
       }
-      const outputCode = result.code || code; // 压缩失败时使用原代码
-      const distFilePath = path.join(base, 'dist', relativeFilePath);
-      const distDir = path.dirname(distFilePath);
-      await fs.mkdir(distDir, {
-        recursive: true
-      });
-      fs.writeFile(distFilePath, outputCode, 'utf-8');
-    } else if (ext === "json") {
-      let result = '';
-      try {
-        result = JSON.stringify(JSON.parse(code));
-      } catch (err) {
-        result = code;
-      }
-      const distFilePath = path.join(base, 'dist', relativeFilePath);
-      const distDir = path.dirname(distFilePath);
-      await fs.mkdir(distDir, {
-        recursive: true
-      });
-      fs.writeFile(distFilePath, result, 'utf-8');
-    } else {
-      const distFilePath = path.join(base, 'dist', relativeFilePath);
-      const distDir = path.dirname(distFilePath);
-      await fs.mkdir(distDir, {
-        recursive: true
-      });
-      fs.writeFile(distFilePath, code, 'utf-8');
+      const minifiedFilePath = filePath;
+      fs.writeFileSync(minifiedFilePath, result.code, 'utf8');
+      successCount++;
+    } catch (error) {
+      console.error(`压缩失败 ${filePath}:`, error.message);
+      failCount++;
     }
-  } catch (err) {
-    console.error(`处理文件失败 [${relativeFilePath}]:`, err.message);
   }
-};
-(async () => {
-  try {
-    await fs.rm(path.join(base, `dist`), {
-      recursive: true,
-      force: true
-    })
-  } catch (err) {
-    console.log(err)
+
+  console.log(`\n压缩完成: 成功 ${successCount} 个, 失败 ${failCount} 个`);
+  if (failCount > 0) {
+    process.exit(1);
   }
-  await processDir('./');
-})()
+  await fs.promises.cp(path.join(__dirname, "../package.json"), path.join(__dirname, "../dist/package.json"))
+  await fs.promises.cp(path.join(__dirname, "../bin"), path.join(__dirname, "../dist/bin"), {
+    recursive: true,
+    force: true
+  })
+  await fs.promises.cp(path.join(__dirname, "../test"), path.join(__dirname, "../dist/test"), {
+    recursive: true,
+    force: true
+  })
+}
+minifyJsFiles().catch(err => {
+  console.error('压缩过程中出现错误:', err);
+  process.exit(1);
+});
