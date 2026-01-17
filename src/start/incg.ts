@@ -1,5 +1,5 @@
 // 临时目录用于缓存
-const Temp = require('./../runTemp')
+Temp = require('./../runTemp')
 // 用 git进行clone克隆仓库
 const git = require('./../git')
 // 字符表

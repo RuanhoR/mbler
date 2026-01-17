@@ -1,12 +1,12 @@
-const {
+import {
   red,
   yellow,
   white,
   cyan,
   reset
-} = require('./colors.js');
-const util = require('util');
-const utils = require('./../utils');
+} from './colors.js';
+import util from 'util';
+import utils from './../utils/index.js';
 /**
  * 日志级别
  * @readonly
@@ -18,7 +18,6 @@ const LEVELS = {
   INFO: 'INFO',
   DEBUG: 'DEBUG'
 };
-
 /**
  * 日志颜色
  * @readonly
@@ -32,13 +31,7 @@ const LEVEL_COLORS = {
 };
 
 class Logger {
-  constructor() {
-    this.debug = this.d;
-    this.warning = this.w;
-    this.error = this.e;
-    this.info = this.i;
-    this[util.inspect.custom] = this.toString
-  }
+  [util.inspect.custom] = this.toString;
   /**
    * 打印日志
    * @private
@@ -47,27 +40,25 @@ class Logger {
    * @param {string} color - 颜色前缀
    * @param {Array<*>} msgs - 日志内容
    */
-  #print(tag, level, color, msgs) {
+  private #print(tag: string, level stirng, color: string, msgs: any[]): void {
     const time = new Date().toISOString();
     const msgStr = utils.toString(msgs)
     console[level.toLowerCase()](`${color}[${level}] [${tag}] ${time}: ${msgStr} ${reset}`);
   }
-
   /**
    * 错误日志
    * @param {string} tag - 日志标签
    * @param {...*} msgs - 日志内容
    */
-  async e(tag, ...msgs) {
+  public async e(tag: stirng, ...msgs: any[]): void {
     this.#print(tag, LEVELS.ERROR, LEVEL_COLORS[LEVELS.ERROR], msgs);
   }
-
   /**
    * 警告日志
    * @param {string} tag - 日志标签
    * @param {...*} msgs - 日志内容
    */
-  async w(tag, ...msgs) {
+  public async w(tag: string, ...msgs: any[]): void {
     this.#print(tag, LEVELS.WARN, LEVEL_COLORS[LEVELS.WARN], msgs);
   }
 
@@ -76,7 +67,7 @@ class Logger {
    * @param {string} tag - 日志标签
    * @param {...*} msgs - 日志内容
    */
-  async i(tag, ...msgs) {
+  public async i(tag: string, ...msgs: any[]): void {
     this.#print(tag, LEVELS.INFO, LEVEL_COLORS[LEVELS.INFO], msgs);
   }
 
@@ -85,14 +76,14 @@ class Logger {
    * @param {string} tag - 日志标签
    * @param {...*} msgs - 日志内容
    */
-  async d(tag, ...msgs) {
+  async d(tag: stirng, ...msgs: any[]): void {
     this.#print(tag, LEVELS.DEBUG, LEVEL_COLORS[LEVELS.DEBUG], msgs);
   }
   /**
    * @returns {string}
    */
-  toString() {
+  toString(): string {
     return '[object Logger]';
   }
 }
-module.exports = new Logger();
+export default const loger = new Logger()

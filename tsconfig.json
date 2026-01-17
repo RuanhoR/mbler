@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist/lib",
-    "module": "NodeNext",
+    "module": "nodenext",
     "target": "esnext",
     "lib": ["esnext"],
     "types": ["node"],
@@ -14,7 +14,7 @@
     "allowJs": true,
     "strict": true,
     "moduleResolution": "nodenext",
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
