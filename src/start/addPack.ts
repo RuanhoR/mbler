@@ -1,8 +1,8 @@
 import * as utils from './../utils/index.js';
 import lang from './../lang/index.js';
-import * as path from 'path';
+import path from 'path';
 import logger from './../loger/index.js';
-import * as fs from 'fs/promises';
+import fs from 'fs/promises';
 import config from './../build/build-g-config.json';
 import getModule from './../build/getModule.js';
 

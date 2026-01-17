@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as utils from './../utils/index.js';
+import { brotliCompress } from 'zlib';
 
 // 目录缓存
 const dirCache = new Map<string, string>();
@@ -32,7 +33,10 @@ const compareVer = (a: string, b: string): number => {
   const A = parts(a);
   const B = parts(b);
   for (let i = 0; i < 3; i++) {
-    if (A[i] !== B[i]) return A[i] > B[i] ? 1 : -1;
+    const a = A[i]
+    const b = B[i]
+    if (!a || !b) continue
+    if (a !== b) return a > b ? 1 : -1;
   }
   return 0;
 };
@@ -63,8 +67,9 @@ class ModulePath {
   async start(): Promise<void> {
     this.cache = await this.#loadContents();
     this.innerList = JSON.parse((await fs.readFile(
-      path.join(this.dir, 'lib/modules/innerDef.json')
-    ).toString())) as string[];
+      path.join(this.dir, 'lib/modules/innerDef.json'),
+      "utf-8"
+    )).toString()) as string[];
   }
 
   // 根据模块名称获取对应的 git 地址
@@ -121,7 +126,7 @@ class ModulePath {
       }
 
       const ddirPath = path.join(this.dir, 'lib/modules', name);
-      const packageJson = await utils.GetData(ddirPath);
+      const packageJson: any = await utils.GetData(ddirPath);
 
       // 如果有 mcVersion 配置，则进行版本校验
       if (packageJson.mcVersion) {

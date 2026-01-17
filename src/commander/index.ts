@@ -78,8 +78,8 @@ export class Input {
    * @param arr 选项数组
    * @returns 用户选中的选项内容（Promise<string>）
    */
-  static select(tip: string, arr: string[]): Promise<string> {
-    let index = 0;
+  static select(tip: string, arr: string[]): Promise<any> {
+    let index: number = 0;
     let win = false;
 
     console.log(
@@ -102,7 +102,8 @@ export class Input {
       // 监听 b 按键来确认选择
       click('b', { ctrl: false, alt: false }).then(() => {
         win = true;
-        process.stdout.write('\x1b[?25h');
+        process.stdout.
+        write('\x1b[?25h');
         resolve(arr[index]);
       });
     });

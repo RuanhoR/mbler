@@ -3,7 +3,7 @@ import * as chokidar from "chokidar";
 import Build from "./../build/index.js";
 import logger from "./../loger/index.js";
 import * as utils from "./../utils/index.js";
-import * as lang from './../lang';
+import lang from './../lang/index.js';
 
 class Dev {
   cwd: string;
@@ -19,7 +19,7 @@ class Dev {
   }
 
   async start(): Promise<void> {
-    logger.i("Dev", lang.dev.start);
+    logger.i("Dev", lang.dev?.start || "开始即时监听构建");
     await this.build.build();
     this.startWatcher();
   }
@@ -40,7 +40,7 @@ class Dev {
       interval: 150
     });
     watcher.on("all", async (event: string, filePath: string) => {
-      logger.i("Dev", `${lang.dev.tip} ${event} ${filePath}`);
+      logger.i("Dev", `${lang.dev?.tip || "监听到变化"} ${event} ${filePath}`);
       if (this.isBuilding) {
         this.pending = true;
         return;
@@ -52,10 +52,10 @@ class Dev {
   async rebuild(): Promise<void> {
     this.isBuilding = true;
     try {
-      logger.i("Dev", lang.dev.start_d);
+      logger.i("Dev", lang.dev?.start_d || "开始增量构建");
       await this.build.build();
     } catch (err) {
-      logger.e("Dev", lang.err_bulid + utils.toString(err));
+      logger.e("Dev", (lang.err_bulid || "构建错误") + utils.toString(err));
     }
 
     this.isBuilding = false;

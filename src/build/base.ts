@@ -15,7 +15,7 @@ const time = (): string => dayjs().format('YYYY-MM-DD HH:mm:ss');
 export abstract class BaseBuild {
   [x: string]: any;
   static times: string = time();
-  outdir: string | null = null;
+  outdir: string = "";
   ResOutDir: string | null = null;
   baseCwd: string = '';
   cwd: string = '';

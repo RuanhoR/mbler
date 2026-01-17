@@ -36,7 +36,7 @@ export interface MblerConfigData {
   outdir ?: MblerConfigOutdir
   description: string;
   version: string;
-  mcVersion: string;
+  mcVersion: string | string[];
   script?: MblerConfigScript;
   minify?: boolean;
 }

@@ -1,8 +1,8 @@
-import * as fs from 'fs/promises';
+import fs from 'fs/promises';
 import * as utils from './../utils/index.js';
 import logger from './../loger/index.js';
-import * as path from 'path';
-import * as lang from './../lang/index.js';
+import path from 'path';
+import lang from './../lang/index.js';
 
 class Clean {
   p: string;

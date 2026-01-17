@@ -59,3 +59,11 @@ const lang = new Lang()
 lang.init()
 Export(lang)
 export default exp
+
+export function cleanFinally(arg0: string, cleanFinally: any) {
+  throw new Error('Function not implemented.')
+}
+export function s0(s0: any) {
+  throw new Error('Function not implemented.')
+}
+

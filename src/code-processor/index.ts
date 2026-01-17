@@ -1,9 +1,10 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as utils from '../utils/index.js';
-import ImportManager from './c-handler-export';
+import imn from './c-handler-export';
 import { minify } from 'terser';
 import getModule from '../build/getModule.js';
+import { AnyCnameRecord } from 'dns';
 
 interface ProcessOptions {
   modules?: string[];
@@ -12,7 +13,7 @@ interface ProcessOptions {
   minify?: boolean;
 }
 
-let gamelib_modules: Awaited<ReturnType<typeof getModule>>;
+let gamelib_modules: any;
 let forInscript = false;
 
 /**
@@ -24,7 +25,7 @@ async function replaceModuleImports(
   targetDir: string,
   sourceDir: string
 ): Promise<string> {
-  const im = new ImportManager(code);
+  const im = imn(code);
   if (Array.isArray(modules)) {
     const imports = im.get();
     if (imports.length < 1) return code;
@@ -42,7 +43,7 @@ async function replaceModuleImports(
           )
         )
         .split(path.sep).join('/');
-      const found = imports.find(imp => imp.ModuleName === item);
+      const found = imports.find((imp: any) => imp.ModuleName === item);
       if (found) im.set({
         ModuleName: `./${relPath}`,
         ImportItem: found.ImportItem
@@ -63,7 +64,7 @@ async function processFile(
 ): Promise<void> {
   try {
     const ext = path.extname(filePath).slice(1);
-    const code = await utils.readFile(filePath) as string;
+    const code = await fs.readFile(filePath, "utf-8");
     
     switch (ext) {
       case 'js':

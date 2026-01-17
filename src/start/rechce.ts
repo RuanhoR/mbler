@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
-import * as lang from './../lang/index.js';
-import * as path from 'path';
+import lang from './../lang/index.js';
+import path from 'path';
 
 export = async function rechce(dirname: string, workDir: string): Promise<void> {
   await Promise.all([

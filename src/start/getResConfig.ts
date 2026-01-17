@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 import * as utils from './../utils/index.js';
 
 const cache = new Map<string, unknown>();

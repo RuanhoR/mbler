@@ -1,11 +1,10 @@
-import * as uuid from './../uuid/index.js';
-import * as fs from 'fs/promises';
+import uuid from './../uuid/index.js';
+import fs from 'fs/promises';
 import * as utils from './../utils/index.js';
-import * as path from 'path';
-import * as git from './../git/index.js';
+import path from 'path';
+import git from './../git/index.js';
 import { spawn } from 'child_process';
 import Temp from './../runTemp/index.js';
-import RunInVm from './../runTemp/script.js';
 import securityFile from './../runTemp/securityFile.js';
 
 const regex = /(https?:\/\/[^\s\/]+\/[^\s\/]+\/[^\s]+(?:\.git)?|(?:git@|[\w.-]+@)[\w.-]+:[^\s]+(?:\.git)?)/;
@@ -30,7 +29,7 @@ export = async function workDirFunction(workDir: string, _dirname: string, param
       const dir = utils.join(dirname, param);
       // 尝试匹配为git url
       if (regex.test(param)) {
-        await git.default(param, cacheDir);
+        await git.clone(param, cacheDir);
       } else if (param.startsWith(npmStart)) {
         // 如果是 npm 包，需要加上 npm: 前缀
         const packageName = param.slice(npmStart.length);
@@ -50,12 +49,12 @@ export = async function workDirFunction(workDir: string, _dirname: string, param
 };
 
 async function Load(cacheDir: string, workDir: string): Promise<void> {
-  const main = ((await utils.readFile(path.join(cacheDir, "package.json"), {
-    want: "object"
+  const main = (JSON.parse(await fs.readFile(path.join(cacheDir, "package.json"), {
+    encoding: "utf-8"
   })) as { main: string }).main;
-  const MblerConfig = await utils.readFile(path.join(cacheDir, "mbler.config.json"), {
-    want: "object"
-  });
+  const MblerConfig = JSON.parse(await fs.readFile(path.join(cacheDir, "mbler.config.json"), {
+    encoding: "utf-8"
+  }));
   const query = {
     name: (MblerConfig as { name: string }).name,
     description: (MblerConfig as { description: string }).description,
@@ -107,7 +106,7 @@ function copy(source: string, out: string): Promise<void> {
   return new Promise((then, error) => fs.readdir(source)
     .then((data) => Promise.all(data
       .map((file) => utils.copy(path.join(source, file), path.join(out, file)))
-    ).then(then))
+    ).then(() => then()))
     .catch(error)
   );
 }

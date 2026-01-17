@@ -31,7 +31,7 @@ interface SubpackData {
 }
 
 // 构建主类
-export class Build extends BaseBuild {
+export default class Build extends BaseBuild {
   [x: string]: any;
   baseDir: string;
   baseModDir: string;
@@ -44,7 +44,6 @@ export class Build extends BaseBuild {
       buildPath :
       path.join(baseDir, buildPath);
     this.cwd = path.join(this.baseCwd, "behavior");
-    this.outdir = null;
     this.ResOutDir = null;
     this.ResCwd = path.join(this.baseCwd, "resources");
     this.dependencies = {};
@@ -105,7 +104,7 @@ export class Build extends BaseBuild {
       configChanged,
       packageChanged
     } = await this.chackConfigHash();
-    const clean = new Clean(this.cwd, this.baseDir);
+    const clean = new Clean(this.baseCwd, this.baseDir);
     await clean.run();
     await utils.waitGC();
     const data: BuildData = await this.loadPackageData();
@@ -162,11 +161,12 @@ export class Build extends BaseBuild {
 
   async buildManifest(data: BuildData): Promise<any> {
     const manifest = (new ManiFest(data, "data")).data;
+    const subpack = data.subpack || {}
     if (typeof data.ResDes === 'object') this.processResourceDependencies(data, manifest);
     if (typeof data.subpack === 'object' && Object.keys(data.subpack).length > 0) {
       manifest.subpack = Object.keys(data.subpack).map(id => ({
         folder_name: id,
-        name: data.subpack[id],
+        name: subpack[id] || "",
         memory_tier: 1
       }));
     }
@@ -338,11 +338,12 @@ export class Build extends BaseBuild {
         return;
       }
       await minify(
-        this.outdir!,
-        this.Modules,
-        path.join(this.outdir!, 'scripts'),
-        this.baseDir,
-        Boolean(data.minify)
+        this.outdir,
+        {
+          modules: this.Modules,
+          sourceDir: path.join(this.outdir, 'scripts'),
+          baseDir: this.baseDir,
+          minify: Boolean(data.minify)}
       );
       await utils.waitGC();
     } catch (err) {

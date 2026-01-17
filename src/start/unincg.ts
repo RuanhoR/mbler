@@ -1,6 +1,5 @@
 import logger from './../loger/index.js';
-import * as path from 'path';
-import * as utils from './../utils/index.js';
+import path from 'path';
 import * as fs from 'fs/promises';
 
 let dirname: string = '';

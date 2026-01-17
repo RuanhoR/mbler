@@ -40,8 +40,10 @@ const compareVer = (a: string, b: string): number => {
   const A = parts(a);
   const B = parts(b);
   for (let i = 0; i < 3; i++) {
-    if (A[i] !== B[i])
-      return A[i] > B[i] ? 1 : -1;
+    const a = A[i]
+    const b = B[i]
+    if (!a || !b) continue
+    if (a !== b) return a > b ? 1 : -1;
   }
   return 0;
 };

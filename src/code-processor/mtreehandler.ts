@@ -41,7 +41,8 @@ export default class ImportManager {
           if (specifier.type === 'ImportDefaultSpecifier') {
             return specifier.local.name;
           } else if (specifier.type === 'ImportSpecifier') {
-            return specifier.imported.name;
+            if (specifier.imported.type == "Identifier") return specifier.imported.name
+            return specifier.imported.value;
           } else if (specifier.type === 'ImportNamespaceSpecifier') {
             return '*' + specifier.local.name; // * as name
           }
@@ -111,8 +112,8 @@ export default class ImportManager {
       imp.importItem.forEach(name => {
         if (name === '*') {
           // 处理 * as xx 的情况
-          const match = name.match(/\*\s+as\s+(\w+)/);
-          if (match) specifiers.push(types.importNamespaceSpecifier(types.identifier(match[1])));
+          const match = name.match(/\*\s+as\s+(\w+)/) || [];
+          if (match) specifiers.push(types.importNamespaceSpecifier(types.identifier(match[1] || "")));
         } else if (name.endsWith('*')) {
           // 默认导入
           specifiers

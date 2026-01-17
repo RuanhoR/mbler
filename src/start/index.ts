@@ -26,7 +26,7 @@ class start {
     console.log(`MBLER : ${v}`)
   }
   build = async () => {
-    const Bulid = require('./../build')
+    const Bulid = require('./../build').default
     const build = new Bulid(this.param, this.dirname)
     await build.build()
   }

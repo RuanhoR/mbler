@@ -1,5 +1,5 @@
 import * as utils from './../utils/index.js';
-import * as lang from './../lang/index.js';
+import lang from './../lang/index.js';
 import * as path from 'path';
 import logger from './../loger/index.js';
 import * as fs from 'fs/promises';
@@ -23,7 +23,7 @@ export = async function RemovePack(packName: string, dirname_: string, workDir: 
     const packageObj = await utils.GetData(workDir);
     // 修改 dependencies[packName]
     if (!packageObj?.script?.dependencies) {
-      packageObj.dependencies = {}; // 如果没有 dependencies，初始化它
+      packageObj.script.dependencies = {}; // 如果没有 dependencies，初始化它
     }
     if (packageObj.script?.dependencies?.[packName]) {
       delete packageObj.script.dependencies[packName];

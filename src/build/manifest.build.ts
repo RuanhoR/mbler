@@ -1,9 +1,9 @@
-import config from './build-g-config.json';
+import confi from './build-g-config.json';
 import * as utils from './../utils/index.js';
 import { mcVersionGeter } from './mcVersion.js';
 import { fromString as uuidFromString } from './../uuid/index.js';
 import * as path from 'path';
-
+const config: any = confi
 interface MblerConfig {
   name: string;
   description: string;
@@ -78,7 +78,8 @@ export class ManiFest {
 
   processScriptConfig(data: MblerConfig, manifest: ManifestData): void {
     const { script } = data;
-    let entry = script.main;
+    if (!script) return;
+    let entry = script.main || "index.js";
     // 如果是mcx，直接设为index.js，因为mcxLoad类会聚集mcx文件和其他文件将其编译输出到index.js
     if (entry?.endsWith(".mcx") && script.lang === "mcx") entry = "index.js";
     if (!isNonEmptyString(entry))

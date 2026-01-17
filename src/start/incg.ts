@@ -18,7 +18,7 @@ const cache = new Map();
 let dirname: string = "";
 // 第二个参数局域缓存，即git的url或本地目录
 let gitRepo: string;
-// 用于在验证失败时尝试降级本地仓库
+// 用于在验证失败时尝试降级本地仓库 
 const VerifyId = 'gitUrl Verify Error'
 const regex = /(https?:\/\/[^\s\/]+\/[^\s\/]+\/[^\s]+(?:\.git)?|(?:git@|[\w.-]+@)[\w.-]+:[^\s]+(?:\.git)?)/;
 async function InstallGlobal(two: string, ab = true) {
@@ -63,7 +63,10 @@ async function isBigVerison(aD: string, bD: string) {
   const A = utils.ToArray((await utils.GetData(aD)).version);
   const B = utils.ToArray((await utils.GetData(aD)).version);
   for (let i = 0; i < 3; i++) {
-    if (A[i] && B[i] && A[i] !== B[i]) return A[i] > B[i] ? true : false;
+    const a = A[i]
+    const b = B[i]
+    if (!a || !b) continue
+    if (a !== b) return a > b ? 1 : -1;
   }
   return 0;
 }
@@ -89,7 +92,7 @@ async function addMod(pack: MblerConfigData, tempMod: Temp | {
   if (cache.get('innerDef').includes(pack.name)) return loger.e(
     'INSTALL', char.SameDes
   )
-  const za = soList.find(item =>
+  const za = soList.find((item: any) =>
     item.name === pack.name || item.git === gitRepo
   );
   const isBig = await isBigVerison(tempMod.dir, path.join(dirname, "lib/modules", za.name))
@@ -109,7 +112,7 @@ async function addMod(pack: MblerConfigData, tempMod: Temp | {
     path.join(dirname, './lib/modules/', pack.name)
   )
 }
-export default async function InstallModules(Dirname, workDir) {
+export default async function InstallModules(Dirname: string, workDir: string) {
   try {
     dirname = Dirname;
     cache.set('innerDef',
@@ -121,7 +124,8 @@ export default async function InstallModules(Dirname, workDir) {
     )
     const p = await utils.GetData(workDir);
     const Mods = process.argv.slice(3)
-    for (let i of Object.values(p.script?.dependencies)) {
+    const dependencies = p.script?.dependencies || {};
+    for (let i of Object.values(dependencies)) {
       if (!i) continue;
       await InstallGlobal(i, false)
     }
@@ -130,7 +134,7 @@ export default async function InstallModules(Dirname, workDir) {
       await InstallGlobal(i, true)
     }
   } catch (err) {
-    loger.e("INSTALL", `ERR in 'InstallModules' Func\nMessage: ${err.message}\nstack : ${err.stack}`)
+    loger.e("INSTALL", `ERR in 'InstallModules' Func\nMessage: ${(err as Error).message}\nstack : ${(err as Error).stack}`)
   } finally {
     loger.i('INSTALL', char.installGit.InstallFinally)
   }
