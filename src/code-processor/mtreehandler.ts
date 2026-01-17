@@ -1,25 +1,38 @@
-const parser = require('@babel/parser');
-const traverse = require('@babel/traverse').default;
-const generate = require('@babel/generator').default;
-const types = require('@babel/types');
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+import generate from '@babel/generator';
+import * as types from '@babel/types';
 
-class ImportManager {
-  constructor(code) {
+interface ImportItem {
+  moduleName: string;
+  importItem: string[];
+}
+
+export default class ImportManager {
+  private code: string | null;
+  private ast: any;
+  private imports: ImportItem[];
+
+  constructor(code: string | null) {
     this.code = code;
     this.ast = null;
-    this.imports = []; // 格式 : Array<{ moduleName, importItem: [] }>
+    this.imports = [];
     this._parse();
   }
 
-  _parse() {
+  private _parse(): void {
+    if (!this.code) {
+      this.ast = { program: { body: [] } };
+      return;
+    }
     // 解析源码为 AST
-    this.ast = parser.parse(this.code, {
+    this.ast = parse(this.code, {
       sourceType: 'module'
     });
     this._collectImports();
   }
 
-  _collectImports() {
+  private _collectImports(): void {
     this.imports = [];
     traverse(this.ast, {
       ImportDeclaration: (path) => {
@@ -33,7 +46,7 @@ class ImportManager {
             return '*' + specifier.local.name; // * as name
           }
           return null;
-        }).filter(name => name !== null);
+        }).filter(name => name !== null) as string[];
 
         this.imports.push({
           moduleName: source,
@@ -44,13 +57,13 @@ class ImportManager {
   }
 
   // 检查是否导入了某个包
-  has(moduleName) {
+  has(moduleName: string): boolean {
     return this.imports
       .some(imp => imp.moduleName === moduleName);
   }
 
   // 返回所有导入包
-  get() {
+  get(): Array<{ ModuleName: string; ImportItem: string[] }> {
     return this.imports.map(imp => ({
       ModuleName: imp.moduleName,
       ImportItem: [...imp.importItem]
@@ -58,10 +71,7 @@ class ImportManager {
   }
 
   // 设置/修改导入项
-  set({
-    ModuleName,
-    ImportItem
-  }) {
+  set({ ModuleName, ImportItem }: { ModuleName: string; ImportItem: string[] }): void {
     // 查找是否已有该包，或有相同的包名或导入项
     const exists = this.imports.findIndex(
       imp => imp.moduleName === ModuleName ||
@@ -87,7 +97,7 @@ class ImportManager {
   }
 
   // 同步 imports 数据到 AST
-  _syncAST() {
+  private _syncAST(): void {
     // 先删除所有 import 声明
     traverse(this.ast, {
       ImportDeclaration(path) {
@@ -97,7 +107,7 @@ class ImportManager {
 
     // 重新插入 import 声明
     this.imports.forEach(imp => {
-      const specifiers = [];
+      const specifiers: any[] = [];
       imp.importItem.forEach(name => {
         if (name === '*') {
           // 处理 * as xx 的情况
@@ -129,11 +139,9 @@ class ImportManager {
   }
 
   // 生成最终代码
-  generate() {
+  generate(): string {
     return generate(this.ast, {
       compact: false
     }).code;
   }
 }
-
-module.exports = ImportManager;
