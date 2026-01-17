@@ -1,5 +1,5 @@
 const cmdList = ["dev", "install", "build", "init", "version", "-v", "web_edit", "clean", "checkout", "-c", "-i", "v", "create", "recache", "lang"];
-module.exports = {
+export default {
   help: `MBLER
 Minecraft Bedrock Edition
 Addon Bulider In Nodejs
