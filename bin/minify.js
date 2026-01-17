@@ -34,7 +34,7 @@ function scanDirectory(directory) {
 
     if (stat.isDirectory()) {
       scanDirectory(fullPath); // 递归扫描子目录
-    } else if (file.endsWith('.js') && !file.endsWith('.min.js')) {
+    } else if ((file.endsWith('.js') && !file.endsWith('.min.js')) || file.endsWith(".json")) {
       jsFiles.push(fullPath);
     }
   });
@@ -52,6 +52,10 @@ async function minifyJsFiles() {
 
   for (const filePath of jsFiles) {
     try {
+      if (filePath.endsWith(".json")) {
+        await fs.promises.cp(filePath.replace(path.join(__dirname, "../dist/lib"), path.join(__dirname, "../src")), filePath)
+        continue;
+      }
       // 读取原始 JS 文件
       const originalCode = fs.readFileSync(filePath, 'utf8');
       const result = await minify(originalCode, {

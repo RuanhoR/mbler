@@ -1,22 +1,30 @@
 import fs from "node:fs"
 import ZhLang from "./zh.js"
 import enLang from "./en.js"
-import { defaultMaxListeners } from "node:events"
+import path from "node:path"
 const langs = ["zh", "en"]
-const configPath = require("node:path").join(require("node:os").homedir(), ".")
+const configPath = path.join(require("node:os").homedir(), ".cache/mbler/.lang.db")
 class Lang {
   currenyLang: "zh" | "en" = "zh";
   init() {
     try {
-      const TheyLang = fs.readFileSync(configPath, "utf-8")
-      if (TheyLang == "zh" || TheyLang == "en") this.currenyLang = TheyLang
-      throw new Error("[setup lang]: set lang error")
+      const TheyLang = fs.readFileSync(configPath, "utf-8").toString().trim()
+      if (TheyLang == "zh" || TheyLang == "en") {
+        this.currenyLang = TheyLang
+      } else {
+        throw new Error("[setup lang]: set lang error")
+      }
     } catch {
       this.currenyLang = "zh"
     }
   }
   set(newLang: "zh" | "en") {
     if (langs.includes(newLang)) {
+      if (!fs.existsSync(configPath)) {
+        fs.mkdirSync(path.dirname(configPath), {
+          recursive: true
+        })
+      }
       fs.writeFileSync(configPath, newLang);
       this.currenyLang = newLang;
       return true;
@@ -25,7 +33,7 @@ class Lang {
   }
   async get() {
     try {
-      if (this.currenyLang == "zh")  return ZhLang
+      if (this.currenyLang == "zh") return ZhLang
       return enLang
     } catch {
       return ZhLang
