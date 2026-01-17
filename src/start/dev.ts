@@ -1,25 +1,30 @@
-const path = require("path");
-const chokidar = require("chokidar");
-const Build = require("./../build");
-const logger = require("./../loger");
-const utils = require("./../utils");
-const ts = require("typescript");
-const lang = require('./../lang')
+import * as path from "path";
+import * as chokidar from "chokidar";
+import Build from "./../build/index.js";
+import logger from "./../loger/index.js";
+import * as utils from "./../utils/index.js";
+import * as lang from './../lang';
+
 class Dev {
-  constructor(cwd, baseDir) {
+  cwd: string;
+  baseDir: string;
+  build: Build;
+  isBuilding: boolean = false;
+  pending: boolean = false;
+
+  constructor(cwd: string, baseDir: string) {
     this.cwd = cwd;
     this.baseDir = baseDir;
     this.build = new Build(cwd, baseDir);
-    this.isBuilding = false;
-    this.pending = false;
   }
-  async start() {
+
+  async start(): Promise<void> {
     logger.i("Dev", lang.dev.start);
     await this.build.build();
     this.startWatcher();
   }
 
-  startWatcher() {
+  startWatcher(): void {
     const watchPath = this.cwd;
     const watcher = chokidar.watch(watchPath, {
       ignoreInitial: true,
@@ -34,7 +39,7 @@ class Dev {
       usePolling: true,
       interval: 150
     });
-    watcher.on("all", async (event, filePath) => {
+    watcher.on("all", async (event: string, filePath: string) => {
       logger.i("Dev", `${lang.dev.tip} ${event} ${filePath}`);
       if (this.isBuilding) {
         this.pending = true;
@@ -43,10 +48,11 @@ class Dev {
       await this.rebuild();
     });
   }
-  async rebuild() {
+
+  async rebuild(): Promise<void> {
     this.isBuilding = true;
     try {
-      logger.i("Dev", lamg.dev.start_d);
+      logger.i("Dev", lang.dev.start_d);
       await this.build.build();
     } catch (err) {
       logger.e("Dev", lang.err_bulid + utils.toString(err));
@@ -61,4 +67,4 @@ class Dev {
   }
 }
 
-module.exports = async (workDir, baseDir) => new Dev(workDir, baseDir).start();
+export = async (workDir: string, baseDir: string): Promise<void> => new Dev(workDir, baseDir).start();

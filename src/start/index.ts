@@ -88,7 +88,7 @@ class start {
           PATH: this.param
         })
       },
-      install: async () => (await import('./incg.js')).default(this.dirname, this.param),
+      install: async () => require('./incg.js')(this.dirname, this.param),
       uninstall: () => require('./unincg.js')(this.two, this.dirname),
       add: () => require('./addPack.js')(this.two, this.dirname, this.param),
       remive: () => require('./unaddPack.js')(this.two, this.dirname, this.param),

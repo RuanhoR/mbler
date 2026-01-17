@@ -1,37 +1,53 @@
-const fs = require('fs/promises');
-const path = require('path');
-const ts = require('typescript');
-const tip = require('./../lang');
-const {
-  mcVersionGeter
-} = require('./mcVersion.js');
-const {
-  fromString: uuidFromString
-} = require('./../uuid');
-const logger = require('./../loger');
-const minify = require('./../code-processor');
-const utils = require('./../utils');
-const getModule = require('./getModule.js');
-const includes = require('./../data/includes.json');
-const config = require('./build-g-config.json');
-const Clean = require('./../start/clean.js');
-const Temp = require('./../runTemp');
-const baseBuild = require('./base')
-const Manifest = require('./manifest.build.js')
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import * as ts from 'typescript';
+import lang from './../lang/index.js';
+import { mcVersionGeter } from './mcVersion.js';
+import { fromString as uuidFromString } from './../uuid/index.js';
+import logger from './../loger/index.js';
+import minify from './../code-processor/index.js';
+import * as utils from './../utils/index.js';
+import getModule from './getModule.js';
+import includes from './../data/includes.json';
+import config from './build-g-config.json';
+import Clean from './../start/clean.js';
+import Temp from './../runTemp/index.js';
+import { BaseBuild } from './base.js';
+import { ManiFest } from './manifest.build.js';
+import type { MblerConfigData } from './../types.js';
+import os from "node:os"
+export interface BuildData extends MblerConfigData {
+  ResDes?: {
+    name: string
+    version: string
+  }
+  subpack?: Record<string, string>
+  minify?: boolean;
+}
+
+interface SubpackData {
+  id: string;
+  title: string;
+}
+
 // 构建主类
-class Build extends baseBuild {
-  constructor(buildPath, baseDir) {
+export class Build extends BaseBuild {
+  [x: string]: any;
+  baseDir: string;
+  baseModDir: string;
+  gamelibModule: any;
+  constructor(buildPath: string, baseDir: string) {
     super();
-    if (!buildPath) utils.Exit(tip.build.config_invalid);
+    if (!buildPath) utils.Exit(lang.build.config_invalid);
     this.baseDir = baseDir;
     this.baseCwd = path.isAbsolute(buildPath) ?
       buildPath :
       path.join(baseDir, buildPath);
-    this.cwd = path.join(this.baseCwd, "behavior")
+    this.cwd = path.join(this.baseCwd, "behavior");
     this.outdir = null;
     this.ResOutDir = null;
-    this.ResCwd = path.join(this.baseCwd, "resources")
-    this.dependencies = [];
+    this.ResCwd = path.join(this.baseCwd, "resources");
+    this.dependencies = {};
     this.gamelibModule = null;
     this.baseModDir = path.join(this.baseDir, 'lib/modules');
     // 锁定属性
@@ -39,7 +55,8 @@ class Build extends baseBuild {
     this.#ObjectPriEn(["outdir", "dependencies", "gamelibModule", "cwd", "ResCwd", "baseModDir", "baseCwd"]);
     this.cacheDir = path.join(this.baseCwd, '.cache__mbler__');
   }
-  #ObjectPri(list) {
+
+  #ObjectPri(list: string[]): void {
     if (!Array.isArray(list)) return;
     for (let item of list) {
       Object.defineProperty(this, item, {
@@ -48,8 +65,9 @@ class Build extends baseBuild {
       });
     }
   }
+
   // 私有：设置不可枚举属性
-  #ObjectPriEn(list) {
+  #ObjectPriEn(list: string[]): void {
     if (!Array.isArray(list)) return;
     for (let item of list) {
       Object.defineProperty(this, item, {
@@ -57,21 +75,30 @@ class Build extends baseBuild {
       });
     }
   }
+
   // 确保缓存目录存在
-  async #ensureCacheDir() {
-    await fs.mkdir(this.cacheDir, {
-      recursive: true,
-      force: true
-    });
+  async #ensureCacheDir(): Promise<void> {
+    try {
+      await fs.mkdir(this.cacheDir, {
+        recursive: true
+      });
+    } catch (err) {
+      // 如果目录已存在，忽略错误
+      if ((err as { code?: string }).code !== 'EEXIST') {
+        throw err;
+      }
+    }
   }
+
   // 构建入口
-  build() {
+  build(): Promise<void> {
     return this.start().catch(err => {
       const errorMsg = utils.toString(err);
-      logger.e('Build', tip.build.error_message_log, errorMsg);
+      logger.e('Build', lang.build.error_message_log, errorMsg);
     });
   }
-  async start() {
+
+  async start(): Promise<void> {
     const startTime = Date.now();
     await this.#ensureCacheDir();
     const {
@@ -81,22 +108,22 @@ class Build extends baseBuild {
     const clean = new Clean(this.cwd, this.baseDir);
     await clean.run();
     await utils.waitGC();
-    const data = await this.loadPackageData();
+    const data: BuildData = await this.loadPackageData();
+    this.d_data = data;
     this.outdir = this.getOutputDir(data.outdir?.behavior, path.join(this.baseCwd, "dist/dep"));
     this.ResOutDir = this.getOutputDir(data.outdir?.resources, path.join(this.baseCwd, "dist/res"));
     const requiredKeys = ['name', 'description', 'version', 'mcVersion'];
     if (!utils.hasKeys(data, requiredKeys, requiredKeys.length))
-      throw new Error(`${tip.build.package_file} 字段缺失：必需字段 ${JSON.stringify(requiredKeys)}`);
+      throw new Error(`${lang.build.package_file} 字段缺失：必需字段 ${JSON.stringify(requiredKeys)}`);
 
     this.gamelibModule = await getModule(this.baseDir);
-    this.d_data = data;
     logger.i('Build', [
-      tip.build.build_info_header,
-      `${tip.build.project_path} ${this.baseCwd}`,
-      `${tip.build.output_dir} ${JSON.stringify(data.outdir)}`,
-      `${tip.build.minify_enabled} ${Boolean(data.minify)}`,
-      `${tip.build.build_time} ${Build.times}`,
-      `${tip.build.tip_dist} ${process.env.MBLER_BUILD_MODULE || "dev"}`
+      lang.build.build_info_header,
+      `${lang.build.project_path} ${this.baseCwd}`,
+      `${lang.build.output_dir} ${JSON.stringify(data.outdir)}`,
+      `${lang.build.minify_enabled} ${Boolean(data.minify)}`,
+      `${lang.build.build_time} ${Build.times}`,
+      `${lang.build.tip_dist} ${process.env.MBLER_BUILD_MODULE || "dev"}`
     ].join('\n'));
     // 并发处理资源、脚本、子包、includes
     await Promise.all([
@@ -113,26 +140,28 @@ class Build extends baseBuild {
         const MCX = require("./../mcx/");
         await MCX.load({
           buildDir: path.join(this.cwd, "scripts"),
-          BabelOpt: data.script?.BabelOpt || {},
-          output: path.join(this.outdir, "scripts"),
+          BabelOpt: data.script || {},
+          output: path.join(this.outdir!, "scripts"),
           main: path.join(this.cwd, data.script?.main || "index.js")
         });
         break;
     }
     await Promise.all([this.processMinification(data),
-      // 资源包处理
-      this.processResources()
-    ])
-    await this.processDist()
+    // 资源包处理
+    this.processResources()
+    ]);
+    await this.processDist();
     // 最终完成
-    logger.i('Build', `${tip.build.build_success} ${(Date.now() - startTime) / 1000}`);
+    logger.i('Build', `${lang.build.build_success} ${(Date.now() - startTime) / 1000}`);
   }
-  async writeManifest(data) {
+
+  async writeManifest(data: BuildData): Promise<void> {
     const manifest = await this.buildManifest(data);
-    await this.writeFile(path.join(this.outdir, 'manifest.json'), manifest);
+    await this.writeFile(path.join(this.outdir!, 'manifest.json'), manifest);
   }
-  async buildManifest(data) {
-    const manifest = (new Manifest(data, "data")).data;
+
+  async buildManifest(data: BuildData): Promise<any> {
+    const manifest = (new ManiFest(data, "data")).data;
     if (typeof data.ResDes === 'object') this.processResourceDependencies(data, manifest);
     if (typeof data.subpack === 'object' && Object.keys(data.subpack).length > 0) {
       manifest.subpack = Object.keys(data.subpack).map(id => ({
@@ -144,44 +173,45 @@ class Build extends baseBuild {
     return manifest;
   }
 
-  processResourceDependencies(data, manifest) {
+  processResourceDependencies(data: BuildData, manifest: any): void {
     const {
       name = 'unknown', version
     } = data.ResDes || {};
-    if (utils.isVersion(version)) {
+    if (version && utils.isVerison(version)) {
       manifest.dependencies.push({
         name: uuidFromString(name),
         version: utils.ToArray(version)
       });
     }
-  };
-  async handleScripts(data) {
+  }
+
+  async handleScripts(data: BuildData): Promise<void> {
     if (!data.script || typeof data.script !== 'object') return;
     const scriptsDir = path.join(this.cwd, 'scripts');
-    const outScripts = path.join(this.outdir, 'scripts');
+    const outScripts = path.join(this.outdir!, 'scripts');
     if (!(await utils.FileExsit(scriptsDir))) return;
     // 复制主包脚本
     await utils.copy(scriptsDir, outScripts);
     this.dependencies = data.script.dependencies || {};
-    await this.initNpmDes()
+    await this.initNpmDes();
     if (Object.keys(this.dependencies).length > 0) {
       this.Modules = await this.handlerMod(this.dependencies, new Set());
     }
-  };
-  async processSubpacks(data) {
+  }
+
+  async processSubpacks(data: BuildData): Promise<void> {
     if (typeof data.subpack !== 'object') return;
-    const outdir = this.outdir;
+    const outdir = this.outdir!;
     const content = new Build(this.cwd, this.baseDir);
     for (let [id, title] of Object.entries(data.subpack)) {
       try {
         const subpackPath = path.join(this.cwd, 'subpacks', id);
         const outSubpack = path.join(outdir, 'subpacks', id);
         await fs.mkdir(outSubpack, {
-          recursive: true,
-          force: true
+          recursive: true
         });
         if (!(await utils.FileExsit(subpackPath))) {
-          logger.w('subpack', tip.build.subpack_folder_not_found.replace('{id}', id));
+          logger.w('subpack', lang.build.subpack_folder_not_found.replace('{id}', id));
           continue;
         }
         const subScriptDir = path.join(subpackPath, 'scripts');
@@ -194,18 +224,19 @@ class Build extends baseBuild {
         content.outdir = outSubpack;
         await content.handleIncludes();
       } catch (err) {
-        logger.e('Build', tip.build.error_processing_subpack.replace('{id}', id).replace('{error}', err.stack));
+        logger.e('Build', lang.build.error_processing_subpack.replace('{id}', id).replace('{error}', (err as Error).stack));
       }
     }
   }
-  async compileTypeScriptUnified() {
-    const tempMod = new Temp(require("os").tmpdir());
+
+  async compileTypeScriptUnified(): Promise<void> {
+    const tempMod = new Temp(os.tmpdir());
     await tempMod.init();
     const tempDir = tempMod.dir;
     try {
-      const rootFiles = await this.getAllTsFiles(this.outdir);
+      const rootFiles = await this.getAllTsFiles(this.outdir!);
       if (!rootFiles || rootFiles.length === 0) {
-        logger.i('Build', tip.build.ts_no_files);
+        logger.i('Build', lang.build.ts_no_files);
         return;
       }
       const tsConfigJson = {
@@ -216,7 +247,7 @@ class Build extends baseBuild {
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
           outDir: tempDir,
-          rootDir: this.outdir,
+          rootDir: this.outdir!,
           strict: true,
           allowJs: true,
           sourceMap: false,
@@ -228,7 +259,7 @@ class Build extends baseBuild {
       const parsed = ts.parseJsonConfigFileContent(
         tsConfigJson,
         ts.sys,
-        this.outdir,
+        this.outdir!,
         undefined,
         "tsconfig.json"
       );
@@ -246,31 +277,32 @@ class Build extends baseBuild {
           const {
             line,
             character
-          } = d.file.getLineAndCharacterOfPosition(d.start);
-          logger.w('TypeScript', tip.build.ts_diagnostics.replace('{file}', d.file.fileName).replace('{line}', (line + 1).toString()).replace('{character}', (character + 1).toString()).replace('{message}', msg));
+          } = d.file.getLineAndCharacterOfPosition(d.start!);
+          logger.w('TypeScript', lang.build.ts_diagnostics.replace('{file}', d.file.fileName).replace('{line}', (line + 1).toString()).replace('{character}', (character + 1).toString()).replace('{message}', msg));
         } else {
           logger.w('TypeScript', msg);
         }
       });
-      await this.removeJsFiles(path.join(this.outdir, 'scripts'));
-      await this.copyCompiledOnly(tempDir, this.outdir);
-      logger.i("Build", tip.build.ts_compilation_error + " 完成");
+      await this.removeJsFiles(path.join(this.outdir!, 'scripts'));
+      await this.copyCompiledOnly(tempDir, this.outdir!);
+      logger.i("Build", lang.build.ts_compilation_error + " 完成");
     } catch (err) {
-      logger.e('Build', tip.build.ts_compilation_error, err);
+      logger.e('Build', lang.build.ts_compilation_error, err);
       throw err;
     } finally {
       await tempMod.remove();
     }
   }
-  async handlerMod(modules, processed = new Set()) {
+
+  async handlerMod(modules: Record<string, string>, processed: Set<string> = new Set()): Promise<string[]> {
     const allModules = this.gamelibModule.getAll();
-    const scriptOutDir = path.join(this.outdir, 'scripts/node_modules');
-    let nextDeps = {};
+    const scriptOutDir = path.join(this.outdir!, 'scripts/node_modules');
+    let nextDeps: Record<string, string> = {};
     for (const [packageName, gitRepo] of Object.entries(modules)) {
       if (!allModules.includes(packageName) || processed.has(packageName)) continue;
       const srcDir = await this.gamelibModule.getDir(packageName, {
         gitUrl: gitRepo,
-        v: this.d_data.mcVersion
+        v: this.d_data!.mcVersion
       });
       if (!srcDir || !(await utils.FileExsit(srcDir))) continue;
       const pkg = await utils.handlerPackage(srcDir, {
@@ -284,36 +316,39 @@ class Build extends baseBuild {
     if (Object.keys(nextDeps).length > 0) await this.handlerMod(nextDeps, processed);
     return Array.from(processed);
   }
-  handleIncludes() {
+
+  handleIncludes(): Promise<void> | undefined {
     if (!Array.isArray(includes)) return;
     const copyOperations = includes
       .filter(item => typeof item === 'string')
       .map(async item => {
         const src = path.join(this.cwd, 'res', item);
-        const dest = path.join(this.outdir, item);
+        const dest = path.join(this.outdir!, item);
         if (await utils.FileExsit(src)) {
           await utils.copy(src, dest);
         }
       });
-    return Promise.all(copyOperations);
+    return Promise.all(copyOperations) as unknown as Promise<void>;
   }
-  async processMinification(data) {
+
+  async processMinification(data: BuildData): Promise<void> {
     try {
       if (!Array.isArray(includes)) {
-        logger.w('Build', tip.build.includes_not_array);
+        logger.w('Build', lang.build.includes_not_array);
         return;
       }
       await minify(
-        this.outdir,
+        this.outdir!,
         this.Modules,
-        path.join(this.outdir, 'scripts'),
+        path.join(this.outdir!, 'scripts'),
         this.baseDir,
         Boolean(data.minify)
       );
       await utils.waitGC();
     } catch (err) {
-      logger.w('Build', tip.build.minification_error, err);
+      logger.w('Build', lang.build.minification_error, err);
     }
   }
 }
-module.exports = Build;
+
+export default Build;

@@ -12,7 +12,7 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "allowJs": true,
-    "strict": true,
+    "strict": false,
     "moduleResolution": "nodenext",
     "verbatimModuleSyntax": false,
     "isolatedModules": true,

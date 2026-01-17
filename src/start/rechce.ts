@@ -1,7 +1,8 @@
-const fs = require('fs/promises')
-const lang = require('./../lang')
-const path = require('path');
-module.exports = async function(dirname, workDir) {
+import * as fs from 'fs/promises';
+import * as lang from './../lang/index.js';
+import * as path from 'path';
+
+export = async function rechce(dirname: string, workDir: string): Promise<void> {
   await Promise.all([
     fs.rm(path.join(dirname, "lib/data/path.db"), {
       recursive: true,
@@ -15,6 +16,6 @@ module.exports = async function(dirname, workDir) {
       recursive: true,
       force: true
     }).catch(() => {})
-  ])
-  console.log(lang.s0)
-}
+  ]);
+  console.log(lang.s0);
+};

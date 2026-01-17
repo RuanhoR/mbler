@@ -7,12 +7,12 @@ process.stdin.setRawMode(true);
 readline.emitKeypressEvents(process.stdin);
 
 // 用于存储注册的异步按键处理器
-type KeyPromise = {
+interface KeyPromise {
   name: string;
   ctrl: boolean;
   alt: boolean;
   resolve: () => void;
-};
+}
 
 const promises: KeyPromise[] = [];
 const tasks: Array<(name: string, ctrl: boolean, alt: boolean, raw: string) => void> = [];
@@ -48,7 +48,7 @@ function click(
   { ctrl = false, alt = false }: { ctrl?: boolean; alt?: boolean }
 ): Promise<void> {
   return new Promise((resolve) => {
-    promises.push({ name, ctrl, alt, resolve });
+    promises.push({ name, ctrl: ctrl || false, alt: alt || false, resolve });
   });
 }
 

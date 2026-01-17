@@ -1,24 +1,27 @@
 // 临时目录用于缓存
-Temp = require('./../runTemp')
+import Temp from './../runTemp'
 // 用 git进行clone克隆仓库
-const git = require('./../git')
+import git from './../git'
 // 字符表
-const char = require('./../lang')
-const loger = require('./../loger')
-const utils = require('./../utils')
-const fs = require('fs/promises')
-const path = require('path')
+import char from './../lang/index.js'
+import loger from './../loger/index.js'
+import * as utils from './../utils/index.js'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import type {
+  MblerConfigData
+} from "../types.js"
+import os from "node:os"
 // 缓存数据用的
 const cache = new Map();
 // __dirname
-let dirname;
+let dirname: string = "";
 // 第二个参数局域缓存，即git的url或本地目录
-let gitRepo;
+let gitRepo: string;
 // 用于在验证失败时尝试降级本地仓库
 const VerifyId = 'gitUrl Verify Error'
 const regex = /(https?:\/\/[^\s\/]+\/[^\s\/]+\/[^\s]+(?:\.git)?|(?:git@|[\w.-]+@)[\w.-]+:[^\s]+(?:\.git)?)/;
-const os = require("os")
-async function InstallGlobal(two, ab = true) {
+async function InstallGlobal(two: string, ab = true) {
   // 创建临时目录
   gitRepo = two
   const tempMod = new Temp(
@@ -39,7 +42,7 @@ async function InstallGlobal(two, ab = true) {
       throw new Error(char.installGit.NoPackage)
     }
     return true;
-  } catch (err) {
+  } catch (err: any) {
     loger.e('INSTALL', err.message)
     return false;
   } finally {
@@ -56,11 +59,11 @@ async function FileInstall() {
     dir: dir
   })
 }
-async function isBigVerison(aD, bD) {
+async function isBigVerison(aD: string, bD: string) {
   const A = utils.ToArray((await utils.GetData(aD)).version);
   const B = utils.ToArray((await utils.GetData(aD)).version);
   for (let i = 0; i < 3; i++) {
-    if (A[i] !== B[i]) return A[i] > B[i] ? true : false;
+    if (A[i] && B[i] && A[i] !== B[i]) return A[i] > B[i] ? true : false;
   }
   return 0;
 }
@@ -70,15 +73,15 @@ async function isBigVerison(aD, bD) {
  * @parsm{Temp} 临时目录，包下载后成果
  * @param{boolean} 是否在遇到同名依赖时询问或直接返回
  */
-async function addMod(pack, tempMod, b = true) {
+async function addMod(pack: MblerConfigData, tempMod: Temp | {
+  dir: string
+}, b: boolean = true) {
   loger.i('INSTALL', `${char.installGit.SetContent} ${pack.name}`)
   const soListDir = utils.join(
     dirname,
     './lib/modules/contents.json'
   )
-  const soList = await utils.readFile(soListDir, {
-    want: 'object'
-  })
+  const soList = JSON.parse((await fs.readFile(soListDir)).toString())
   const installModPack = await utils.readFile(path.join(tempMod.dir, "mbler.config.json"), {
     want: 'object'
   })
@@ -106,14 +109,14 @@ async function addMod(pack, tempMod, b = true) {
     path.join(dirname, './lib/modules/', pack.name)
   )
 }
-module.exports = async function InstallModules(Dirname, workDir) {
+export default async function InstallModules(Dirname, workDir) {
   try {
     dirname = Dirname;
     cache.set('innerDef',
       await utils.readFile(
         path.join(dirname, './lib/modules/innerDef.json'), {
-          want: 'object'
-        }
+        want: 'object'
+      }
       )
     )
     const p = await utils.GetData(workDir);

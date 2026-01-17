@@ -4,11 +4,9 @@ import Logger from "./../loger/index.js"
 import {
   Input as commander
 } from "./../commander";
-import config from './../build/build-g-config.json' assert {
-  type: "json"
-}
+const config = require('./../build/build-g-config.json')
 import fs from "node:fs/promises"
-export function hasKeys(obj, keys, minValue) {
+export function hasKeys(obj: any, keys: Array<string>, minValue: number): boolean {
   if (
     !(typeof obj === `object` &&
       !Array.isArray(obj)
@@ -23,13 +21,14 @@ export function hasKeys(obj, keys, minValue) {
   }
   return false;
 }
-export const input = function(): (t: string, g: boolean): Promise < (t: string = "", g: boolean = true) => Promise < string > > {
-  let curr;
+export const input = function (): (t: string, g?: boolean) => Promise<string> {
+  type InputCallBack = (a: string) => void;
+  let curr: null | InputCallBack;
   let currstr = "";
   let tip = "";
   let show = true;
   // 在输入时使用输入中间件
-  commander.use(function(name: string, ctrl: boolean, alt: boolean, raw: string): void {
+  commander.use(function (name: string, ctrl: boolean, alt: boolean, raw: string): void {
     if (typeof curr !== "function") return;
     if (ctrl || alt) return;
     if (raw) {
@@ -61,7 +60,7 @@ export const input = function(): (t: string, g: boolean): Promise < (t: string =
    * @param{string} tip 提示
    * @param{boolean} show 是否显示输入
    */
-  return async function(t: string = "", g: boolean = true): Promise < string > {
+  return async function (t: string = "", g: boolean = true): Promise<string> {
     return new Promise((resolve) => {
       show = g;
       tip = t;
@@ -76,7 +75,7 @@ export const input = function(): (t: string, g: boolean): Promise < (t: string =
  * @param {string} outputFile 输出的 ZIP 文件完整路径，如 'C:/backup/output.zip' 或 '/backup/output.zip'
  * @returns {Promise<boolean>} 是否压缩成功
  */
-export async function zip(sourceDir: string, outputFile: string): Promise < void > {
+export async function zip(sourceDir: string[], outputFile: string): Promise<void> {
   const zip = new Zip();
   for (let item of sourceDir) {
     if (typeof item !== "string") continue;
@@ -84,54 +83,41 @@ export async function zip(sourceDir: string, outputFile: string): Promise < void
   }
   await zip.writeZipPromise(outputFile);
 }
-export const waitGC = (): Promise < void > => new Promise(r => setImmediate(r));
+export const waitGC = (): Promise<void> => new Promise(r => setImmediate(r));
 export function toString(t: any): string {
   if (typeof t === 'string') return t;
-  if (t instanceof Error) return t.stack;
+  if (t instanceof Error) {
+    if (typeof t.stack == "string") return t.stack
+    return t.message;
+  };
   if (Array.isArray(t)) return t.map((item: any): string => toString(item)).join('\n');
   if (typeof t?.toString === 'function') return t.toString();
   if (t === void 0) return '[Objeect utils]'
   return JSON.stringify(t, null, 2);
 }
-export function ToArray(str: string): [number, number, number][] {
+export function ToArray(str: string): number[] {
   return str.split(`.`).map(Number);
 }
-export const sleep = (ms: number = 100): Promise < void > => new Promise(resolve => setTimeout(resolve, ms));
-type ParseReadFileOpt = {
-  delay: number;
-  maxRetries: number;
-  want: 'string' | 'object';
-};
-type ReadFileOpt = Partial < ParseReadFileOpt >
-  type TypeMap = {
-    object: Object
-    string: string
-  }
-type ParseReadFileOpt = {
-  delay: number;
-  maxRetries: number;
-  want: 'string' | 'object';
-};
+export const sleep = (ms: number = 100): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+import type { ParseReadFileOpt, ReadFileOpt } from '../types';
 export async function readFileWithRetry(
   filePath: string,
   opt: {
-    want: 'string';delay ? : number;maxRetries ? : number
+    want: 'string'; delay?: number; maxRetries?: number
   }
-): Promise < string > ;
+): Promise<string>;
 
 export async function readFileWithRetry(
   filePath: string,
   opt: {
-    want: 'object';delay ? : number;maxRetries ? : number
+    want: 'object'; delay?: number; maxRetries?: number
   }
-): Promise < Object > ;
+): Promise<Object>;
 export async function readFileWithRetry(
   filePath: string,
-  opt: {
-    want: 'string' | 'object';delay ? : number;maxRetries ? : number
-  }
-): Promise < string | Object > {
-  const opts = {
+  opt: ReadFileOpt
+): Promise<string | Object> {
+  const opts: ParseReadFileOpt = {
     maxRetries: 5,
     delay: 200,
     want: 'string',
@@ -140,16 +126,17 @@ export async function readFileWithRetry(
   let lastError;
   for (let attempt = 0; attempt < opts.maxRetries; attempt++) {
     try {
-      let text = await fs.readFile(filePath);
-      if (opts.want === 'string') text = text.toString()
+      let resu: string | Object = ""
+      const text = (await fs.readFile(filePath)).toString();
+      if (opts.want === 'string') resu = text.toString()
       if (opts.want === 'object') {
         try {
-          text = JSON.parse(text)
+          resu = JSON.parse(text)
         } catch {
-          text = {}
+          resu = {}
         }
       }
-      return text;
+      return resu;
     } catch (err) {
       lastError = err;
       if (attempt < opts.maxRetries - 1) {
@@ -159,7 +146,7 @@ export async function readFileWithRetry(
   }
   return {};
 }
-export const JSONparse = function(str: string): Object {
+export const JSONparse = function (str: string): any {
   return JSON.parse(str);
 }
 export function join(baseDir: string, inputPath: string): string {
@@ -167,14 +154,14 @@ export function join(baseDir: string, inputPath: string): string {
     inputPath :
     path.join(baseDir, inputPath);
 }
-export const isVerison = function(str: string): boolean {
+export const isVerison = function (str: string): boolean {
   return /\d+\.\d+\.\d+/.test(str)
 }
 export function Exit(msg: string): void {
   Logger.e('ERROR', msg);
   process.exit(1)
 }
-export async function FileExsit(dir: string): Promise < boolean > {
+export async function FileExsit(dir: string): Promise<boolean> {
   try {
     await fs.access(dir);
     return true
@@ -182,35 +169,22 @@ export async function FileExsit(dir: string): Promise < boolean > {
     return false
   }
 }
-export type MblerDesConfig = {
-  [string key]: string
-}
-export type MblerConfigScript = {
-  ui: boolean,
-  lang ? : string,
-  main: string,
-  dependencies ? : MblerDesConfig
-}
-export type MblerConfigData = {
-  name: string
-  description: string
-  version: string
-  mcVersion: string
-  script ? : MblerConfigScript
-  minify ? : boolean
-}
-export async function GetData(dir: string): MblerConfigData {
+import type { MblerDesConfig, MblerConfigScript, MblerConfigData } from '../types';
+export async function GetData(dir: string): Promise<MblerConfigData> {
   const configPath = path.join(dir, config.PackageFile);
   const fileContent = await fs.readFile(configPath, 'utf-8')
   const data = JSONparse(fileContent);
   if (typeof data.version === "string" && typeof data.mcVersion === "string" && typeof data.name === "string" && typeof data.description === "string") return data;
   throw new Error("[mbler find config]: " + dir + ": not found config")
 }
-export async isMblerProject(Dir: string): Promise < boolean > {
+export async function isMblerProject(Dir: string): Promise<boolean> {
   const rel = await Promise.all([
     path.join(Dir, "package.json"),
-    path.join(Dir, BuildConfig.PackageFile)
-  ].map(FileExsit)).catch((e: Error): boolean[] => console.log(e.stack) || [false, false]);
+    path.join(Dir, config.PackageFile)
+  ].map(FileExsit)).catch((e: Error): boolean[] => {
+    console.log(e.stack)
+    return [false, false]
+  });
   const res = rel.every(Boolean);
   return res
 }
@@ -220,24 +194,18 @@ export async isMblerProject(Dir: string): Promise < boolean > {
  * @returns {boolean}
  */
 function isValidVersion(v: any): boolean {
-  return typeof v === 'string' && isVersion(v);
+  return typeof v === 'string' && isVerison(v);
 }
-type handlerPackageResult = {
-  des: string[]
-  ui: boolean
-  main: string
-  name
-}
-type handlerPackageDes = {
-  des: string[]
-}
+import type { HandlerPackageResult, HandlerPackageDes } from '../types';
 /**
  * 处理模块包配置，提取依赖、主入口、UI 配置等
  * @param {string} dir 模块目录路径
  * @param {Object} opt 可选参数（如：已处理的依赖列表）
  * @returns {Promise<Object>} { des: string[], ui: boolean, main: string }
  */
-export async function handlerPackage(dir: string, opt: handlerPackageDes = {}): handlerPackageResult {
+export async function handlerPackage(dir: string, opt: HandlerPackageDes = {
+  des: []
+}): Promise<HandlerPackageResult> {
   let data;
   try {
     data = await GetData(dir);
@@ -255,10 +223,10 @@ export async function handlerPackage(dir: string, opt: handlerPackageDes = {}): 
       '必需字段: name, description, version'
     );
   }
-  const result: handlerPackageResult = {
-    des: [], // 依赖模块名数组
+  const result: HandlerPackageResult = {
+    des: {}, // 依赖模块名数组
     ui: false, // 是否使用 @minecraft/server-ui
-    main: './index.js' // 默认主入口
+    main: './index.js', // 默认主入口
     name: data.name,
     version: data.version,
     description: data.description
@@ -266,27 +234,49 @@ export async function handlerPackage(dir: string, opt: handlerPackageDes = {}): 
   // opt.des : Type Array || undefined
   if (opt.des && data?.script?.dependencies) result.des = ForOfMod(data.script.dependencies, opt.des)
   result.ui = Boolean(Boolean(data?.script?.ui));
-  if (isNonEmptyString(data?.script?.main)) {
+  if (data?.script) {
     result.main = data.script.main;
   }
   return result;
 };
 
-// 工具函数：判断非空字符串
-function isNonEmptyString(str: any): boolean {
-  return typeof str === 'string' && str.trim().length > 0;
-}
-
-function ForOfMod(Mod, InstallMod) {
-  // Mod : {name:git}
-  let returnValue = {};
+/**
+ *  * 遍历模块依赖配置，过滤掉已经安装的模块
+ * @param Mod 模块依赖对象，key 是包名，value 是 Git 地址，例如 { "module-a": "git-url" }
+ * @param InstallMod 已安装的模块名数组，例如 ["module-a", "module-b"]
+ * @returns 过滤后的模块对象，只包含未安装的模块
+ */
+function ForOfMod(
+  Mod: {
+    [packageName: string]: string
+  }, // 比如 { "pkg": "git-url" }
+  InstallMod: string[] | undefined // 比如 ["pkg1", "pkg2"]
+): {
+  [packageName: string]: string
+} { // 返回的也是 { "pkg": "git-url" }，过滤后的
+  let returnValue: {
+    [packageName: string]: string
+  } = {};
   try {
     for (const [packageName, gitRepo] of Object.entries(Mod)) {
-      // InstallMod: Array<String: packageName>
-      if (typeof InstallMod?.includes === 'function')
-        if (InstallMod?.includes(packageName)) continue;
+      if (
+        InstallMod?.includes &&
+        typeof InstallMod.includes === 'function' &&
+        InstallMod.includes(packageName)
+      ) {
+        continue; // 如果已安装，跳过
+      }
       returnValue[packageName] = gitRepo;
     }
-  } catch {}
+  } catch (err) {
+    console.error('ForOfMod 发生错误:', err);
+  }
   return returnValue;
+}
+export function readFile(arg0: string, opt: any) {
+  throw new Error('Function not implemented.');
+}
+
+export function copy(dir: string, arg1: string) {
+  throw new Error('Function not implemented.');
 }

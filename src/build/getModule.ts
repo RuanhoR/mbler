@@ -1,22 +1,34 @@
-const fs = require('fs/promises');
-const path = require('path');
-const utils = require('./../utils');
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import * as utils from './../utils/index.js';
 
 // 目录缓存
-const dirCache = new Map();
-let cacheList = null;
-const normalize = (v) => {
+const dirCache = new Map<string, string>();
+let cacheList: string[] | null = null;
+
+interface ModuleCacheItem {
+  name: string;
+  git: string;
+}
+
+interface ModuleVersionInfo {
+  ERR: string;
+  message: string;
+}
+
+const normalize = (v: string | null | undefined): string => {
   return String(v || '').trim();
 };
-const parts = (v) => {
+
+const parts = (v: string | null | undefined): number[] => {
   return normalize(v)
     .split('.')
     .slice(0, 3)
-    .map(n => parseInt(n, 10) || 0);
+    .map((n: string): number => parseInt(n, 10) || 0);
 };
 
 // 比较版本号，返回 1 表示 a > b，-1 表示 a < b，0 表示相等
-const compareVer = (a, b) => {
+const compareVer = (a: string, b: string): number => {
   const A = parts(a);
   const B = parts(b);
   for (let i = 0; i < 3; i++) {
@@ -26,35 +38,37 @@ const compareVer = (a, b) => {
 };
 
 // 判断版本范围是否合法：min < max
-const isValidVersionRange = (min, max) => {
+const isValidVersionRange = (min: string, max: string): boolean => {
   return compareVer(max, min) === 1;
 };
 
 // 判断目标版本 v 是否在 [min, max] 范围内（闭区间）
-const isVersionInRange = (v, min, max) => {
+const isVersionInRange = (v: string, min: string, max: string): boolean => {
   return compareVer(v, min) >= 0 && compareVer(v, max) <= 0;
 };
 
 // ModulePath 类定义
 class ModulePath {
-  constructor(dirname) {
+  dir: string;
+  innerList: string[];
+  cache: ModuleCacheItem[];
+
+  constructor(dirname: string) {
     this.dir = dirname;
-    this.innerList = new Array();
-    this.cache = {};
+    this.innerList = new Array<string>();
+    this.cache = [];
   }
 
   // 初始化：加载内容并读取 innerDef.json
-  async start() {
+  async start(): Promise<void> {
     this.cache = await this.#loadContents();
-    this.innerList = await utils.readFile(
-      path.join(this.dir, 'lib/modules/innerDef.json'), {
-        want: 'object'
-      }
-    );
+    this.innerList = JSON.parse((await fs.readFile(
+      path.join(this.dir, 'lib/modules/innerDef.json')
+    ).toString())) as string[];
   }
 
   // 根据模块名称获取对应的 git 地址
-  getGit(Name) {
+  getGit(Name: string): string | null {
     for (const {
         name,
         git
@@ -66,22 +80,27 @@ class ModulePath {
   }
 
   // 获取所有模块名称列表
-  getAll() {
+  getAll(): string[] {
     if (cacheList) return cacheList;
-    cacheList = this.cache.map(item => item.name);
+    cacheList = this.cache.map((item: ModuleCacheItem): string => item.name);
     return cacheList;
   }
 
   // 根据包名查找模块所在目录，同时校验版本
-  async getDir(packageName, {
-    gitUrl = '',
-    v = "0.0.0"
-  } = {}) {
+  async getDir(
+    packageName: string,
+    options: {
+      gitUrl?: string;
+      v?: string;
+    } = {}
+  ): Promise<string | null | ModuleVersionInfo> {
     if (!packageName) return null;
+
+    const { gitUrl = '', v = "0.0.0" } = options;
 
     // 先查缓存
     if (dirCache.has(packageName)) {
-      return dirCache.get(packageName);
+      return dirCache.get(packageName)!;
     }
 
     for (const {
@@ -135,21 +154,22 @@ class ModulePath {
   }
 
   // 读取 contents.json 文件内容
-  async #loadContents() {
+  async #loadContents(): Promise<ModuleCacheItem[]> {
     const dataPath = path.join(this.dir, 'lib/modules/contents.json');
     try {
       if (await this.#fileExists(dataPath)) {
         const content = await fs.readFile(dataPath, 'utf8');
         const data = utils.JSONparse(content);
-        return typeof data === 'object' && data !== null ? data : {};
+        return (typeof data === 'object' && data !== null) ? data as ModuleCacheItem[] : [];
       }
     } catch (err) {
       console.error('Failed to load contents.json:', err);
     }
-    return {};
+    return [];
   }
+
   // 检查文件是否存在
-  async #fileExists(filePath) {
+  async #fileExists(filePath: string): Promise<boolean> {
     try {
       await fs.access(filePath);
       return true;
@@ -158,7 +178,8 @@ class ModulePath {
     }
   }
 }
-module.exports = async (dirname) => {
+
+export = async (dirname: string): Promise<ModulePath> => {
   const instance = new ModulePath(dirname);
   await instance.start();
   return instance;

@@ -1,16 +1,16 @@
-const {
+import {
   spawn
-} = require('child_process');
-const {
+} from 'child_process';
+import {
   input
-} = require('./../utils')
-const char = require('./../lang')
+} from './../utils/index.js'
+import char from './../lang/index.js'
 /**
  * 拉取 Git 仓库
  * @param {string} repoDir - 本地 Git 仓库目录（如 './my-project'）
  * @returns {Promise<void>}
  */
-module.exports = function gitPull(repoDir) {
+export default function gitPull(repoDir: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
     const gitPullProcess = spawn('git', ['pull'], {
       cwd: repoDir,
@@ -20,7 +20,7 @@ module.exports = function gitPull(repoDir) {
     gitPullProcess.on('close', (code) => {
       if (code === 0) {
         console.log(`Git 拉取成功: ${repoDir}`);
-        resolve();
+        resolve(true);
         return;
       }
 
@@ -49,10 +49,10 @@ module.exports = function gitPull(repoDir) {
             retryGitPull();
           } else if (answer === '3') {
             // 选项 3：取消
-            console.log('❌ 用户取消操作');
+            console.log('用户取消操作');
             reject(new Error('用户取消 Git 拉取'));
           } else {
-            console.log('❌ 无效选项，操作终止');
+            console.log('无效选项，操作终止');
             reject(new Error('无效的用户输入'));
           }
         } else {
@@ -69,7 +69,7 @@ module.exports = function gitPull(repoDir) {
       retryProcess.on('close', (retryCode) => {
         if (retryCode === 0) {
           console.log(`✅ Git 拉取成功（重试后）: ${repoDir}`);
-          resolve();
+          resolve(true);
         } else {
           reject(new Error(`❌ Git 拉取重试失败，退出码: ${retryCode}`));
         }
@@ -80,7 +80,7 @@ module.exports = function gitPull(repoDir) {
     }
   });
 }
-function runGitConfig(configArgs) {
+function runGitConfig(configArgs: string) {
   return new Promise((configResolve, configReject) => {
     const configProcess = spawn('git', ['config', ...configArgs.split(' ')], {
       stdio: 'inherit'
@@ -88,15 +88,15 @@ function runGitConfig(configArgs) {
     configProcess.on('close', (code) => {
       if (code === 0) {
         console.log(`✅ 已执行: git config ${configArgs}`);
-        configResolve();
+        configResolve(true);
       } else {
         console.warn(`⚠️ 执行 git config 失败（可能不影响后续操作），退出码: ${code}`);
-        configResolve(); // 即使失败也继续尝试 git pull
+        configResolve(true); // 即使失败也继续尝试 git pull
       }
     });
     configProcess.on('error', (err) => {
       console.warn(`⚠️ 执行 git config 出错: ${err.message}（尝试继续）`);
-      configResolve(); // 即使出错也继续尝试 git pull
+      configResolve(true); // 即使出错也继续尝试 git pull
     });
   });
 }

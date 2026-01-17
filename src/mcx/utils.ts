@@ -2,7 +2,9 @@ import fs from "node:fs/promises";
 import path from "node:path"
 import type {
   ReadFileOpt,
-  ParseReadFileOpt,
+  ParseReadFileOpt
+} from "../types.js"
+import type {
   TypeVerifyBody
 } from "./types.js"
 export default class McxUtlis {
@@ -11,7 +13,7 @@ export default class McxUtlis {
    * @param path 文件路径
    * @returns 是否存在
    */
-  public static async FileExsit(path: string): Promise < boolean > {
+  public static async FileExsit(path: string): Promise<boolean> {
     try {
       await fs.access(path);
       return true;
@@ -29,7 +31,7 @@ export default class McxUtlis {
   public static async readFile(
     filePath: string,
     opt: ReadFileOpt = {}
-  ): Promise < object | string > {
+  ): Promise<object | string> {
     // 补全必填字段，确保类型安全
     const opts: ParseReadFileOpt = {
       delay: 200, // 默认延迟
@@ -67,7 +69,7 @@ export default class McxUtlis {
     }
     return opts.want === 'object' ? {} : '';
   }
-  public static sleep(time: number): Promise < void > {
+  public static sleep(time: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, time));
   }
   // 在运行时进行对象类型验证

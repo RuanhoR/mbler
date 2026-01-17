@@ -6,7 +6,7 @@ import {
   reset
 } from './colors.js';
 import util from 'util';
-import utils from './../utils/index.js';
+import * as utils from './../utils/index.js';
 /**
  * 日志级别
  * @readonly
@@ -40,7 +40,7 @@ class Logger {
    * @param {string} color - 颜色前缀
    * @param {Array<*>} msgs - 日志内容
    */
-  private #print(tag: string, level stirng, color: string, msgs: any[]): void {
+  #print(tag: string, level: string, color: string, msgs: any[]): void {
     const time = new Date().toISOString();
     const msgStr = utils.toString(msgs)
     console[level.toLowerCase()](`${color}[${level}] [${tag}] ${time}: ${msgStr} ${reset}`);
@@ -50,7 +50,7 @@ class Logger {
    * @param {string} tag - 日志标签
    * @param {...*} msgs - 日志内容
    */
-  public async e(tag: stirng, ...msgs: any[]): void {
+  public e(tag: string, ...msgs: any[]): void {
     this.#print(tag, LEVELS.ERROR, LEVEL_COLORS[LEVELS.ERROR], msgs);
   }
   /**
@@ -58,7 +58,7 @@ class Logger {
    * @param {string} tag - 日志标签
    * @param {...*} msgs - 日志内容
    */
-  public async w(tag: string, ...msgs: any[]): void {
+  public w(tag: string, ...msgs: any[]): void {
     this.#print(tag, LEVELS.WARN, LEVEL_COLORS[LEVELS.WARN], msgs);
   }
 
@@ -67,7 +67,7 @@ class Logger {
    * @param {string} tag - 日志标签
    * @param {...*} msgs - 日志内容
    */
-  public async i(tag: string, ...msgs: any[]): void {
+  public i(tag: string, ...msgs: any[]): void {
     this.#print(tag, LEVELS.INFO, LEVEL_COLORS[LEVELS.INFO], msgs);
   }
 
@@ -76,7 +76,7 @@ class Logger {
    * @param {string} tag - 日志标签
    * @param {...*} msgs - 日志内容
    */
-  async d(tag: stirng, ...msgs: any[]): void {
+  d(tag: string, ...msgs: any[]): void {
     this.#print(tag, LEVELS.DEBUG, LEVEL_COLORS[LEVELS.DEBUG], msgs);
   }
   /**
@@ -86,4 +86,4 @@ class Logger {
     return '[object Logger]';
   }
 }
-export default const loger = new Logger()
+export default new Logger()

@@ -1,13 +1,14 @@
-const utils = require('./../utils')
-const fs = require('fs/promises')
+import * as utils from './../utils'
+import fs from 'node:fs/promises'
+import path from "node:path"
 // 用于给 Temp 提供不需要导入 fs 的小支持
 // 一些时候直接 Temp.dir 作为目录完事
-module.exports = class FileMethod {
-  dir = null;
-  #getDir(Dir) {
-    return path.join(this.dir, DirName)
+export default class FileMethod {
+  dir: string = "";
+  #getDir(Dir: string) {
+    return path.join(this.dir, Dir)
   }
-  async mkdir(DirName) {
+  async mkdir(DirName: string) {
     try {
       await fs.mkdir(this.#getDir(DirName), {
         recursive: true
@@ -17,9 +18,9 @@ module.exports = class FileMethod {
       return false
     }
   }
-  async rm(File) {
+  async rm(File: string): Promise<boolean> {
     try {
-      await fs.rm(this.#getDir(DirName), {
+      await fs.rm(this.#getDir(File), {
         recursive: true,
         force: true
       });
@@ -28,21 +29,18 @@ module.exports = class FileMethod {
       return false
     }
   }
-  async writeFile(File, content) {
+  async writeFile(File: string, content: string | Buffer) {
     try {
-      await fs.writeFile(this.#getDir(File), content, {
-        recursive: true,
-        force: true
-      });
+      await fs.writeFile(this.#getDir(File), content);
       return true;
     } catch (err) {
       return false
     }
   }
-  async readFile(File, opt) {
-    return await utils.readFile(this.#getDir(File), opt)
+  readFile(File: string) {
+    return fs.readFile(this.#getDir(File))
   }
-  async readdir(Dir) {
+  async readdir(Dir: string) {
     return await fs.readdir(this.#getDir(Dir))
   }
 }

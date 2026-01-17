@@ -1,9 +1,4 @@
-type ParseReadFileOpt = {
-  delay: number;
-  maxRetries: number;
-  want: 'string' | 'object';
-};
-type ReadFileOpt = Partial<ParseReadFileOpt>
+import type { ParseReadFileOpt, ReadFileOpt } from '../types';
 interface BaseToken {
   data: string;
   type: TokenType;
@@ -18,7 +13,7 @@ interface ContentToken extends BaseToken {
   type: 'Content';
 }
 type Token = TagToken | TagEndToken | ContentToken;
-type AttributeMap = Record < string, string | boolean > ;
+type AttributeMap = Record<string, string | boolean>;
 interface ParsedTagNode {
   start: TagToken;
   name: string;
@@ -42,8 +37,6 @@ interface TypeVerifyBody {
   [key: string]: JsType
 }
 export type {
-  ParseReadFileOpt,
-  ReadFileOpt,
   Token,
   ContentToken,
   TagEndToken,
