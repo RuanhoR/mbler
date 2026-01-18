@@ -11,6 +11,7 @@ import {
   type ParserOptions
 } from "@babel/parser"
 import Parser from "@babel/parser"
+import * as t from "@babel/types"
 import {
   type ImportDeclaration,
   type Node,
@@ -73,7 +74,33 @@ class Utils {
     if (!ir) throw new TypeError("plase call use right ImportList")
     // first verify ir.raw
     if (ir?.raw && Utils.CheckImportNode(ir?.raw, ir)) return ir.raw;
-     let result = [];
+    let result: Array<t.ImportNamespaceSpecifier | t.ImportSpecifier | t.ImportDefaultSpecifier> = [];
+    for (let ImportIt of ir.imported) {
+      if (!ImportIt) continue
+      if (ImportIt.isAll) {
+        result.push(t.importNamespaceSpecifier(
+          t.identifier(
+            ImportIt.as
+          )
+        ))
+        continue;
+      }
+      if (ImportIt.import == "default") {
+        result.push(t.importDefaultSpecifier(
+          t.identifier(ImportIt.as)
+        ))
+        continue
+      }
+      if (!ImportIt.import) throw new TypeError("[compile node]: not found imported")
+      result.push(t.importSpecifier(
+        t.identifier(ImportIt.as),
+        t.identifier(ImportIt.import)
+      ))
+    }
+    return t.importDeclaration(
+      result,
+      t.stringLiteral(ir.source)
+    )
   }
   public static ImportToCache(node: ImportDeclaration): ImportList {
     const result: ImportListImport[] = []
@@ -132,7 +159,9 @@ class CompileMain {
   async traverse(node: Program): Promise<CompileData> {
     const context = new CompileData(node)
     const buildCache = context.Cache
-    for (let nodeItem of node.body) {
+    for (let nodeIndex in node.body) {
+      const nodeItem = node.body[nodeIndex];
+      if (!nodeItem) continue;
       switch (nodeItem.type) {
         case "ImportDeclaration":
           const newsImport = Utils.ImportToCache(nodeItem);
@@ -142,10 +171,7 @@ class CompileMain {
           // ExportNamedDeclaration must in top
         case "ExportNamedDeclaration":
           break;
-        case "WhileStatement":
-          break;
-        case "WhileStatement":
-          break;
+        case "Export"
       }
     }
   }

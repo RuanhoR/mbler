@@ -32,7 +32,7 @@ interface PropNode {
   value: PropValue
   type: "PropChar" | "PropObject"
 }
-type JsType = "number" | "string" | "object" | "function" | "bigint" | "symbol"
+type JsType = "boolean" | "number" | "string" | "object" | "function" | "bigint" | "symbol"
 interface TypeVerifyBody {
   [key: string]: JsType
 }

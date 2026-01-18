@@ -48,11 +48,8 @@ export default function gitPull(repoDir: string): Promise<boolean> {
             await runGitConfig('--global --replace-all safe.directory "*"');
             retryGitPull();
           } else if (answer === '3') {
-            // 选项 3：取消
-            console.log('用户取消操作');
             reject(new Error('用户取消 Git 拉取'));
           } else {
-            console.log('无效选项，操作终止');
             reject(new Error('无效的用户输入'));
           }
         } else {
@@ -68,7 +65,6 @@ export default function gitPull(repoDir: string): Promise<boolean> {
       });
       retryProcess.on('close', (retryCode) => {
         if (retryCode === 0) {
-          console.log(`✅ Git 拉取成功（重试后）: ${repoDir}`);
           resolve(true);
         } else {
           reject(new Error(`❌ Git 拉取重试失败，退出码: ${retryCode}`));
@@ -87,15 +83,13 @@ function runGitConfig(configArgs: string) {
     });
     configProcess.on('close', (code) => {
       if (code === 0) {
-        console.log(`✅ 已执行: git config ${configArgs}`);
         configResolve(true);
       } else {
-        console.warn(`⚠️ 执行 git config 失败（可能不影响后续操作），退出码: ${code}`);
+        console.warn(`执行 git config 失败（可能不影响后续操作），退出码: ${code}`);
         configResolve(true); // 即使失败也继续尝试 git pull
       }
     });
     configProcess.on('error', (err) => {
-      console.warn(`⚠️ 执行 git config 出错: ${err.message}（尝试继续）`);
       configResolve(true); // 即使出错也继续尝试 git pull
     });
   });

@@ -156,7 +156,7 @@ export async function readFileWithRetry(
   }
   return {};
 }
-export const readFile = readFileSync;
+export const readFile = readFileWithRetry;
 export const JSONparse = function (str: string): any {
   return JSON.parse(str);
 }
