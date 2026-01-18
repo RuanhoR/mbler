@@ -1,42 +1,50 @@
-import type { 
-  Token, 
-  ParsedTagNode, 
-  ParsedTagContentNode, 
-  AttributeMap 
-} from '../types';
-
+import type {
+  BaseToken,
+  TagToken,
+  TagEndToken,
+  ContentToken,
+  Token,
+  ParsedTagNode,
+  AttributeMap,
+  ParsedTagContentNode,
+  TokenType
+} from "./../types.js"
 class Lexer {
   private text: string;
-  private booleanProxyCache: WeakMap<any, any>;
-
+  private booleanProxyCache: WeakMap < object, any > ;
   constructor(text: string) {
     this.text = text;
     this.booleanProxyCache = new WeakMap();
   }
-
-  get tokens(): IterableIterator<ParsedTagNode> {
+  get tokens(): Iterable < ParsedTagNode > {
     return {
-      [Symbol.iterator]: this.tokenIterator.bind(this)
-    } as IterableIterator<ParsedTagNode>;
+      [Symbol.iterator]: () => this.tokenIterator()
+    };
   }
-
-  parseAttributes(tagContent: string): { name: string; arr: AttributeMap } {
-    const attributes: AttributeMap = {};
+  /**
+   * 解析标签属性，如：<div id="app" disabled />
+   */
+  parseAttributes(tagContent: string): {
+    name: string;arr: AttributeMap
+  } {
+    const attributes: Record < string, string > = {};
     let currentKey = '';
     let currentValue = '';
     let inKey = true;
-    let name = "";
+    let name = '';
     let inValue = false;
     let quoteChar: string | null = null;
-    let isTagName = true; // 标记是否在解析标签名阶段
+    let isTagName = true;
 
-    for (const char of tagContent) {
+    for (let i = 0; i < tagContent.length; i++) {
+      const char = tagContent[i];
+
       if (isTagName) {
         if (char === ' ' || char === '>') {
           name = currentKey.trim();
           currentKey = '';
           isTagName = false;
-          if (char === '>') break; // 标签结束
+          if (char === '>') break;
         } else {
           currentKey += char;
         }
@@ -44,7 +52,10 @@ class Lexer {
       }
 
       if (inValue) {
-        if (char === quoteChar && currentValue[currentValue.length - 1] !== '\\') {
+        if (
+          char === quoteChar &&
+          (currentValue.length === 0 || currentValue[currentValue.length - 1] !== '\\')
+        ) {
           attributes[currentKey.trim()] = currentValue;
           currentKey = '';
           currentValue = '';
@@ -57,11 +68,12 @@ class Lexer {
       } else if (char === '=' && inKey) {
         inKey = false;
         inValue = true;
-        const nextIndex = tagContent.indexOf(char, tagContent.indexOf(currentKey)) + 1;
-        const nextChar = tagContent[nextIndex];
+        const nextIndex = i + 1;
+        const nextChar =
+          nextIndex < tagContent.length ? tagContent[nextIndex] : ' ';
         quoteChar = (nextChar === '"' || nextChar === "'") ? nextChar : null;
       } else if (char === ' ' && inKey && currentKey) {
-        attributes[currentKey.trim()] = "true";
+        attributes[currentKey.trim()] = 'true';
         currentKey = '';
       } else if (inKey) {
         currentKey += char;
@@ -71,58 +83,21 @@ class Lexer {
     if (isTagName) {
       name = currentKey.trim();
     } else if (currentKey) {
-      attributes[currentKey.trim()] = inValue ? currentValue.replace(/^["']/, "").replace(/["']$/, "") : "true";
+      attributes[currentKey.trim()] = inValue ?
+        currentValue.replace(/^["']/, '').replace(/["']$/, '') :
+        'true';
     }
 
     return {
       name,
-      arr: attributes
+      arr: attributes as AttributeMap,
     };
   }
 
-  * tokenIterator(): IterableIterator<ParsedTagNode> {
-    const tagTokens = Array.from(this.tagSplitIterator());
-    let currentTag: Partial<ParsedTagNode> = {};
-    let contentStartIndex = 0;
-
-    for (let i = 0; i < tagTokens.length; i++) {
-      const token = tagTokens[i];
-      if (!token) continue;
-      if (token.type === "Tag") {
-        const arr = this.parseAttributes(token.data.slice(1, -1));
-        currentTag = {
-          start: token,
-          name: arr.name,
-          arr: arr.arr, // 展开解析后的属性
-          content: null,
-          end: null
-        };
-        contentStartIndex = i + 1;
-      } else if (token.type === "TagEnd" && currentTag.name) {
-        currentTag.end = token;
-
-        let contentData = '';
-        for (let j = contentStartIndex; j < i; j++) {
-          contentData += token.data;
-        }
-
-        currentTag.content = {
-          data: contentData,
-          type: "TagContent"
-        } as ParsedTagContentNode;
-
-        Object.freeze(currentTag.start);
-        Object.freeze(currentTag.end);
-        Object.freeze(currentTag.content);
-        Object.seal(currentTag); // 密封整个标签对象
-
-        yield currentTag as ParsedTagNode;
-        currentTag = {};
-      }
-    }
-  }
-
-  * tagSplitIterator(): IterableIterator<Token> {
+  /**
+   * 拆分输入文本为 Token 流：Tag、TagEnd、Content
+   */
+  * tagSplitIterator(): IterableIterator < Token > {
     let inTag = false;
     let buffer = '';
     let inContent = false;
@@ -131,26 +106,30 @@ class Lexer {
     for (const char of this.text) {
       if (char === '<') {
         if (contentBuffer) {
-          yield {
+          const n: ContentToken = {
             data: contentBuffer,
-            type: "Content"
-          };
+            type: 'Content'
+          }
+          yield n;
           contentBuffer = '';
         }
 
         inTag = true;
         buffer = '<';
       } else if (char === '>') {
-        if (!inTag) throw new Error("未匹配的'>'");
+        if (!inTag) {
+          throw new Error("未匹配的 '>'");
+        }
 
         buffer += '>';
         inTag = false;
 
-        yield {
+        const type: TokenType = buffer.startsWith('</') ? 'TagEnd' : 'Tag';
+        const n: TagToken | TagEndToken = {
           data: buffer,
-          type: buffer.startsWith("</") ? "TagEnd" : "Tag"
+          type
         };
-
+        yield n
         buffer = '';
       } else if (inTag) {
         buffer += char;
@@ -160,53 +139,101 @@ class Lexer {
     }
 
     if (contentBuffer) {
-      yield {
+      const n: ContentToken = {
         data: contentBuffer,
-        type: "Content"
-      };
+        type: 'Content'
+      }
+      yield n;
     }
   }
 
-  getBooleanCheckProxy(): any {
+  /**
+   * 生成 Token 迭代器，用于遍历所有结构化 Token
+   */
+  * tokenIterator(): IterableIterator < ParsedTagNode > {
+    const tagTokens: Token[] = Array.from(this.tagSplitIterator());
+    let currentTag: ParsedTagNode | null = null;
+    let contentStartIndex = 0;
+
+    for (let i = 0; i < tagTokens.length; i++) {
+      const token = tagTokens[i];
+      if (!token) continue;
+      if (token.type === 'Tag') {
+        const arr = this.parseAttributes(token.data.slice(1, -1));
+        currentTag = {
+          start: token as TagToken,
+          name: arr.name,
+          arr: arr.arr,
+          content: null,
+          end: null,
+        };
+        contentStartIndex = i + 1;
+      } else if (token.type === 'TagEnd' && currentTag) {
+        currentTag.end = token as TagEndToken;
+
+        let contentData = '';
+        for (let j = contentStartIndex; j < i; j++) {
+          const contentToken = tagTokens[j] as ContentToken;
+          contentData += contentToken.data;
+        }
+
+        const n: ParsedTagContentNode = {
+          data: contentData,
+          type: 'TagContent',
+        };
+        currentTag.content = n;
+        // 构造最终的 ParsedTagNode
+        const tagNode: ParsedTagNode = {
+          start: currentTag.start,
+          name: currentTag.name,
+          arr: currentTag.arr,
+          content: currentTag.content,
+          end: currentTag.end,
+        };
+
+        yield tagNode; // 直接 yield 结构化 AST 节点
+        currentTag = null;
+      }
+    }
+  }
+
+  /**
+   * 创建一个动态布尔属性访问的 Proxy（可选功能）
+   */
+  getBooleanCheckProxy(): Record < string, boolean > {
     if (!this.booleanProxyCache.has(this)) {
-      const charMap = new Map();
+      const charMap = new Map < string,
+        boolean > ();
       const proxy = new Proxy({}, {
-        get(_: any, prop: string | symbol) {
+        get(_: any, prop: string | symbol): boolean {
+          if (typeof prop !== 'string') return false;
           return charMap.get(prop) || false;
         },
-        set(_: any, prop: string | symbol, value: any) {
+        set(_: any, prop: string | symbol, value: any): boolean {
+          if (typeof prop !== 'string') return false;
           charMap.set(prop, Boolean(value));
           return true;
-        }
+        },
       });
       this.booleanProxyCache.set(this, proxy);
     }
-    return this.booleanProxyCache.get(this);
+    return this.booleanProxyCache.get(this) as Record < string, boolean > ;
   }
 }
-
-class McxAst {
+export default class McxAst {
   private text: string;
 
-  /**
-   * 构造标签解析ast
-   * @param {string} text - 需要解析的文本
-   */
   constructor(text: string) {
     this.text = text;
   }
-
-  get data(): ParsedTagNode[] {
-    return this.generateAst();
-  }
-
-  generateAst(): ParsedTagNode[] {
+  private getAST(): ParsedTagNode[] {
     const lexer = new Lexer(this.text);
     return Array.from(lexer.tokens);
-  } 
+  }
+  get data(): ParsedTagNode[] {
+    return this.getAST();
+  }
+  parseAST(): ParsedTagNode[] {
+    return this.getAST();
+  }
 }
-
-export default function parser (code: string): ParsedTagNode[] {
-  const asc = new McxAst(code)
-  return asc.generateAst()
-};

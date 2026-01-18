@@ -15,7 +15,7 @@ interface KeyPromise {
 }
 
 const promises: KeyPromise[] = [];
-const tasks: Array<(name: string, ctrl: boolean, alt: boolean, raw: string) => void> = [];
+const tasks: Array < (name: string, ctrl: boolean, alt: boolean, raw: string) => void > = [];
 process.on('exit', (code) => {
   process.stdout.write('\x1b[?25h');
 });
@@ -24,8 +24,12 @@ process.on('exit', (code) => {
  * 监听键盘输入并触发对应的 Promise 或任务
  */
 function handler(
-  name: string,
-  { ctrl, alt }: { ctrl: boolean; alt: boolean }
+  name: string, {
+    ctrl,
+    alt
+  }: {
+    ctrl: boolean;alt: boolean
+  }
 ) {
   // 查找是否有匹配的 Promise 等待触发
   const find = promises.find(
@@ -44,11 +48,20 @@ function handler(
  * 模拟等待某个按键被按下，返回一个 Promise
  */
 function click(
-  name: string,
-  { ctrl = false, alt = false }: { ctrl?: boolean; alt?: boolean }
-): Promise<void> {
+  name: string, {
+    ctrl = false,
+    alt = false
+  }: {
+    ctrl ? : boolean;alt ? : boolean
+  }
+): Promise < void > {
   return new Promise((resolve) => {
-    promises.push({ name, ctrl: ctrl || false, alt: alt || false, resolve });
+    promises.push({
+      name,
+      ctrl: ctrl || false,
+      alt: alt || false,
+      resolve
+    });
   });
 }
 
@@ -78,7 +91,7 @@ export class Input {
    * @param arr 选项数组
    * @returns 用户选中的选项内容（Promise<string>）
    */
-  static select(tip: string, arr: string[]): Promise<any> {
+  static select(tip: string, arr: string[]): Promise < any > {
     let index: number = 0;
     let win = false;
 
@@ -92,15 +105,24 @@ export class Input {
       index++;
       if (index >= arr.length) index = 0;
       console.log(`\x1b[1A${Input.render(arr, index)}\n\x1b[1A`);
-      click('n', { ctrl: false, alt: false }).then(handlerNext);
+      click('n', {
+        ctrl: false,
+        alt: false
+      }).then(handlerNext);
     };
 
     return new Promise((resolve) => {
       // 监听 n 按键来切换选项
-      click('n', { ctrl: false, alt: false }).then(handlerNext);
+      click('n', {
+        ctrl: false,
+        alt: false
+      }).then(handlerNext);
 
       // 监听 b 按键来确认选择
-      click('b', { ctrl: false, alt: false }).then(() => {
+      click('b', {
+        ctrl: false,
+        alt: false
+      }).then(() => {
         win = true;
         process.stdout.
         write('\x1b[?25h');
@@ -117,6 +139,9 @@ export class Input {
     tasks.push(task);
   }
 }
+click("c", {
+  ctrl: true
+}).then(() => process.exit(0))
 
 // 监听键盘输入事件
 process.stdin.on('keypress', (str: string, key: any) => {
@@ -124,5 +149,8 @@ process.stdin.on('keypress', (str: string, key: any) => {
   const ctrl = Boolean(key?.ctrl);
   const alt = Boolean(key?.alt);
 
-  handler(rawKeyName, { ctrl, alt });
+  handler(rawKeyName, {
+    ctrl,
+    alt
+  });
 });

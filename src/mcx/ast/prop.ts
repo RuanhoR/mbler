@@ -1,34 +1,79 @@
+import type {
+  PropNode,
+  PropValue
+} from "../types.js";
 
-/**
- * 解析属性字符串，如 "xxx = yyyy"，返回. {xxx: yyy}
- * @param input 输入字符串，格式如 "xxx = yyyy"
- * @returns 包含解析后属性的 Record<string, string>
- */
-const parseProp = (input: string): Record<string, string> => {
-  const result: Record<string, string> = {};
-  
-  // 去除前后空格
-  const trimmedInput = input.trim();
-  
-  // 如果没有等号，整个字符串作为键，值为 "true"
-  if (!trimmedInput.includes('=')) {
-    result[trimmedInput] = "true";
-    return result;
-  }
-  
-  // 分割键值对
-  const equalsIndex = trimmedInput.indexOf('=');
-  const key = trimmedInput.substring(0, equalsIndex).trim();
-  let value = trimmedInput.substring(equalsIndex + 1).trim();
-  
-  // 处理引号包裹的值
-  if ((value.startsWith('"') && value.endsWith('"')) || 
-      (value.startsWith("'") && value.endsWith("'"))) {
-    value = value.slice(1, -1);
-  }
-  
-  result[key] = value;
-  return result;
-};
+const STATUS = [0, 1]; // 0: 搜集 key，1: 搜集 value
 
-export default parseProp;
+export class Lexer {
+  private code: string;
+
+  constructor(code: string) {
+    this.code = code;
+  }
+
+  // 对外暴露的 tokenize 方法（生成器函数）
+  * tokenize(): IterableIterator < PropNode > {
+    let currStatus = STATUS[0]; // 0: key，1: value
+    let key = "";
+    let value = "";
+    let hasEquals = false;
+
+    for (const char of this.code) {
+      if (/\s/.test(char)) {
+        if (char === '\n') {
+          if (currStatus === STATUS[1] && key && value) {
+            const propNode: PropNode = {
+              key,
+              value: this.HandlerValue(value),
+              type: "PropChar"
+            }
+            yield propNode;
+          } else if (currStatus === STATUS[0] && key) {}
+          key = "";
+          value = "";
+          hasEquals = false;
+          currStatus = STATUS[0];
+        }
+        continue; // 跳过所有空白字符
+      }
+
+      if (char === '=') {
+        if (currStatus === STATUS[0]) {
+          currStatus = STATUS[1]; // 切换到 value 状态
+          hasEquals = true;
+        }
+      } else {
+        if (currStatus === STATUS[0]) {
+          key += char; // 搜集 key
+        } else if (currStatus === STATUS[1]) {
+          value += char; // 搜集 value
+        }
+      }
+    }
+    if (key && value) {
+      const propNode: PropNode = {
+        key,
+        value: this.HandlerValue(value),
+        type: "PropChar"
+      }
+      yield propNode;
+    }
+  }
+  HandlerValue(value: string): PropValue {
+    try {
+      const num = Number(value);
+      if (!Number.isNaN(num)) return num;
+      if (["[", "{"].includes(value.slice(0, 1)) && ["]", "}"].includes(value.slice(-1))) {
+        return JSON.parse(value)
+      }
+    } catch {}
+    return value;
+  }
+}
+
+// 默认导出解析函数
+export default function PropParser(code: string): PropNode[] {
+  const lexer = new Lexer(code);
+  return Array.from(lexer.tokenize());
+}

@@ -1,10 +1,6 @@
-import Prop from "./prop"
-import Tag from "./tag"
+import AST_tag from "./tag.js"
+import AST_prop from "./prop.js"
 export default {
-  Prop,
-  Tag
-}
-export {
-  Prop,
-  Tag
+  tag: AST_tag,
+  prop: AST_prop
 }
