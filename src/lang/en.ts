@@ -107,23 +107,7 @@ export default {
     "reading_file_content": "Read file contents"
   },
   "commands": {
-    "list": {
-      "0": "dev",
-      "1": "install",
-      "2": "build",
-      "3": "init",
-      "4": "version",
-      "5": "-v",
-      "6": "web_edit",
-      "7": "clean",
-      "8": "checkout",
-      "9": "-c",
-      "10": "-i",
-      "11": "v",
-      "12": "create",
-      "13": "recache",
-      "14": "lang"
-    },
+    "list": ["dev", "install", "build", "init", "version", "-v", "web_edit", "clean", "checkout", "-c", "-i", "v", "create", "recache", "lang"],
     "dev": "mblerdev\nMonitor files and repackage when modified",
     "build": "mbler build\nPackage the project, package the mbler project into a standard mcbe behavior package, see the document for details on the mbler project",
     "init": "mbler init\nInitialization path configuration file, created interactively from the command line, alias: -i",

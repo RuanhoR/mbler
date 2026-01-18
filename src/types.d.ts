@@ -20,9 +20,9 @@ export interface MblerDesConfig {
 }
 
 export interface MblerConfigScript {
-  ui: boolean;
+  ui ?: boolean;
   lang?: string;
-  main: string;
+  main : string;
   dependencies?: MblerDesConfig;
   UseBeta ?: boolean 
 }

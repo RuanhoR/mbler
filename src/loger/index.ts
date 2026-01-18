@@ -23,7 +23,7 @@ const LEVELS = {
  * @readonly
  * @type {Object<string, string>}
  */
-const LEVEL_COLORS = {
+const LEVEL_COLORS: any = {
   [LEVELS.ERROR]: red,
   [LEVELS.WARN]: yellow,
   [LEVELS.INFO]: white,
@@ -43,7 +43,25 @@ class Logger {
   #print(tag: string, level: string, color: string, msgs: any[]): void {
     const time = new Date().toISOString();
     const msgStr = utils.toString(msgs)
-    console[level.toLowerCase()](`${color}[${level}] [${tag}] ${time}: ${msgStr} ${reset}`);
+    this.getConsole(level.toLowerCase(), `${color}[${level}] [${tag}] ${time}: ${msgStr} ${reset}`);
+  }
+  getConsole(type: string, t: string): void {
+    switch (type) {
+      case "error":
+        console.error(t)
+        break;
+      case "info":
+        console.info(t)
+        break;
+      case "warn":
+        console.warn(t)
+        break;
+      case "debug":
+        console.debug(t)
+        break;
+      default:
+        console.info(t)
+    }
   }
   /**
    * 错误日志

@@ -85,9 +85,7 @@ async function addMod(pack: MblerConfigData, tempMod: Temp | {
     './lib/modules/contents.json'
   )
   const soList = JSON.parse((await fs.readFile(soListDir)).toString())
-  const installModPack = await utils.readFile(path.join(tempMod.dir, "mbler.config.json"), {
-    want: 'object'
-  })
+  const installModPack = JSON.parse(await fs.readFile(path.join(tempMod.dir, "mbler.config.json"), "utf-8"))
   // 不允许覆盖内置包
   if (cache.get('innerDef').includes(pack.name)) return loger.e(
     'INSTALL', char.SameDes
@@ -116,11 +114,7 @@ export default async function InstallModules(Dirname: string, workDir: string) {
   try {
     dirname = Dirname;
     cache.set('innerDef',
-      await utils.readFile(
-        path.join(dirname, './lib/modules/innerDef.json'), {
-        want: 'object'
-      }
-      )
+      JSON.parse(await fs.readFile(path.join(dirname, './lib/modules/innerDef.json'), "utf-8"))
     )
     const p = await utils.GetData(workDir);
     const Mods = process.argv.slice(3)

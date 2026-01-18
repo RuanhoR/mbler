@@ -47,6 +47,7 @@
     "@types/adm-zip": "^0.5.7",
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
-    "@types/node": "^25.0.9"
+    "@types/node": "^25.0.9",
+    "globals": "^17.0.0"
   }
 }

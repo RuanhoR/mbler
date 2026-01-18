@@ -49,5 +49,6 @@ export type {
   TypeVerifyBody,
   JsType,
   PropNode,
-  ParsedTagNode
+  ParsedTagNode,
+  
 }

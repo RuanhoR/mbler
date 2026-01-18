@@ -3,6 +3,7 @@ import * as utils from './../utils/index.js';
 import { mcVersionGeter } from './mcVersion.js';
 import { fromString as uuidFromString } from './../uuid/index.js';
 import * as path from 'path';
+import type { BuildData } from './index';
 const config: any = confi
 interface MblerConfig {
   name: string;
@@ -56,7 +57,7 @@ const isNonEmptyString = (str: unknown): boolean => typeof str === 'string' && s
 export class ManiFest {
   data: ManifestData;
 
-  constructor(MblerConfig: MblerConfig, type: string) {
+  constructor(MblerConfig: MblerConfig | BuildData, type: string) {
     this.data = {
       format_version: 2,
       header: {
@@ -64,7 +65,7 @@ export class ManiFest {
         description: MblerConfig.description,
         uuid: uuidFromString(MblerConfig.name, config[type].header),
         version: utils.ToArray(MblerConfig.version),
-        min_engine_version: utils.ToArray(MblerConfig.mcVersion),
+        min_engine_version: utils.ToArray(MblerConfig.mcVersion.toString()),
       },
       modules: [{
         type: type,
@@ -76,7 +77,7 @@ export class ManiFest {
     if (type === "data" && MblerConfig.script) this.processScriptConfig(MblerConfig, this.data);
   }
 
-  processScriptConfig(data: MblerConfig, manifest: ManifestData): void {
+  processScriptConfig(data: MblerConfig | BuildData, manifest: ManifestData): void {
     const { script } = data;
     if (!script) return;
     let entry = script.main || "index.js";
@@ -87,7 +88,7 @@ export class ManiFest {
     if (!manifest.dependencies) manifest.dependencies = [];
     manifest.dependencies.push({
       module_name: '@minecraft/server',
-      version: mcVersionGeter.ToServer(data.mcVersion, Boolean(script.UseBeta))
+      version: mcVersionGeter.ToServer(data.mcVersion.toString(), Boolean(script.UseBeta))
     });
     manifest.modules.push({
       type: 'script',
@@ -100,7 +101,7 @@ export class ManiFest {
     if (script.ui === true) {
       manifest.dependencies.push({
         module_name: '@minecraft/server-ui',
-        version: mcVersionGeter.ToServerUi(data.mcVersion, Boolean(script.UseBeta))
+        version: mcVersionGeter.ToServerUi(data.mcVersion.toString(), Boolean(script.UseBeta))
       });
     };
     manifest.capabilities = ['script_eval'];

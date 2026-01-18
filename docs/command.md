@@ -16,7 +16,6 @@
 | version | `mbler version` | — | 显示当前工作目录项目的版本（package 或 mbler 配置中的版本）。 |
 | v | `mbler v` | `-v` | 显示 mbler 工具自身的版本。 |
 | clean | `mbler clean` | `cln` | 清理构建产生的临时文件与输出痕迹。 |
-| web_edit | `mbler web_edit` | — | {BETA} 启动本地网页代码编辑器（实验功能）。 |
 | install | `mbler install <git-url \| 本地路径>` | — | 从指定 git 仓库或本地路径安装/拉取一个脚本依赖包到本地依赖仓库。 |
 | add | `mbler add <package-name>` | — | 在当前工作目录的配置中添加已安装依赖的声明（将依赖加入项目引用）。 |
 | remove | `mbler remove <package-name>` | — | 从当前工作目录配置中删除依赖声明（不删除已安装包）。 |
@@ -79,4 +78,3 @@ mbler dev
 其它说明与常见问题
 - npm link 相关：执行 `npm link` 后，请确认全局 npm bin 在系统 PATH 中。Linux/macOS 可用 `which mbler` 确认，Windows 可用 `where mbler`。
 - 命令上下文：多数命令（如 build、add、remove、version）依赖当前工作目录（checkout 的指向），确保使用前先`mbler -c ./`绑定工作目录一下。
-- web_edit 为实验性功能

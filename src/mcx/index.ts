@@ -8,4 +8,3 @@ export default {
   utils: utils,
   errorList: errors
 }
-Object.setPrototypeOf(module.exports, null);

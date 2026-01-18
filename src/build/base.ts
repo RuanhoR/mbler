@@ -48,7 +48,8 @@ export abstract class BaseBuild {
           )
         )
       );
-      const manifest = (new ManiFest(this.d_data!, "resources")).data;
+      if (this.d_data == null) throw new Error("[build error]: not load config when init")
+      const manifest = (new ManiFest(this.d_data, "resources")).data;
       await this.writeFile(path.join(this.ResOutDir!, "manifest.json"), JSON.stringify(manifest));
     } else {
       logger.i("Build", lang.build.no_resources);

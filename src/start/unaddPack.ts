@@ -21,8 +21,11 @@ export = async function RemovePack(packName: string, dirname_: string, workDir: 
       throw new Error(lang.config_invalid);
     }
     const packageObj = await utils.GetData(workDir);
-    // 修改 dependencies[packName]
+    // 修改 dependencies[packName] 
     if (!packageObj?.script?.dependencies) {
+      packageObj.script = packageObj.script || {
+        main: "index"
+      };
       packageObj.script.dependencies = {}; // 如果没有 dependencies，初始化它
     }
     if (packageObj.script?.dependencies?.[packName]) {

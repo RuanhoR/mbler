@@ -2,9 +2,10 @@ import fs from 'node:fs/promises'
 import char from './../lang/index.js'
 import path from 'node:path'
 import * as utils from './../utils/index.js'
-const db = 'lib/data/path.db'
+const db = '.cache/mbler/.path.db'
 import "./../commander/index.js"
 import process from 'node:process'
+import os from "node:os"
 class start {
   command: string
   two: string
@@ -14,7 +15,7 @@ class start {
   constructor(dir: string) {
     this.dirname = dir
     this.param = ""
-    this.DataPath = path.join(this.dirname, db)
+    this.DataPath = path.join(os.homedir(), db)
     this.command = process.argv[2] || '';
     this.two = (process.argv[3] || '').trim();
     this.start();

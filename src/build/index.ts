@@ -351,5 +351,3 @@ export default class Build extends BaseBuild {
     }
   }
 }
-
-export default Build;
