@@ -59,7 +59,7 @@ export abstract class BaseBuild {
   async processDist(): Promise<void> {
     const utils = await import('./../utils/index.js');
     if (process.env.MBLER_BUILD_MODULE === "dist") {
-      const temp = new Temp(os.tmpdir());
+      const temp = new Temp(path.join(os.tmpdir(), "mbler"));
       await temp.init();
       await Promise.all([
         utils.copy(this.outdir!, path.join(temp.dir, "behavior")),
