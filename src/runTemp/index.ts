@@ -32,7 +32,7 @@ class Temp extends FileMethod {
   async #checkDir(dirPath: string): Promise<void> {
     const exists = await utils.FileExsit(dirPath);
     if (!exists) {
-      throw new Error(`Directory does not exist: ${dirPath}`);
+      fs.mkdir(dirPath)
     }
   }
 
@@ -57,11 +57,6 @@ class Temp extends FileMethod {
       logger.i('temp', '等待中...');
       await utils.sleep(1000);
       result = await waitGen.next();
-    }
-
-    if (result.done) {
-      logger.w('temp', '等待迭代器意外退出');
-      throw new Error('Unexpected end of wait generator.');
     }
     const data = result.value;
     if (typeof data == "boolean") throw new TypeError("[read generator]")
