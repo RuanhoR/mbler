@@ -82,7 +82,7 @@ function runNpm(param: string[], cwd: string): Promise<number | null> {
 
 async function NpmInstall(dependencies: string, tagerDir: string): Promise<void> {
   const temp = new Temp(
-    require("os").tmpdir()
+    path.join(require("os").tmpdir(), "mbler")
   );
   await temp.init();
   const {

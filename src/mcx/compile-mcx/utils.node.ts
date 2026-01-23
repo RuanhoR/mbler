@@ -29,8 +29,6 @@ export default class NodeUtils {
         computed: false
       };
     }
-
-    // 逻辑上 100% 保证
     if (current.type !== 'MemberExpression') {
       throw new Error('Internal error: expected MemberExpression');
     }
@@ -39,7 +37,7 @@ export default class NodeUtils {
   }
   public static memberExpressionToStringArray(
     memberExpression: MemberExpression,
-    maxLength: number
+    maxLength : number
   ): string[] {
     const result: string[] = [];
     let current: Expression | ThisExpression = memberExpression;

@@ -17,9 +17,11 @@ interface KeyPromise {
 const promises: KeyPromise[] = [];
 const tasks: Array < (name: string, ctrl: boolean, alt: boolean, raw: string) => void > = [];
 process.on('exit', (code) => {
-  process.stdout.write('\x1b[?25h');
+  process.stdout.write('\x1b[?25h\n');
 });
-
+click("c", {
+  ctrl: true
+}).then(() => process.exit(0))
 /**
  * 监听键盘输入并触发对应的 Promise 或任务
  */
@@ -139,10 +141,6 @@ export class Input {
     tasks.push(task);
   }
 }
-click("c", {
-  ctrl: true
-}).then(() => process.exit(0))
-
 // 监听键盘输入事件
 process.stdin.on('keypress', (str: string, key: any) => {
   const rawKeyName = key?.name || '';

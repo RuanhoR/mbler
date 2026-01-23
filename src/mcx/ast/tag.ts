@@ -11,12 +11,12 @@ import type {
 } from "./../types.js"
 class Lexer {
   private text: string;
-  private booleanProxyCache: WeakMap < object, any > ;
+  private booleanProxyCache: WeakMap<object, any>;
   constructor(text: string) {
     this.text = text;
     this.booleanProxyCache = new WeakMap();
   }
-  get tokens(): Iterable < ParsedTagNode > {
+  get tokens(): Iterable<ParsedTagNode> {
     return {
       [Symbol.iterator]: () => this.tokenIterator()
     };
@@ -25,9 +25,9 @@ class Lexer {
    * 解析标签属性，如：<div id="app" disabled />
    */
   parseAttributes(tagContent: string): {
-    name: string;arr: AttributeMap
+    name: string; arr: AttributeMap
   } {
-    const attributes: Record < string, string > = {};
+    const attributes: Record<string, string> = {};
     let currentKey = '';
     let currentValue = '';
     let inKey = true;
@@ -97,7 +97,7 @@ class Lexer {
   /**
    * 拆分输入文本为 Token 流：Tag、TagEnd、Content
    */
-  * tagSplitIterator(): IterableIterator < Token > {
+  * tagSplitIterator(): IterableIterator<Token> {
     let inTag = false;
     let buffer = '';
     let inContent = false;
@@ -150,7 +150,7 @@ class Lexer {
   /**
    * 生成 Token 迭代器，用于遍历所有结构化 Token
    */
-  * tokenIterator(): IterableIterator < ParsedTagNode > {
+  * tokenIterator(): IterableIterator<ParsedTagNode> {
     const tagTokens: Token[] = Array.from(this.tagSplitIterator());
     let currentTag: ParsedTagNode | null = null;
     let contentStartIndex = 0;
@@ -200,10 +200,10 @@ class Lexer {
   /**
    * 创建一个动态布尔属性访问的 Proxy（可选功能）
    */
-  getBooleanCheckProxy(): Record < string, boolean > {
+  getBooleanCheckProxy(): Record<string, boolean> {
     if (!this.booleanProxyCache.has(this)) {
-      const charMap = new Map < string,
-        boolean > ();
+      const charMap = new Map<string,
+        boolean>();
       const proxy = new Proxy({}, {
         get(_: any, prop: string | symbol): boolean {
           if (typeof prop !== 'string') return false;
@@ -217,7 +217,7 @@ class Lexer {
       });
       this.booleanProxyCache.set(this, proxy);
     }
-    return this.booleanProxyCache.get(this) as Record < string, boolean > ;
+    return this.booleanProxyCache.get(this) as Record<string, boolean>;
   }
 }
 export default class McxAst {
@@ -235,5 +235,32 @@ export default class McxAst {
   }
   parseAST(): ParsedTagNode[] {
     return this.getAST();
+  }
+
+  /**
+   * 生成代码字符串
+   * @param node 要生成代码的AST节点
+   * @returns 生成的代码字符串
+   */
+  static generateCode(node: ParsedTagNode): string {
+    let code = `<${node.name}`;
+    // 添加属性
+    for (const [key, value] of Object.entries(node.arr)) {
+      if (value === 'true') {
+        code += ` ${key}`;
+      } else {
+        code += ` ${key}=${value}`;
+      }
+    }
+    code += '>';
+    // 添加内容
+    if (node.content) {
+      code += node.content.data;
+    }
+
+    // 添加结束标签
+    code += `</${node.name}>`;
+
+    return code;
   }
 }

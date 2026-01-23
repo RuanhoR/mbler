@@ -3,7 +3,10 @@ import type {
 } from "@babel/parser";
 import type {
   Node,
-  ImportDeclaration
+  ImportDeclaration,
+  ExportAllDeclaration,
+  ExportDefaultDeclaration,
+  ExportNamedDeclaration
 } from "@babel/types"
 interface callList {
   source: string[]
@@ -23,7 +26,7 @@ interface ImportList {
 interface BuildCache {
   call: callList[]
   import: ImportList[]
-  export: [Node,Node][]
+  export: Array<ExportNamedDeclaration | ExportAllDeclaration | ExportDefaultDeclaration>
 }
 type MCX_INFO = {
   author: "github@RuanhoR"
@@ -41,7 +44,6 @@ export type {
 }
 interface CompileUserConfig {
   babelParser ?: ParserOptions
-  allowJS ?: boolean
   useTS ?: boolean
 }
 interface CompileOpt {
@@ -49,6 +51,7 @@ interface CompileOpt {
   main: string
   ProjectDir: string
   moduleDir: string
+  moduleList: string[]
   output: string
   isCache: boolean
   config: Partial<CompileUserConfig>

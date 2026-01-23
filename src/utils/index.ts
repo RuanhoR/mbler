@@ -299,4 +299,6 @@ export async function copy(src: string, out: string) {
       recursive: true
     })
   } catch (err) { }
-}
+};
+const iconfig = require("./../build/build-g-config.json")
+export {iconfig  as config}
