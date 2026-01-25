@@ -1,7 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
 import dayjs from 'dayjs';
-import logger from './../loger/index.js';
 import lang from './../lang/index.js';
 import Temp from './../runTemp/index.js';
 import { spawn } from 'child_process';
@@ -10,7 +9,8 @@ import type { MblerConfigData } from './../types.js';
 import type { BuildData } from './index.js';
 import os from "node:os"
 const time = (): string => dayjs().format('YYYY-MM-DD HH:mm:ss');
-
+import LogNext from "./utils"
+import * as utils from './../utils/index.js'
 // 这里是主Build的底类，用于提供工具，主Build负责将工具连起来，进行完整的构建
 export abstract class BaseBuild {
   [x: string]: any;
@@ -38,7 +38,6 @@ export abstract class BaseBuild {
   }
 
   async processResources(): Promise<void> {
-    const utils = await import('./../utils/index.js');
     if ((await utils.FileExsit(this.ResCwd)) && this.ResOutDir) {
       await Promise.all(
         (await fs.readdir(this.ResCwd)).map((dir) =>
@@ -52,12 +51,11 @@ export abstract class BaseBuild {
       const manifest = (new ManiFest(this.d_data, "resources")).data;
       await this.writeFile(path.join(this.ResOutDir!, "manifest.json"), JSON.stringify(manifest));
     } else {
-      logger.i("Build", lang.build.no_resources);
+      LogNext(lang.build.no_resources);
     }
   }
 
   async processDist(): Promise<void> {
-    const utils = await import('./../utils/index.js');
     if (process.env.MBLER_BUILD_MODULE === "dist") {
       const temp = new Temp(path.join(os.tmpdir(), "mbler"));
       await temp.init();
@@ -85,12 +83,12 @@ export abstract class BaseBuild {
         temp.dir
       ], dir);
       await temp.remove();
-      logger.i("Build", `${lang.build.ziped} ${dir}`);
+      LogNext(`${lang.build.ziped} ${dir}`);
     }
   }
 
   async loadPackageData(): Promise<MblerConfigData> {
-    const utils = await import('./../utils/index.js');
+
     const data = await utils.GetData(this.baseCwd);
     if (!data) throw new Error(lang.buildBase.cannot_read_project_config);
     if (typeof data !== 'object' || data === null)
@@ -111,7 +109,7 @@ export abstract class BaseBuild {
     const packager = JSON.parse(await fs.readFile(path.join(this.baseCwd, 'package.json'), "utf-8")) as { dependencies?: Record<string, string> };
     const desLength = Object.keys(packager.dependencies || {}).length;
     if (desLength < 1) {
-      logger.w('Build', lang.buildBase.npm_deps_skipped_no_json);
+      LogNext(lang.buildBase.npm_deps_skipped_no_json);
       return;
     }
     await fs.writeFile(path.join(this.outdir!, 'scripts/package.json'), JSON.stringify(packager));
@@ -120,29 +118,29 @@ export abstract class BaseBuild {
 
   #npmInstall(repo: string): Promise<number> {
     return new Promise((resolve, reject) => {
-      logger.i('Build', lang.buildBase.starting_npm_install);
+      LogNext( lang.buildBase.starting_npm_install);
       const processC = spawn('npm', ['install'], {
         cwd: repo,
         stdio: 'ignore'
       });
       processC.on('close', (code: number) => {
         if (code === 0) {
-          logger.i('Build', lang.buildBase.npm_install_completed);
+          LogNext(lang.buildBase.npm_install_completed);
           resolve(code);
         } else {
-          logger.w('Build', lang.buildBase.npm_install_exit_code + code);
+          LogNext(lang.buildBase.npm_install_exit_code + code);
           resolve(code);
         }
       });
       processC.on('error', (err: Error) => {
-        logger.e('npmInstall', `${lang.buildBase.npm_install_error} ${err.stack}`);
+        LogNext(`${lang.buildBase.npm_install_error} ${err.stack}`);
         reject(err);
       });
     });
   }
 
   async getFileHash(filePath: string): Promise<string | null> {
-    const utils = await import('./../utils/index.js');
+
     if (!await utils.FileExsit(filePath)) return null;
     const content = await fs.readFile(filePath);
     const hashSum = (await import('crypto')).createHash('sha1');
@@ -243,7 +241,7 @@ export abstract class BaseBuild {
         }
       }
     } catch (err) {
-      logger.w('Build', `ERR: ${err && (err as Error).stack ? (err as Error).stack : err}`);
+      LogNext(`ERR: ${err && (err as Error).stack ? (err as Error).stack : err}`);
     }
   }
 
@@ -266,7 +264,7 @@ export abstract class BaseBuild {
   }
 
   async writeFile(filePath: string, content: string | object): Promise<void> {
-    const utils = await import('./../utils/index.js');
+
     try {
       await utils.waitGC();
       await fs.mkdir(path.dirname(filePath), {
@@ -275,7 +273,7 @@ export abstract class BaseBuild {
       const data = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
       await fs.writeFile(filePath, data, 'utf-8');
     } catch (err) {
-      logger.e('Build', `WRITE FILE ERR: ${filePath}`, err);
+      LogNext(`WRITE FILE ERR: ${filePath}`, err);
       throw err;
     }
     await utils.waitGC();

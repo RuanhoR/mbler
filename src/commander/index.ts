@@ -17,7 +17,7 @@ interface KeyPromise {
 const promises: KeyPromise[] = [];
 const tasks: Array < (name: string, ctrl: boolean, alt: boolean, raw: string) => void > = [];
 process.on('exit', (code) => {
-  process.stdout.write('\x1b[?25h\n');
+  process.stdout.write('\x1b[?25h');
 });
 click("c", {
   ctrl: true
