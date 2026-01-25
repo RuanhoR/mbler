@@ -15,6 +15,9 @@ import Parser from "@babel/parser"
 import * as t from "@babel/types"
 import McxAST from "./../ast/index.js"
 import {
+  ItemComponent
+} from "./../compile-component/lib.js"
+import {
   type ImportDeclaration,
   type Node,
   type Program,
@@ -28,8 +31,8 @@ import loger from "../../loger/index.js";
 import { readFile } from "node:fs/promises";
 import { MblerConfigData } from "../../types.js";
 import { ParsedTagNode, PropNode } from "../types.js";
-import McxUtlis from "./../utils.js";
 import { randomUUID } from "node:crypto";
+import { BlockComponent } from "@minecraft/server";
 const McxConfig = {
   allowTag: {
     script: null,
@@ -42,10 +45,17 @@ const McxConfig = {
   }
 }
 const conBuild = require("./../../build/build-g-config.json")
+export interface LikeRunRule {
+  allowImport: boolean
+  getExport ?: []
+  setup ?: boolean
+  global: Record<string, any>
+}
+export type ComponentExportCompileData = Record<string, ItemComponent>
 export interface McxBuildCache {
   script ?: CompileData
   Component: {
-    items: {
+    item: {
       Fileid: string
       UseExport: string
     }[],
@@ -63,6 +73,7 @@ export const DefaultCache: BuildCache = {
 }
 export class CompileData {
   public Cache: BuildCache
+  public type = "JsCompileData" as const
   public context: Context;
   public filePath: string = "";
   constructor(public AST: Program, cache: BuildCache = DefaultCache) {
@@ -72,7 +83,8 @@ export class CompileData {
 }
 
 export class McxCompileData {
-  JSContext = new Context();
+  public JSContext = new Context();
+  public type = "McxCompileData" as const
   public filePath: string = ""
   setFilePath(filePath: string) {
     this.filePath = filePath;
@@ -180,6 +192,82 @@ class Utils {
   }
   
 }
+class ComponentExport {
+  ast: t.Program
+  TopConext: Record<string, t.Expression>
+  // export: fileid
+  constructor(code: string, public rule: LikeRunRule, BabelConfig: ParserOptions) {
+    this.ast = Parser.parse(code).program;
+    this.TopConext = {}
+    this.run()
+  }
+  public run(): ComponentExportCompileData {
+    const spData: ComponentExportCompileData = {};
+    this.atre(this.ast, spData)
+    return spData;
+  }
+  FindVar(name: string, ThisContext: typeof this.TopConext): t.Expression {
+    if (typeof name == "string") {
+      if (this.TopConext[name]) return this.TopConext[name]
+      if (ThisContext[name]) return ThisContext[name]
+    }
+    throw new Error("[compile error]: can't find var : " + name)
+  }
+  writeResult(spData: ComponentExportCompileData, declaration: t.VariableDeclarator, id: string): void {
+    // @ts-ignore
+    if (this.rule.getExport && this.rule.getExport.includes(id)) {
+      continue;
+    }
+    const init = declaration.init;
+    if (init?.type !== "NewExpression") return;
+    const className = init.callee
+    if (className.type !== "MemberExpression") return;
+    const callee = NodeUtils.memberExpressionToStringArray(className, 2);
+    if (callee[0] !== "__MCX__") return;
+    const name = callee[1]
+    if (name == "ItemComponent") spData[id] = new ItemComponent()
+  }
+  private atre(block: t.Block, spData: ComponentExportCompileData): void {
+    const isTop = block.type == "Program";
+    const ThisContext: typeof this.TopConext = {};
+    for (const _node of block.body) {
+      if (_node.type == "BlockStatement") {
+        this.atre(_node, spData)
+      } else if (_node.type == "BreakStatement" || _node.type == "ContinueStatement" || _node.type == "EmptyStatement" || _node.type == "WithStatement") continue;
+      let node: t.Node = _node;
+      // 基础模块报错
+      let isExport: boolean = isTop ? Boolean(this.rule.setup) : false;
+      if (isTop) {
+        if (_node.type == "ExportDefaultDeclaration") {
+          isExport = true;
+          node = _node.declaration;
+        } else if (_node.type == "ExportNamedDeclaration") {
+          if (_node.specifiers.length > 0 || !_node.declaration) throw new Error("[compile component]: you shouldn't use 'export xxx from xxx' in component mcx");
+          isExport = true;
+          node = _node.declaration;
+        } else if (_node.type == "ExportAllDeclaration" || _node.type == "ImportDeclaration") {
+          throw new Error("[compile component]: 'export * from ' or 'import'(you should use __MCX__ to visit mcx component class) can't use in component mcx")
+        }
+      }
+      if (node.type == "VariableDeclaration") {
+        if (node.kind !== "const") continue;
+        for (const declaration of node.declarations) {
+          if (!declaration || !declaration.init) continue;
+          // 理想模式 
+          if (declaration.id.type == "Identifier") {
+            const id: string = declaration.id.name
+            if (!id) continue;
+            if (isTop) {
+              this.TopConext[id] = declaration.init
+            } else {
+              ThisContext[id] = declaration.init
+            }
+          }
+        }
+      }
+    }
+  }
+}
 class CompileMain {
   public main: string;
   public babelConfig: ParserOptions;
@@ -283,7 +371,7 @@ class CompileMain {
         modulePath = path.join(filePath, source)
       } else if (source == "mcx") {
         // visit 'mcx'
-        //  mcx 提供的导出被计划为大多都是宏，不需要处理
+        //  mcx 提供的导出被计划为大多都是宏，不需要处理，后续补上.d.ts即可
         continue;
       } else {
         // find module
@@ -333,7 +421,7 @@ class CompileMain {
     const parser = this.Tag(code);
     let result: McxBuildCache = {
       Component: {
-        items: [],
+        item: [],
         isLoad: false
       },
       Event: {
@@ -341,19 +429,19 @@ class CompileMain {
         data: []
       }
     }
-    let isTop: boolean = true;
     let allowTag: any = McxConfig.allowTag;
     const FindTag = (node: ParsedTagNode[], lastTag: string[]): void => {
       const allowTagNames = Object.keys(allowTag);
+      const isTop: boolean = lastTag.length == 0;
       for (let index = 0; index < node.length; index++) {
         const item = node[index];
-        const hasContext: boolean = !!(typeof item?.content?.data == "string" && item.content.data.trim())
+        const hasContent: boolean = !!(typeof item?.content?.data == "string" && item.content.data.trim().length > 1)
         if (typeof item?.name !== "string") throw new Error("[compile error]: mcx: Tag name is not string")
         if (!allowTagNames.includes(item?.name)) throw new Error("[compile error]: mcx: visit not allow tag: " + item?.name);
         if (isTop) {
           if (item.name == "script") {
             // 验证内容
-            if (!hasContext || !item.content) throw new Error("[compile error]: mcx: script tag shouldn't null")
+            if (!hasContent || !item.content) throw new Error("[compile error]: mcx: script tag shouldn't null")
             // 验证是否已写
             if (result.script) throw new Error("[compile error]: mcx: a mcx cannot have two script tag")
             result.script = this.traverse(
@@ -364,7 +452,7 @@ class CompileMain {
           }
           if (item.name == "Event") {
             // 验证内容
-            if (!hasContext || !item.content) throw new Error("[compile error]: mcx: Event shouldn't null")
+            if (!hasContent || !item.content) throw new Error("[compile error]: mcx: Event shouldn't null")
             // 验证属性是否可写
             if (result.Event.data.length > 0) throw new Error("[compile error]: mcx: a mcx can't have two event tag")
             // 验证是否冲突
@@ -384,18 +472,38 @@ class CompileMain {
             }
           }
           if (item.name == "Component") {
-            if (!hasContext || !item.content) throw new Error("[compile error]: mcx: Component should't null");
+            if (!hasContent || !item.content) throw new Error("[compile error]: mcx: Component should't null");
             // 是否冲突
             if (result.Event.data.length > 0) throw new Error("[compile error]: mcx: compoent tag can't use with event tag")
             // 是否已写
             if (result.Component.isLoad) throw new Error("[compile error]: mcx: a mcx shouldn't use more component")
-            
+            allowTag = McxConfig.allowTag.Component
             FindTag(this.Tag(item.content.data), [item.name])
+            return;
           }
         }
-        const TopTag = lastTag[0]
+        const TopTag = lastTag[0] 
         // 不需要判断 script和Event，因为其只有一层
-        if (TopTag == "Component") {} else {
+        if (TopTag == "Component") {
+          // 遍历到第二层的时候
+          if (lastTag.length == 1) {
+            if (allowTag[item.name]) {
+              if (!hasContent || !item.content) throw new Error("[compile mcx]: can't get component data")
+              FindTag(this.Tag(item.content?.data), [...lastTag, item.name])
+              return;
+            }
+          }
+          // 遍历内部
+          if (lastTag.length > 1) {
+            if (typeof item.arr.id !== "string" || !hasContent || !item.content) throw new Error("[compile mcx]: a component have to have a file id as arr")
+            if (item.name == "item") {
+              result.Component.item.push({
+                Fileid: item.arr.id.replace("../", ""),
+                UseExport: item.content.data.trim()
+              })
+            }
+          }
+        } else {
           throw new Error("[compile mcx]: TopTag is not right")
         }
       }

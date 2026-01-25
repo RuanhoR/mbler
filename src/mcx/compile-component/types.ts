@@ -3,6 +3,12 @@ interface ItemComponentOpt {
   id: string
   name: string
   format: string
+  components: {
+    offHand: boolean
+    damage: number
+    DestroyInCreate: boolean
+    icon: string
+  }
 }
 type JSONValue<T> = T | {
   value: T
@@ -18,18 +24,22 @@ interface ItemJSON {
         category: string
         group: ItemGroupEnum
       }
-    },
+    }
     components: {
-      "minecraft:display_name" ?: JSONValue<string>
+      "minecraft:display_name" ?: JSONValue<string>,
       "minecraft:allow_off_hand" ?: JSONValue<boolean>
-      "minecraft:block_placer" ?: {
-        block: string
-        use_on: string | string[] | {
-          name ?: string
-          states: number | string | boolean
-          tags ?: string
-        }[]
-      }
+      "minecraft:can_destroy_in_creative" ?: JSONValue<boolean>,
+      "minecraft:compostable" ?: {
+        composting_chance: number
+      },
+      "minecraft:cooldown" ?: {
+        category: string
+        // 正整数 10 进制
+        duration: number
+        type: "use" | "attack"
+      },
+      "minecraft:damage" ?: JSONValue<number>
+      "minecraft:icon" ?: JSONValue<string>
     }
   }
 }
