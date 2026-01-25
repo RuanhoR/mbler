@@ -28,7 +28,7 @@ export const input = function (): (t: string, g?: boolean) => Promise<string> {
   let tip = "";
   let show = true;
   // 在输入时使用输入中间件
-  commander.use(function (name: string, ctrl: boolean, alt: boolean, raw: string): void {
+  commander.use(function (raw: string, ctrl: boolean, alt: boolean, name: string): void {
     if (typeof curr !== "function") return;
     if (ctrl || alt) return;
     if (raw) {
@@ -45,8 +45,8 @@ export const input = function (): (t: string, g?: boolean) => Promise<string> {
         return;
       }
     }
-    if (name && typeof name === 'string' && name.length === 1) {
-      currstr += name;
+    if (name && typeof name === 'string') {
+      currstr += name[0];
       refreshInput();
     }
   });

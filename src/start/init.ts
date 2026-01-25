@@ -101,4 +101,4 @@ class Init {
   }
 }
 
-export default Init;
+export = Init;

@@ -31,8 +31,7 @@ function handler(
     alt
   }: {
     ctrl: boolean;alt: boolean
-  }
-) {
+  }, raw: string) {
   // 查找是否有匹配的 Promise 等待触发
   const find = promises.find(
     (e) => e.name === name && e.ctrl === ctrl && e.alt === alt
@@ -43,7 +42,7 @@ function handler(
   }
 
   // 通知所有注册的监听任务
-  tasks.forEach((item) => item(name, ctrl, alt, name));
+  tasks.forEach((item) => item(name, ctrl, alt, raw));
 }
 
 /**
@@ -150,5 +149,5 @@ process.stdin.on('keypress', (str: string, key: any) => {
   handler(rawKeyName, {
     ctrl,
     alt
-  });
+  }, str);
 });

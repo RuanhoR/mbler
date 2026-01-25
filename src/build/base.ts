@@ -273,7 +273,7 @@ export abstract class BaseBuild {
       const data = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
       await fs.writeFile(filePath, data, 'utf-8');
     } catch (err) {
-      LogNext(`WRITE FILE ERR: ${filePath}`, err);
+      LogNext(`WRITE FILE ERR: ${filePath}`);
       throw err;
     }
     await utils.waitGC();
