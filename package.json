@@ -24,18 +24,20 @@
     "@babel/generator": "7.28.5",
     "@babel/parser": "7.28.5",
     "@babel/traverse": "7.28.5",
-    "@babel/types": "^7.28.6",
-    "adm-zip": "^0.5.16",
-    "chokidar": "^4.0.3",
+    "@babel/types": "7.28.6",
+    "adm-zip": "0.5.16",
+    "chokidar": "4.0.3",
     "dayjs": "1.11.18",
-    "mime-types": "3.0.1",
+    "posthtml-parser": "^0.12.1",
     "terser": "5.44.0",
     "typescript": "^5.9.3"
   },
   "files": [
     "lib",
     "test",
-    "bin"
+    "bin",
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
@@ -44,11 +46,11 @@
     "mbler": "bin/mbler.js"
   },
   "devDependencies": {
-    "@minecraft/server": "^2.4.0",
-    "@types/adm-zip": "^0.5.7",
-    "@types/babel__generator": "^7.27.0",
-    "@types/babel__traverse": "^7.28.0",
-    "@types/node": "^25.0.9",
-    "globals": "^17.0.0"
+    "@minecraft/server": "2.4.0",
+    "@types/adm-zip": "0.5.7",
+    "@types/babel__generator": "7.27.0",
+    "@types/babel__traverse": "7.28.0",
+    "@types/node": "25.0.9",
+    "globals": "17.0.0"
   }
 }
