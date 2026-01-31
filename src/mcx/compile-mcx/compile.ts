@@ -3,7 +3,7 @@ import type {
   CompileOpt
 } from "./types.js"
 import Utils from "./../utils.js"
-import _compile from "./_compile.js"
+/*import _compile from "./_compile.js"*/
 /**
  * @description - this is a function factory to generate mcxProject
  */
@@ -24,6 +24,6 @@ class Compile {
     };
   }
   async start(): Promise<void> {
-    await (new _compile(this.BuildOpt)).compile();
+    /*await (new _compile(this.BuildOpt)).compile();*/
   }
 }

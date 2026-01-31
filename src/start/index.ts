@@ -48,6 +48,11 @@ class start {
       console.log(this.param)
       return;
     }
+    try {
+      if (!(await utils.FileExsit(path.dirname(this.DataPath)))) {
+        await fs.mkdir(path.dirname(this.DataPath))
+      }
+    } catch (err: any){}
     await fs.writeFile(this.DataPath, this.two)
     console.log(char.s0, `PATH => ${this.two}`)
   }
