@@ -30,9 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build project
-        run: npm run build
+        run: npm run build && cd dist
       - name: Zip dist folder
-        run: zip -r dist.zip dist/
+        run: zip -r dist.zip .
       - name: Release to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
