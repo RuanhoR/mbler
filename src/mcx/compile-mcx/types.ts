@@ -15,7 +15,7 @@ interface callList {
 }
 interface ImportListImport {
   isAll: boolean
-  import ? : string
+  import ? : string | undefined
   as: string
 }
 interface ImportList {

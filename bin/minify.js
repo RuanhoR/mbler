@@ -141,12 +141,16 @@ try{      // 确保目标目录存在
       path.join(__dirname, "../test"),
       path.join(__dirname, "../dist/test"),
       { recursive: true, force: true }
+    ),
+    fs.promises.cp(
+      path.join(__dirname, "../README.md"),
+      path.join(__dirname, "../dist/README.md")
+    ),
+    fs.promises.cp(
+      path.join(__dirname, "../LICENSE"),
+      path.join(__dirname, "../dist/LICENSE")
     )
   ]);
-
-  if (failCount > 0) {
-    process.exit(1);
-  }
 }
 
 processFiles().catch(err => {
