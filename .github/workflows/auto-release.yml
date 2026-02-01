@@ -13,11 +13,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # 确保能获取到 tag 信息
+          fetch-depth: 0
+      - name: Extract tag name
+        id: extract_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+      - name: 配置 npm 认证
+        run: |
+          rm -f ~/.npmrc
+          cat <<EOF > ~/.npmrc
+          //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
+          EOF
       - name: Install dependencies
         run: npm install
       - name: Build project
@@ -39,3 +48,5 @@ jobs:
               SourceCode - 自动生成的源码
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: publish npm
+        run: npm publish
