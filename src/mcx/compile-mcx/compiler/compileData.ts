@@ -4,7 +4,7 @@ import { Node } from "posthtml-parser";
 export class JsCompileData {
   File: string = "__repl";
   isFile: boolean = false;
-  constructor(public raw: string, public node: t.Program, public BuildCache: BuildCache = {
+  constructor(public node: t.Program, public BuildCache: BuildCache = {
     export: [],
     import: [],
     call: []

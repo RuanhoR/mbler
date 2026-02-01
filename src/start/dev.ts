@@ -3,7 +3,7 @@ import * as chokidar from "chokidar";
 import Build from "./../build/index.js";
 import logger from "./../loger/index.js";
 import * as utils from "./../utils/index.js";
-import lang from './../lang/index.js';
+import lang from "./../lang/index.js";
 
 class Dev {
   cwd: string;
@@ -33,11 +33,11 @@ class Dev {
         "**/.git/**",
         "**/node_modules/**",
         "**/lib/data/cache/**",
-        "dist/**"
+        "dist/**",
       ],
       persistent: true,
       usePolling: true,
-      interval: 150
+      interval: 150,
     });
     watcher.on("all", async (event: string, filePath: string) => {
       logger.i("Dev", `${lang.dev?.tip || "监听到变化"} ${event} ${filePath}`);
@@ -67,4 +67,5 @@ class Dev {
   }
 }
 
-export = async (workDir: string, baseDir: string): Promise<void> => new Dev(workDir, baseDir).start();
+export = async (workDir: string, baseDir: string): Promise<void> =>
+  new Dev(workDir, baseDir).start();
