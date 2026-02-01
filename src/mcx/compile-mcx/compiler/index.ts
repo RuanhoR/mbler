@@ -106,7 +106,9 @@ class CompileJS {
   CompileData: CompileData.JsCompileData;
   conditionalInTempImport(node: t.Expression, thisContext: Context): void {
     if (node.type == "Identifier") {
-      if (node.name in thisContext) {}
+      if (node.name in this.indexTemp && !this.writeImportKeys.includes(node.name)) {
+        this.writeImportKeys.push(node.name)
+      }
     }
     else if (node.type == "FunctionExpression") {
       this.tre(t.blockStatement([node.body]));
