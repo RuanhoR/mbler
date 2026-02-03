@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
-import Parser, { ParserOptions } from "@babel/parser"
+import * as Parser from "@babel/parser"
 import { ImportList, ImportListImport } from "../types";
 import * as t from "@babel/types"
 export default class Utils {
-  public static async FileAST(fileDir: string, parserOpt: ParserOptions): Promise < t.Program > {
+  public static async FileAST(fileDir: string, parserOpt: Parser.ParserOptions): Promise < t.Program > {
     if (typeof fileDir !== "string") throw new TypeError("[read file]: compile utils was passed a non-string value");
     const file = await readFile(fileDir, "utf-8")
     if (typeof file !== "string") throw new Error("[read file]: not found file " + fileDir)

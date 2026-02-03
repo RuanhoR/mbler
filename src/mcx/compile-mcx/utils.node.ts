@@ -7,6 +7,7 @@ import type {
   callExpression,
   ArrayExpression
 } from '@babel/types';
+import { Context } from './compiler';
 
 export default class NodeUtils {
   public static stringArrayToMemberExpression(
@@ -97,8 +98,8 @@ export default class NodeUtils {
    */
   public static evaluateExpression(
     expression: Expression,
-    currentContext: Record<string, Expression> = {},
-    topContext: Record<string, Expression> = {}
+    currentContext: Context = {},
+    topContext: Context = {}
   ): string | number | symbol | object {
     const context = { ...topContext, ...currentContext };
 

@@ -6,6 +6,7 @@ import git from './../git/index.js';
 import { spawn } from 'child_process';
 import Temp from './../runTemp/index.js';
 import securityFile from './../runTemp/securityFile.js';
+import { tmpdir } from 'os';
 
 const regex = /(https?:\/\/[^\s\/]+\/[^\s\/]+\/[^\s]+(?:\.git)?|(?:git@|[\w.-]+@)[\w.-]+:[^\s]+(?:\.git)?)/;
 const npmStart = "npm:";
@@ -20,7 +21,7 @@ export = async function workDirFunction(workDir: string, _dirname: string, param
     if (await utils.isMblerProject(workDir)) throw new Error("WorkDir is init You shouldn't use 'create' command");
     // 缓存id
     const CreateId = uuid.fromString(`ul-to-${param}`);
-    const cacheDir = path.join(process.cwd(), "lib/initializer-cache", CreateId);
+    const cacheDir = path.join(tmpdir(), "mbler/initializer-cache", CreateId);
     // 如果缓存存在
     if (await utils.FileExsit(cacheDir)) {
       await Load(cacheDir, workDir);

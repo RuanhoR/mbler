@@ -1,10 +1,11 @@
 import * as fs from 'fs/promises';
 import lang from './../lang/index.js';
 import path from 'path';
+import { homedir, tmpdir } from 'os';
 
 export = async function rechce(dirname: string, workDir: string): Promise<void> {
   await Promise.all([
-    fs.rm(path.join(dirname, "lib/data/path.db"), {
+    fs.rm(path.join(homedir(), ".cache/mbler"), {
       recursive: true,
       force: true
     }).catch(() => {}),
@@ -12,7 +13,7 @@ export = async function rechce(dirname: string, workDir: string): Promise<void> 
       recursive: true,
       force: true
     }).catch(() => {}),
-    fs.rm(path.join(dirname, "lib/data/cache"), {
+    fs.rm(path.join(tmpdir(), "mbler"), {
       recursive: true,
       force: true
     }).catch(() => {})

@@ -2,16 +2,18 @@ import type {
   ParserOptions
 } from "@babel/parser";
 import type {
-  Node,
   ImportDeclaration,
   ExportAllDeclaration,
   ExportDefaultDeclaration,
-  ExportNamedDeclaration
+  ExportNamedDeclaration,
+  Expression,
+  SpreadElement,
+  ArgumentPlaceholder
 } from "@babel/types"
 interface callList {
-  source: string[]
-  arguments: Node[]
-  remove: Function
+  source: Expression
+  arguments: Array<SpreadElement | Expression | ArgumentPlaceholder>
+  remove: () => void
 }
 interface ImportListImport {
   isAll: boolean
