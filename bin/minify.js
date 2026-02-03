@@ -20,7 +20,7 @@ try {
 }
 
 const distDir = path.resolve(__dirname, './../dist');
-console.log(`🔍 扫描目录: ${distDir}`);
+console.log(distDir);
 
 if (!fs.existsSync(distDir)) {
   console.error('dist 目录不存在:', distDir);

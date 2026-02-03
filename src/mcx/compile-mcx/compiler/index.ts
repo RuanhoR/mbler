@@ -107,7 +107,7 @@ class CompileJS {
   conditionalInTempImport(node: t.Expression, thisContext: Context): void {
     if (node.type == "Identifier") {
       if (node.name in this.indexTemp && !this.writeImportKeys.includes(node.name)) {
-        this.writeImportKeys.push(node.name)
+        this.writeImportKeys.push(node.name);
       }
     }
     else if (node.type == "FunctionExpression") {
@@ -116,15 +116,21 @@ class CompileJS {
     else if (node.type == "ArrowFunctionExpression") {
       if (t.isExpression(node.body)) {
         this.conditionalInTempImport(node.body, thisContext)
+      } else {
+        this.tre(node.body);
       }
     }
+    else if (t.isLiteral(node)) return;
+    else if (node.type == "CallExpression") {}
   }
   tre(node: t.Block) {
     if (!t.isBlock(node))
       throw new Error("[compile error]: can't for in not block node");
     const isTop: boolean = t.isProgram(node);
-    const currenyContext: Context = {};
-    for (let item of node.body) {
+    const currenyContext: Context = isTop ? this.TopContext : {} ;
+    for (let index in node.body) {
+      const item = node.body[index]
+      if (!item) continue;
       if (item.type == "ImportDeclaration") {
         if (!isTop)
           throw new Error(
@@ -215,7 +221,19 @@ class CompileJS {
           }
         }
       }
-      else if (item.type == "ReturnStatement") {}
+      else if (item.type == "ReturnStatement") {
+        const body = item.argument;
+        if (!body) continue;
+        this.conditionalInTempImport(body, currenyContext);
+      }
+      else if (item.type == "ExportAllDeclaration" || item.type == "ExportDefaultDeclaration" || item.type == "ExportNamedDeclaration") {
+        if (!isTop) {
+          throw new Error("[compiler]: export node can't in not top");
+        }
+        
+        this.CompileData.BuildCache.export.push(item);
+      }
+      else if (item.type == "SwitchStatement") {}
     }
   };
   run() {
