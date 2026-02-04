@@ -19,7 +19,7 @@ export default class CompileMain {
     if (ext !== ".js") {
       throw new Error("[load project]: main file must is a javascript.");
     }
-    const ir = compiler.compileJS(code);
+    const ir = compiler.compileJSFn(code);
     return ir;
   }
 }

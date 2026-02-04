@@ -152,7 +152,9 @@ export class CompileJS {
   ): void {
     // If identifier, mark it
     if (t.isIdentifier(node)) {
+      this.log.push(node.name);
       if (node.name in this.indexTemp && !this.writeImportKeys.includes(node.name)) {
+        this.log.push("push:" + node.name + "into writeImportKeys");
         this.writeImportKeys.push(node.name);
       }
       return;
@@ -188,11 +190,6 @@ export class CompileJS {
 
     // Call expression: record call for buildcache and mark identifiers used in callee and args
     if (t.isCallExpression(node) && node.callee?.type !== "V8IntrinsicIdentifier") {
-      // mark identifiers inside callee (including member expressions)
-      const names = this.extractIdentifierNames(node.callee as any);
-      for (const n of names) {
-        if (n in this.indexTemp && !this.writeImportKeys.includes(n)) this.writeImportKeys.push(n);
-      }
 
       this.CompileData.BuildCache.call.push({
         source: node.callee,
@@ -223,11 +220,12 @@ export class CompileJS {
       throw new Error("[compile error]: can't for in not block node");
     const isTop: boolean = t.isProgram(node);
     const currenyContext: Context = isTop ? this.TopContext : ExtendContext;
-    for (let index in node.body) {
+    for (let index = 0; index < node.body.length; index++) {
       this.log.push(index);
       const item = node.body[index];
       const remove = () => {
-        node.body.splice(parseInt(index), 1);
+        node.body.splice(index, 1);
+        index--;
       };
       if (!item) continue;
       if (item.type == "ImportDeclaration") {
@@ -360,7 +358,7 @@ export class CompileJS {
 }
 
 export function compileJSFn(code: string): CompileData.JsCompileData {
-  const comiler = new CompileJS(parse(code).program);
+  const comiler = new CompileJS(parse(code, {sourceType: "module"}).program);
   comiler.run();
   return comiler.CompileData;
 }
