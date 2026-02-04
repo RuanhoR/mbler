@@ -96,103 +96,166 @@ class Lexer {
 
   /**
    * 拆分输入文本为 Token 流：Tag、TagEnd、Content
+   * 新增：忽略 HTML 注释 <!-- ... --> 并记录每个 token 的起始位置与行号
    */
-  * tagSplitIterator(): IterableIterator<Token> {
-    let inTag = false;
-    let buffer = '';
-    let inContent = false;
-    let contentBuffer = '';
+  * tagSplitIterator(): IterableIterator<Token & { startIndex?: number; endIndex?: number; startLine?: number }> {
+    const text = this.text;
+    let i = 0;
+    let line = 1;
+    const len = text.length;
 
-    for (const char of this.text) {
-      if (char === '<') {
-        if (contentBuffer) {
-          const n: ContentToken = {
-            data: contentBuffer,
-            type: 'Content'
+    while (i < len) {
+      const ch = text[i];
+
+      if (ch === '<') {
+        // 检查注释 <!-- ... -->
+        if (text.startsWith('!--', i + 1)) {
+          const commentStart = i;
+          const endIdx = text.indexOf('-->', i + 4);
+          const commentEnd = endIdx === -1 ? len - 1 : endIdx + 2;
+          // 更新行号
+          const segment = text.slice(i, commentEnd + 1);
+          for (const c of segment) if (c === '\n') line++;
+          i = commentEnd + 1;
+          continue; // 跳过注释
+        }
+
+        // 普通标签读取到 '>'
+        const tokenStart = i;
+        const tokenStartLine = line;
+        let j = i + 1;
+        let sawGt = false;
+        for (; j < len; j++) {
+          const c = text[j];
+          if (c === '>') {
+            sawGt = true;
+            break;
           }
-          yield n;
-          contentBuffer = '';
+          if (c === '\n') line++;
         }
-
-        inTag = true;
-        buffer = '<';
-      } else if (char === '>') {
-        if (!inTag) {
-          throw new Error("未匹配的 '>'");
-        }
-
-        buffer += '>';
-        inTag = false;
-
+        const tokenEnd = j;
+        const buffer = text.slice(tokenStart, sawGt ? j + 1 : len);
         const type: TokenType = buffer.startsWith('</') ? 'TagEnd' : 'Tag';
-        const n: TagToken | TagEndToken = {
+        const tok: any = {
           data: buffer,
-          type
+          type,
+          startIndex: tokenStart,
+          endIndex: sawGt ? tokenEnd : len - 1,
+          startLine: tokenStartLine
         };
-        yield n
-        buffer = '';
-      } else if (inTag) {
-        buffer += char;
+        yield tok;
+        i = sawGt ? j + 1 : len;
       } else {
-        contentBuffer += char;
+        // 内容直到下一个 '<'
+        const contentStart = i;
+        const contentStartLine = line;
+        let j = i;
+        for (; j < len; j++) {
+          const c = text[j];
+          if (c === '<') break;
+          if (c === '\n') line++;
+        }
+        const data = text.slice(contentStart, j);
+        const n: any = {
+          data,
+          type: 'Content',
+          startIndex: contentStart,
+          endIndex: j - 1,
+          startLine: contentStartLine
+        };
+        yield n;
+        i = j;
       }
-    }
-
-    if (contentBuffer) {
-      const n: ContentToken = {
-        data: contentBuffer,
-        type: 'Content'
-      }
-      yield n;
     }
   }
 
   /**
    * 生成 Token 迭代器，用于遍历所有结构化 Token
+   * 改为基于 stack 的解析以支持嵌套，并为 ParsedTagNode 添加 loc: { start:{line,index}, end:{line,index} }
+   * Content 改为递归节点数组 (ParsedTagContentNode | ParsedTagNode)[]
    */
   * tokenIterator(): IterableIterator<ParsedTagNode> {
-    const tagTokens: Token[] = Array.from(this.tagSplitIterator());
-    let currentTag: ParsedTagNode | null = null;
-    let contentStartIndex = 0;
+    const rawTokens = Array.from(this.tagSplitIterator());
+    const root: (ParsedTagNode | ParsedTagContentNode)[] = [];
+    const stack: any[] = [];
 
-    for (let i = 0; i < tagTokens.length; i++) {
-      const token = tagTokens[i];
+    for (let idx = 0; idx < rawTokens.length; idx++) {
+      const token = rawTokens[idx] as any;
       if (!token) continue;
-      if (token.type === 'Tag') {
-        const arr = this.parseAttributes(token.data.slice(1, -1));
-        currentTag = {
-          start: token as TagToken,
+
+      if (token.type === 'Content') {
+        const contentNode: ParsedTagContentNode = {
+          data: token.data,
+          type: 'TagContent'
+        };
+        if (stack.length > 0) {
+          const top = stack[stack.length - 1];
+          top.content.push(contentNode);
+        } else {
+          root.push(contentNode);
+        }
+      } else if (token.type === 'Tag') {
+        const inner = token.data.slice(1, -1).trim();
+        // 自闭合 <br/> 或 <img ... /> 也当作单节点（没有 end），这里简单检测末尾 '/'
+        const isSelfClosing = inner.endsWith('/');
+        const arr = this.parseAttributes(isSelfClosing ? inner.slice(0, -1).trim() : inner);
+        const node: any = {
+          start: token,
           name: arr.name,
           arr: arr.arr,
-          content: null,
+          // content 现在是一个数组，包含文本节点或子标签
+          content: [] as (ParsedTagContentNode | ParsedTagNode)[],
           end: null,
+          // loc: start/end positions will be set when available
+          loc: {
+            start: { line: token.startLine || 1, index: token.startIndex || 0 },
+            end: { line: token.startLine || 1, index: token.endIndex || (token.startIndex || 0) }
+          } as { start: { line: number; index: number }; end: { line: number; index: number } }
         };
-        contentStartIndex = i + 1;
-      } else if (token.type === 'TagEnd' && currentTag) {
-        currentTag.end = token as TagEndToken;
 
-        let contentData = '';
-        for (let j = contentStartIndex; j < i; j++) {
-          const contentToken = tagTokens[j] as ContentToken;
-          contentData += contentToken.data;
+        if (isSelfClosing) {
+          // self-closing: immediately close and attach to parent or root
+          if (stack.length > 0) {
+            stack[stack.length - 1].content.push(node);
+          } else {
+            // yield top-level node
+            yield node;
+          }
+        } else {
+          stack.push(node);
         }
+      } else if (token.type === 'TagEnd') {
+        // 从 '</name>' 中提取 name
+        const name = token.data.replace(/^<\/\s*/, '').replace(/\s*>$/, '').trim();
+        // 找到最近的匹配开始标签
+        for (let s = stack.length - 1; s >= 0; s--) {
+          const candidate = stack[s];
+          if (candidate && candidate.name === name) {
+            // 设置结束
+            candidate.end = token;
+            candidate.loc.end = { line: token.startLine || candidate.loc.start.line, index: token.endIndex || (token.loc.start.index) };
+            // 从 stack 中移除并附加到父节点或作为顶层节点产出
+            stack.splice(s, 1);
+            if (stack.length > 0) {
+              stack[stack.length - 1].content.push(candidate);
+            } else {
+              // yield completed top-level node
+              yield candidate;
+            }
+            break;
+          }
+        }
+        // 如果没有匹配的开始标签，则忽略（或可扩展为错误处理）
+      }
+    }
 
-        const n: ParsedTagContentNode = {
-          data: contentData,
-          type: 'TagContent',
-        };
-        currentTag.content = n;
-        // 构造最终的 ParsedTagNode
-        const tagNode: ParsedTagNode = {
-          start: currentTag.start,
-          name: currentTag.name,
-          arr: currentTag.arr,
-          content: currentTag.content,
-          end: currentTag.end,
-        };
-
-        yield tagNode; // 直接 yield 结构化 AST 节点
-        currentTag = null;
+    // 如果有未闭合的标签，则把它们作为顶层节点输出（保留当前内容）
+    while (stack.length > 0) {
+      const node = stack.shift();
+      if (stack.length > 0) {
+        stack[0].content.push(node);
+      } else {
+        yield node;
       }
     }
   }
@@ -228,6 +291,7 @@ export default class McxAst {
   }
   private getAST(): ParsedTagNode[] {
     const lexer = new Lexer(this.text);
+    // 现在 tokenIterator 直接产生顶层 ParsedTagNode（并且注释已被忽略）
     return Array.from(lexer.tokens);
   }
   get data(): ParsedTagNode[] {
@@ -238,14 +302,14 @@ export default class McxAst {
   }
 
   /**
-   * 生成代码字符串
+   * 生成代码字符串（递归处理 content 数组）
    * @param node 要生成代码的AST节点
    * @returns 生成的代码字符串
    */
   static generateCode(node: ParsedTagNode): string {
     let code = `<${node.name}`;
     // 添加属性
-    for (const [key, value] of Object.entries(node.arr)) {
+    for (const [key, value] of Object.entries((node as any).arr || {})) {
       if (value === 'true') {
         code += ` ${key}`;
       } else {
@@ -253,14 +317,98 @@ export default class McxAst {
       }
     }
     code += '>';
-    // 添加内容
-    if (node.content) {
-      code += node.content.data;
+    // 添加内容（content 现在为数组）
+    const contentArr = (node as any).content as (ParsedTagContentNode | ParsedTagNode)[] | null;
+    if (Array.isArray(contentArr)) {
+      for (const item of contentArr) {
+        if ((item as ParsedTagContentNode).type === 'TagContent') {
+          code += (item as ParsedTagContentNode).data;
+        } else {
+          code += McxAst.generateCode(item as ParsedTagNode);
+        }
+      }
     }
 
     // 添加结束标签
     code += `</${node.name}>`;
 
     return code;
+  }
+}
+export class MCXUtils {
+  static isTagNode(node: any): node is ParsedTagNode {
+    return (
+      node &&
+      typeof node === 'object' &&
+      'start' in node &&
+      'name' in node &&
+      'arr' in node &&
+      'content' in node &&
+      'end' in node
+    );
+  }
+  static isTagContentNode(node: any): node is ParsedTagContentNode {
+    return (
+      node &&
+      typeof node === 'object' &&
+      'data' in node &&
+      'type' in node &&
+      node.type === 'TagContent'
+    );
+  }
+  static isAttributeMap(obj: any): obj is AttributeMap {
+    return (
+      obj &&
+      typeof obj === 'object' &&
+      !Array.isArray(obj)
+    );
+  }
+  static isToken(obj: any): obj is Token {
+    return (
+      obj &&
+      typeof obj === 'object' &&
+      'data' in obj &&
+      'type' in obj &&
+      (obj.type === 'Tag' || obj.type === 'TagEnd' || obj.type === 'Content')
+    );
+  }
+  static isTagToken(obj: any): obj is TagToken {
+    return (
+      MCXUtils.isToken(obj) &&
+      obj.type === 'Tag'
+    );
+  }
+  static isTagEndToken(obj: any): obj is TagEndToken {
+    return (
+      MCXUtils.isToken(obj) &&
+      obj.type === 'TagEnd'
+    );
+  }
+  static isContentToken(obj: any): obj is ContentToken {
+    return (
+      MCXUtils.isToken(obj) &&
+      obj.type === 'Content'
+    );
+  }
+  static isBaseToken(obj: any): obj is BaseToken {
+    return (
+      obj &&
+      typeof obj === 'object' &&
+      'data' in obj &&
+      'type' in obj
+    );
+  }
+  static isTokenType(value: any): value is TokenType {
+    return (
+      value === 'Tag' ||
+      value === 'TagEnd' ||
+      value === 'Content'
+    );
+  }
+  static isParseNode(node: any): node is ParsedTagNode[] {
+    return (
+      Array.isArray(node) &&
+      node.every(MCXUtils.isTagNode)
+    );
   }
 }

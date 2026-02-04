@@ -1,4 +1,3 @@
-import type { ParseReadFileOpt, ReadFileOpt } from '../types';
 interface BaseToken {
   data: string;
   type: TokenType;
@@ -49,6 +48,5 @@ export type {
   TypeVerifyBody,
   JsType,
   PropNode,
-  ParsedTagNode,
-  
+  ParsedTagNode
 }
