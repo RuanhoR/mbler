@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "一个针对Minecraft JavaScript API 的lib库，让你的附加包版本管理更简单",
   "repository": {
     "type": "git",
@@ -29,7 +29,6 @@
     "adm-zip": "0.5.16",
     "chokidar": "4.0.3",
     "dayjs": "1.11.18",
-    "posthtml-parser": "^0.12.1",
     "terser": "5.44.0",
     "typescript": "^5.9.3"
   },
