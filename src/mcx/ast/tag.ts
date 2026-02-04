@@ -7,11 +7,12 @@ import type {
   ParsedTagNode,
   AttributeMap,
   ParsedTagContentNode,
+  MCXLoc,
   TokenType
 } from "./../types.js"
 class Lexer {
   private text: string;
-  private booleanProxyCache: WeakMap<object, any>;
+  private booleanProxyCache: WeakMap<object, Record<string, boolean>>;
   constructor(text: string) {
     this.text = text;
     this.booleanProxyCache = new WeakMap();
@@ -90,7 +91,7 @@ class Lexer {
 
     return {
       name,
-      arr: attributes as AttributeMap,
+      arr: attributes,
     };
   }
 
@@ -98,7 +99,7 @@ class Lexer {
    * 拆分输入文本为 Token 流：Tag、TagEnd、Content
    * 新增：忽略 HTML 注释 <!-- ... --> 并记录每个 token 的起始位置与行号
    */
-  * tagSplitIterator(): IterableIterator<Token & { startIndex?: number; endIndex?: number; startLine?: number }> {
+  * tagSplitIterator(): IterableIterator<Token> {
     const text = this.text;
     let i = 0;
     let line = 1;
@@ -136,7 +137,7 @@ class Lexer {
         const tokenEnd = j;
         const buffer = text.slice(tokenStart, sawGt ? j + 1 : len);
         const type: TokenType = buffer.startsWith('</') ? 'TagEnd' : 'Tag';
-        const tok: any = {
+        const tok: Token = {
           data: buffer,
           type,
           startIndex: tokenStart,
@@ -156,7 +157,7 @@ class Lexer {
           if (c === '\n') line++;
         }
         const data = text.slice(contentStart, j);
-        const n: any = {
+        const n: Token = {
           data,
           type: 'Content',
           startIndex: contentStart,
@@ -177,10 +178,10 @@ class Lexer {
   * tokenIterator(): IterableIterator<ParsedTagNode> {
     const rawTokens = Array.from(this.tagSplitIterator());
     const root: (ParsedTagNode | ParsedTagContentNode)[] = [];
-    const stack: any[] = [];
+    const stack: ParsedTagNode[] = [];
 
     for (let idx = 0; idx < rawTokens.length; idx++) {
-      const token = rawTokens[idx] as any;
+      const token = rawTokens[idx];
       if (!token) continue;
 
       if (token.type === 'Content') {
@@ -190,7 +191,7 @@ class Lexer {
         };
         if (stack.length > 0) {
           const top = stack[stack.length - 1];
-          top.content.push(contentNode);
+          (top as ParsedTagNode).content.push(contentNode);
         } else {
           root.push(contentNode);
         }
@@ -199,10 +200,10 @@ class Lexer {
         // 自闭合 <br/> 或 <img ... /> 也当作单节点（没有 end），这里简单检测末尾 '/'
         const isSelfClosing = inner.endsWith('/');
         const arr = this.parseAttributes(isSelfClosing ? inner.slice(0, -1).trim() : inner);
-        const node: any = {
-          start: token,
+        const node: ParsedTagNode = {
+          start: token as TagToken,
           name: arr.name,
-          arr: arr.arr,
+          arr: arr.arr as AttributeMap,
           // content 现在是一个数组，包含文本节点或子标签
           content: [] as (ParsedTagContentNode | ParsedTagNode)[],
           end: null,
@@ -210,13 +211,13 @@ class Lexer {
           loc: {
             start: { line: token.startLine || 1, index: token.startIndex || 0 },
             end: { line: token.startLine || 1, index: token.endIndex || (token.startIndex || 0) }
-          } as { start: { line: number; index: number }; end: { line: number; index: number } }
+          } as MCXLoc
         };
 
         if (isSelfClosing) {
           // self-closing: immediately close and attach to parent or root
           if (stack.length > 0) {
-            stack[stack.length - 1].content.push(node);
+            (stack[stack.length - 1] as ParsedTagNode).content.push(node);
           } else {
             // yield top-level node
             yield node;
@@ -233,11 +234,11 @@ class Lexer {
           if (candidate && candidate.name === name) {
             // 设置结束
             candidate.end = token;
-            candidate.loc.end = { line: token.startLine || candidate.loc.start.line, index: token.endIndex || (token.loc.start.index) };
+            candidate.loc.end = { line: token.startLine || candidate.loc.start.line, index: token.endIndex || ((token.loc as MCXLoc).start.index) };
             // 从 stack 中移除并附加到父节点或作为顶层节点产出
             stack.splice(s, 1);
             if (stack.length > 0) {
-              stack[stack.length - 1].content.push(candidate);
+              (stack[stack.length - 1] as ParsedTagNode).content.push(candidate);
             } else {
               // yield completed top-level node
               yield candidate;
@@ -248,12 +249,11 @@ class Lexer {
         // 如果没有匹配的开始标签，则忽略（或可扩展为错误处理）
       }
     }
-
     // 如果有未闭合的标签，则把它们作为顶层节点输出（保留当前内容）
     while (stack.length > 0) {
-      const node = stack.shift();
+      const node = stack.shift()!;
       if (stack.length > 0) {
-        stack[0].content.push(node);
+        (stack[0] as ParsedTagNode).content.push(node);
       } else {
         yield node;
       }
@@ -265,20 +265,19 @@ class Lexer {
    */
   getBooleanCheckProxy(): Record<string, boolean> {
     if (!this.booleanProxyCache.has(this)) {
-      const charMap = new Map<string,
-        boolean>();
+      const charMap = new Map<string, boolean>();
       const proxy = new Proxy({}, {
-        get(_: any, prop: string | symbol): boolean {
+        get(_: unknown, prop: string | symbol): boolean {
           if (typeof prop !== 'string') return false;
           return charMap.get(prop) || false;
         },
-        set(_: any, prop: string | symbol, value: any): boolean {
+        set(_: unknown, prop: string | symbol, value: unknown): boolean {
           if (typeof prop !== 'string') return false;
           charMap.set(prop, Boolean(value));
           return true;
         },
       });
-      this.booleanProxyCache.set(this, proxy);
+      this.booleanProxyCache.set(this, proxy as Record<string, boolean>);
     }
     return this.booleanProxyCache.get(this) as Record<string, boolean>;
   }
@@ -309,16 +308,16 @@ export default class McxAst {
   static generateCode(node: ParsedTagNode): string {
     let code = `<${node.name}`;
     // 添加属性
-    for (const [key, value] of Object.entries((node as any).arr || {})) {
+    for (const [key, value] of Object.entries(node.arr || {})) {
       if (value === 'true') {
         code += ` ${key}`;
       } else {
-        code += ` ${key}=${value}`;
+        code += ` ${key}=${String(value)}`;
       }
     }
     code += '>';
     // 添加内容（content 现在为数组）
-    const contentArr = (node as any).content as (ParsedTagContentNode | ParsedTagNode)[] | null;
+    const contentArr = node.content;
     if (Array.isArray(contentArr)) {
       for (const item of contentArr) {
         if ((item as ParsedTagContentNode).type === 'TagContent') {
@@ -336,79 +335,79 @@ export default class McxAst {
   }
 }
 export class MCXUtils {
-  static isTagNode(node: any): node is ParsedTagNode {
+  static isTagNode(node: unknown): node is ParsedTagNode {
     return (
-      node &&
+      !!node &&
       typeof node === 'object' &&
-      'start' in node &&
-      'name' in node &&
-      'arr' in node &&
-      'content' in node &&
-      'end' in node
+      'start' in (node as object) &&
+      'name' in (node as object) &&
+      'arr' in (node as object) &&
+      'content' in (node as object) &&
+      'end' in (node as object)
     );
   }
-  static isTagContentNode(node: any): node is ParsedTagContentNode {
+  static isTagContentNode(node: unknown): node is ParsedTagContentNode {
     return (
-      node &&
+      !!node &&
       typeof node === 'object' &&
-      'data' in node &&
-      'type' in node &&
-      node.type === 'TagContent'
+      'data' in (node as object) &&
+      'type' in (node as object) &&
+      (node as ParsedTagContentNode).type === 'TagContent'
     );
   }
-  static isAttributeMap(obj: any): obj is AttributeMap {
+  static isAttributeMap(obj: unknown): obj is AttributeMap {
     return (
-      obj &&
+      !!obj &&
       typeof obj === 'object' &&
       !Array.isArray(obj)
     );
   }
-  static isToken(obj: any): obj is Token {
+  static isToken(obj: unknown): obj is Token {
     return (
-      obj &&
+      !!obj &&
       typeof obj === 'object' &&
-      'data' in obj &&
-      'type' in obj &&
-      (obj.type === 'Tag' || obj.type === 'TagEnd' || obj.type === 'Content')
+      'data' in (obj as object) &&
+      'type' in (obj as object) &&
+      (((obj as Token).type) === 'Tag' || ((obj as Token).type) === 'TagEnd' || ((obj as Token).type) === 'Content')
     );
   }
-  static isTagToken(obj: any): obj is TagToken {
+  static isTagToken(obj: unknown): obj is TagToken {
     return (
       MCXUtils.isToken(obj) &&
-      obj.type === 'Tag'
+      ((obj as Token).type) === 'Tag'
     );
   }
-  static isTagEndToken(obj: any): obj is TagEndToken {
+  static isTagEndToken(obj: unknown): obj is TagEndToken {
     return (
       MCXUtils.isToken(obj) &&
-      obj.type === 'TagEnd'
+      ((obj as Token).type) === 'TagEnd'
     );
   }
-  static isContentToken(obj: any): obj is ContentToken {
+  static isContentToken(obj: unknown): obj is ContentToken {
     return (
       MCXUtils.isToken(obj) &&
-      obj.type === 'Content'
+      ((obj as Token).type) === 'Content'
     );
   }
-  static isBaseToken(obj: any): obj is BaseToken {
+  static isBaseToken(obj: unknown): obj is BaseToken {
     return (
-      obj &&
+      !!obj &&
       typeof obj === 'object' &&
-      'data' in obj &&
-      'type' in obj
+      'data' in (obj as object) &&
+      'type' in (obj as object)
     );
   }
-  static isTokenType(value: any): value is TokenType {
+  static isTokenType(value: unknown): value is TokenType {
     return (
       value === 'Tag' ||
       value === 'TagEnd' ||
       value === 'Content'
     );
   }
-  static isParseNode(node: any): node is ParsedTagNode[] {
+  static isParseNode(node: unknown): node is ParsedTagNode[] {
     return (
       Array.isArray(node) &&
-      node.every(MCXUtils.isTagNode)
+      (node as unknown[]).every(MCXUtils.isTagNode)
     );
   }
 }

@@ -1,4 +1,4 @@
-const cmdList = ["dev", "install", "build", "init", "version", "-v", "web_edit", "clean", "checkout", "-c", "-i", "v", "create", "recache", "lang"];
+const cmdList = ["dev", "install", "build", "init", "version", "-v", "clean", "checkout", "-c", "-i", "v", "create", "recache", "lang"];
 export default {
   help: `MBLER
 Minecraft Bedrock Edition

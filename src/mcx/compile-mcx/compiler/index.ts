@@ -1,8 +1,16 @@
 import * as t from "@babel/types";
-import { ImportList, ImportListImport } from "../types";
+import {
+  _MCXstructureLocComponentTypes,
+  ImportList,
+  ImportListImport,
+  MCXstructureLoc,
+  MCXstructureLocComponentType,
+} from "../types";
 import * as CompileData from "./compileData";
 import Utils from "./utils";
 import { parse } from "@babel/parser";
+import { ParsedTagContentNode, ParsedTagNode } from "../../types";
+import McxAst, { MCXUtils } from "../../ast/tag";
 interface ImportTemp extends ImportListImport {
   source: string;
   as: never;
@@ -24,9 +32,9 @@ export class CompileJS {
     this.run();
     this.writeBuildCache();
   }
-  TopContext: Context = {};
-  indexTemp: Record<string, ImportTemp> = {};
-  push = (source: ImportList) => {
+  public TopContext: Context = {};
+  private indexTemp: Record<string, ImportTemp> = {};
+  private push(source: ImportList) {
     for (const node of source.imported) {
       this.indexTemp[node.as] = {
         source: source.source,
@@ -34,8 +42,8 @@ export class CompileJS {
         isAll: node.isAll,
       } as any;
     }
-  };
-  takeInnerMost(node: t.MemberExpression): MemberItem {
+  }
+  private takeInnerMost(node: t.MemberExpression): MemberItem {
     if (!t.isMemberExpression(node))
       throw new Error("[take item}: must MemberExpression");
     let current: t.Node | t.Expression | t.V8IntrinsicIdentifier = node;
@@ -73,8 +81,10 @@ export class CompileJS {
       return t.stringLiteral("");
     }
   }
-  writeImportKeys: string[] = [];
-  extractIdentifierNames(node: t.Expression | t.V8IntrinsicIdentifier | t.PrivateName): string[] {
+  private writeImportKeys: string[] = [];
+  private extractIdentifierNames(
+    node: t.Expression | t.V8IntrinsicIdentifier | t.PrivateName,
+  ): string[] {
     const identifiers: string[] = [];
 
     if (t.isIdentifier(node)) {
@@ -104,7 +114,7 @@ export class CompileJS {
 
     return identifiers;
   }
-  writeBuildCache() {
+  private writeBuildCache() {
     const currenySource: string[] = [];
     let build: ImportList[] = [];
     for (const [as, data] of Object.entries(this.indexTemp)) {
@@ -144,17 +154,21 @@ export class CompileJS {
     // write filtered imports into CompileData.BuildCache
     this.CompileData.BuildCache.import = build;
   }
-  CompileData: CompileData.JsCompileData;
-  conditionalInTempImport(
+  private CompileData: CompileData.JsCompileData;
+  public getCompileData(): CompileData.JsCompileData {
+    return this.CompileData;
+  }
+  private conditionalInTempImport(
     node: t.Expression,
     thisContext: Context,
     remove: () => void,
   ): void {
     // If identifier, mark it
     if (t.isIdentifier(node)) {
-      this.log.push(node.name);
-      if (node.name in this.indexTemp && !this.writeImportKeys.includes(node.name)) {
-        this.log.push("push:" + node.name + "into writeImportKeys");
+      if (
+        node.name in this.indexTemp &&
+        !this.writeImportKeys.includes(node.name)
+      ) {
         this.writeImportKeys.push(node.name);
       }
       return;
@@ -180,26 +194,39 @@ export class CompileJS {
     if (t.isMemberExpression(node)) {
       const names = this.extractIdentifierNames(node);
       for (const n of names) {
-        if (n in this.indexTemp && !this.writeImportKeys.includes(n)) this.writeImportKeys.push(n);
+        if (n in this.indexTemp && !this.writeImportKeys.includes(n))
+          this.writeImportKeys.push(n);
       }
       // recurse into object and property when applicable
-      this.conditionalInTempImport(node.object as t.Expression, thisContext, remove);
-      if (t.isExpression(node.property)) this.conditionalInTempImport(node.property, thisContext, remove);
+      this.conditionalInTempImport(
+        node.object as t.Expression,
+        thisContext,
+        remove,
+      );
+      if (t.isExpression(node.property))
+        this.conditionalInTempImport(node.property, thisContext, remove);
       return;
     }
 
     // Call expression: record call for buildcache and mark identifiers used in callee and args
-    if (t.isCallExpression(node) && node.callee?.type !== "V8IntrinsicIdentifier") {
-
+    if (
+      t.isCallExpression(node) &&
+      node.callee?.type !== "V8IntrinsicIdentifier"
+    ) {
       this.CompileData.BuildCache.call.push({
         source: node.callee,
         arguments: node.arguments,
         remove,
       });
 
-      this.conditionalInTempImport(node.callee as t.Expression, thisContext, remove);
+      this.conditionalInTempImport(
+        node.callee as t.Expression,
+        thisContext,
+        remove,
+      );
       for (const arg of node.arguments) {
-        if (t.isExpression(arg)) this.conditionalInTempImport(arg, thisContext, remove);
+        if (t.isExpression(arg))
+          this.conditionalInTempImport(arg, thisContext, remove);
       }
       return;
     }
@@ -208,20 +235,19 @@ export class CompileJS {
     try {
       const names = this.extractIdentifierNames(node as any);
       for (const n of names) {
-        if (n in this.indexTemp && !this.writeImportKeys.includes(n)) this.writeImportKeys.push(n);
+        if (n in this.indexTemp && !this.writeImportKeys.includes(n))
+          this.writeImportKeys.push(n);
       }
     } catch (_) {
       // ignore
     }
   }
-  log: any[] = [];
-  tre(node: t.Block, ExtendContext: Context = {}): void {
+  private tre(node: t.Block, ExtendContext: Context = {}): void {
     if (!t.isBlock(node))
       throw new Error("[compile error]: can't for in not block node");
     const isTop: boolean = t.isProgram(node);
     const currenyContext: Context = isTop ? this.TopContext : ExtendContext;
     for (let index = 0; index < node.body.length; index++) {
-      this.log.push(index);
       const item = node.body[index];
       const remove = () => {
         node.body.splice(index, 1);
@@ -234,7 +260,7 @@ export class CompileJS {
             "[compile node]: import declaration must use in top.",
           );
         this.push(Utils.ImportToCache(item));
-        remove()
+        remove();
       } else if (item.type == "BlockStatement") {
         this.tre(item, currenyContext);
       } else if (
@@ -343,8 +369,7 @@ export class CompileJS {
         }
       } else if (item.type == "ExpressionStatement") {
         this.conditionalInTempImport(item.expression, currenyContext, remove);
-      }
-      else if (item.type == "FunctionDeclaration") {
+      } else if (item.type == "FunctionDeclaration") {
         const funcBody = item.body;
         this.tre(funcBody, currenyContext);
       }
@@ -356,9 +381,95 @@ export class CompileJS {
     this.tre(this.node);
   }
 }
-
+class CompileMCX {
+  constructor(public code: string) {
+    const mcxCode = (new McxAst(code)).parseAST();
+    if (!MCXUtils.isParseNode(mcxCode))
+      throw new Error(
+        "[compile error]: mcxCompile can't work in a not mcxNode",
+      );
+      this.mcxCode = mcxCode;
+    this.structureCheck();
+    const JSIR = this.genenrateJSIR();
+    this.CompileData = new CompileData.MCXCompileData(mcxCode, JSIR, this.tempLoc);
+    this.run();
+  }
+  private mcxCode: ParsedTagNode[];
+  private tempLoc: MCXstructureLoc = {
+    script: new CompileData.JsCompileData(t.program([])),
+    Event: {
+      on: "after",
+      subscribe: {},
+    },
+    Component: {},
+  };
+  public getCompileData(): CompileData.MCXCompileData {
+    return this.CompileData;
+  }
+  private checkComponentName(name: string): name is MCXstructureLocComponentType {
+    return Object.values(_MCXstructureLocComponentTypes).includes(name as any);
+  }
+  private checkComponentParentName(name: string): name is keyof typeof _MCXstructureLocComponentTypes {
+    return Object.keys(_MCXstructureLocComponentTypes).includes(name);
+  }
+  private commonTagNodeContent(node: ParsedTagNode | ParsedTagContentNode): string {
+    let content: string = "";
+    if (MCXUtils.isTagContentNode(node)) {
+      return node.data;
+    }
+    if (MCXUtils.isTagNode(node)) {
+      return node.content.map((sub) => this.commonTagNodeContent(sub)).join("");
+    }
+    throw new Error("[mcx compile]: internal error: unknown node type");
+  }
+  private structureCheck() {
+    const temp: {
+      script: string;
+      Event: ParsedTagNode | null;
+      Component: Record<MCXstructureLocComponentType, ParsedTagNode>;
+    } = {
+      script: "",
+      Event: null,
+      Component: {} as Record<MCXstructureLocComponentType, ParsedTagNode>
+    };
+    for (const node of this.mcxCode || []) {
+      if (!MCXUtils.isTagNode(node)) continue;
+      if (node.name == "script") {
+        temp.script = node.content.length == 0 ? "": this.commonTagNodeContent(node);
+      } else if (node.name == "Event") {
+        temp.Event = node;
+      } else if (this.checkComponentName(node.name)) {
+        temp.Component[node.name as MCXstructureLocComponentType] = node;
+      }
+    }
+    if (!temp.script)
+      throw new Error("[compile error]: mcx must has a script");
+    this.tempLoc.script = compileJSFn(temp.script);
+    if (temp.Event) {
+      for (const subNode of temp.Event.content || []) {
+        if (!MCXUtils.isTagNode(subNode)) continue;
+        const subName = subNode.name;
+        if (this.checkComponentParentName(subName)) {
+          this.handlerChildComponent()
+        }
+      }
+    }
+  }
+  private handlerChildComponent() {
+    
+  }
+  private CompileData: CompileData.MCXCompileData;
+  private run() {}
+  private genenrateJSIR(): CompileData.JsCompileData {}
+}
 export function compileJSFn(code: string): CompileData.JsCompileData {
-  const comiler = new CompileJS(parse(code, {sourceType: "module"}).program);
+  const comiler = new CompileJS(parse(code, { sourceType: "module" }).program);
   comiler.run();
-  return comiler.CompileData;
+  return comiler.getCompileData();
+}
+export function compileMCXFn(
+  mcxCode: string,
+): CompileData.MCXCompileData {
+  const compiler = new CompileMCX(mcxCode);
+  return compiler.getCompileData();
 }

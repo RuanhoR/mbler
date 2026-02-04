@@ -1,6 +1,6 @@
 import * as t from "@babel/types"
-import { BuildCache } from "../types";
-import { Node } from "posthtml-parser";
+import { BuildCache, MCXstructureLoc } from "../types";
+import { ParsedTagNode } from "../../types";
 export class JsCompileData {
   File: string = "__repl";
   isFile: boolean = false;
@@ -17,7 +17,7 @@ export class JsCompileData {
 export class MCXCompileData {
   File: string = "";
   isFile: boolean = false;
-  constructor(public raw: Node[], public JSIR: JsCompileData) {}
+  constructor(public raw: ParsedTagNode[], public JSIR: JsCompileData, public strLoc: MCXstructureLoc) {}
   setFilePath(dir: string) {
     this.JSIR.setFilePath(dir);
     this.isFile = true;

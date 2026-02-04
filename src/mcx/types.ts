@@ -1,6 +1,10 @@
 interface BaseToken {
   data: string;
   type: TokenType;
+  startIndex ?: number;
+  endIndex ?: number;
+  startLine ?: number;
+  loc ?: MCXLoc;
 }
 interface TagToken extends BaseToken {
   type: 'Tag';
@@ -13,12 +17,17 @@ interface ContentToken extends BaseToken {
 }
 type Token = TagToken | TagEndToken | ContentToken;
 type AttributeMap = Record<string, string | boolean>;
+interface MCXLoc {
+  start: { line: number; index: number };
+  end: { line: number; index: number };
+}
 interface ParsedTagNode {
   start: TagToken;
   name: string;
   arr: AttributeMap;
-  content: ParsedTagContentNode | null;
+  content: (ParsedTagContentNode | ParsedTagNode)[];
   end: TagEndToken | null;
+  loc: MCXLoc;
 }
 interface ParsedTagContentNode {
   data: string;
@@ -48,5 +57,6 @@ export type {
   TypeVerifyBody,
   JsType,
   PropNode,
-  ParsedTagNode
+  ParsedTagNode,
+  MCXLoc
 }

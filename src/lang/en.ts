@@ -1,5 +1,5 @@
 export default {
-  "help": "MBLER\nMinecraft Bedrock Edition\nAddon Bulider In Nodejs\nnodejs build tools on bedrock version of minecraft\nSolve the problem of checking documents everywhere to configure api version\nUsage: node index.js [command]\n* You can also omit the node prefix after npm link link\nCommands: dev, install, build, init, version, -v, web_edit, clean, checkout, -c, -i, v, create, recache, lang\nHelp command:\n  help\n    Show help information\n    The second parameter is the name of the command to be queried or empty\n    Alias: -h, -help\n git https://github.com/RuanhoR/mbler/",
+  "help": "MBLER\nMinecraft Bedrock Edition\nAddon Bulider In Nodejs\nnodejs build tools on bedrock version of minecraft\nSolve the problem of checking documents everywhere to configure api version\nUsage: node index.js [command]\n* You can also omit the node prefix after npm link link\nCommands: dev, install, build, init, version, -v, clean, checkout, -c, -i, v, create, recache, lang\nHelp command:\n  help\n    Show help information\n    The second parameter is the name of the command to be queried or empty\n    Alias: -h, -help\n git https://github.com/RuanhoR/mbler/",
   "config_invalid": "Non-GameLib projects",
   "err_bulid": "Build error",
   "uncommand": "Invalid command",
@@ -107,7 +107,7 @@ export default {
     "reading_file_content": "Read file contents"
   },
   "commands": {
-    "list": ["dev", "install", "build", "init", "version", "-v", "web_edit", "clean", "checkout", "-c", "-i", "v", "create", "recache", "lang"],
+    "list": ["dev", "install", "build", "init", "version", "-v", "clean", "checkout", "-c", "-i", "v", "create", "recache", "lang"],
     "dev": "mblerdev\nMonitor files and repackage when modified",
     "build": "mbler build\nPackage the project, package the mbler project into a standard mcbe behavior package, see the document for details on the mbler project",
     "init": "mbler init\nInitialization path configuration file, created interactively from the command line, alias: -i",
@@ -117,7 +117,6 @@ export default {
     "-v": "$v",
     "v": "mbler [v/-v]\nCheck the version of the mbler tool itself",
     "checkout": "mbler [checkout/-c] [null | PATH]\nView (when the second parameter is null) or switch the working directory",
-    "web_edit": "mbler web_edit\nOpen the text editor of the local HTTP working directory. It is not recommended to use during development.",
     "create": "mbler create [npm package name | git url | path]\nAfter downloading from the specified source (with cache), create the template package in the sandbox vm, similar to npm create",
     "recache": "mbler recache\nreset cache",
     "lang": "mbler lang [lang name]\nSet the language, such as mbler lang zh_CN\nThe current languages are\n 1. zh 中文\n 2. en English",
