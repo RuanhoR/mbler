@@ -20,6 +20,9 @@ importers:
       '@babel/types':
         specifier: 7.28.6
         version: 7.28.6
+      '@mbler/mcx-core':
+        specifier: 0.0.2-alpha
+        version: 0.0.2-alpha
       adm-zip:
         specifier: 0.5.16
         version: 0.5.16
@@ -118,6 +121,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@mbler/mcx-core@0.0.2-alpha':
+    resolution: {integrity: sha512-LcOvTRo+Zr6rRkf5hXTniLbiutJGA0MyUBAlNAxOZM6Vcngbz6DQdKBEs1rKgSmBYC//K52EG+ZFZ9y5q2ealg==}
 
   '@minecraft/common@1.2.0':
     resolution: {integrity: sha512-JdmEq4P3Z/FtoBzhLijFgMSVFnFRrUoLwY8DHHrgtFo0mfLTOLTB1RErYjLMsA6b7BGVNxkX/pfFRiH7QZ0XwQ==}
@@ -292,6 +298,12 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@mbler/mcx-core@0.0.2-alpha':
+    dependencies:
+      '@babel/generator': 7.28.5
+      '@babel/parser': 7.28.5
+      '@babel/types': 7.28.6
 
   '@minecraft/common@1.2.0': {}
 

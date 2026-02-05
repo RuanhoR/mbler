@@ -1,8 +1,0 @@
-<Event @after>
-  PlayerJoin=on
-</Event>
-<script>
-  export function on(event) {
-    event.player.sendMessage("欢迎进入游戏")
-  }
-</script>

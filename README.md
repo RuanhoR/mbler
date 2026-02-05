@@ -1,6 +1,10 @@
 # McBeBuilder - MBLER
-
-#### 介绍
+### 提示
+最近一次提交， 我们办了一件大事...
+  - 把 mcx 这个模块移到新仓库，用npm引用
+  - 你会看到大量代码被删除，并不是放弃开发，而是迁移
+  - 新仓库 https://github.com/RuanhoR/mcx-core
+### 介绍
 一个针对Minecraft JavaScript API 的nodejs包，让你的附加包版本管理更简单
 ### 安装
 确保你已经安装以下工具：
@@ -30,3 +34,4 @@ mbler init
 ## 文档
 [中文](https://zh.mbler-docs.ruanhor.dpdns.org/)
 [英文](https://mbler-docs.ruanhor.dpdns.org/)
+

@@ -30,7 +30,8 @@
     "chokidar": "4.0.3",
     "dayjs": "1.11.18",
     "terser": "5.44.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@mbler/mcx-core": "0.0.2-alpha"
   },
   "files": [
     "lib",

@@ -24,7 +24,7 @@ import {
 import type {
   MblerConfigData
 } from './../types.js';
-import MCX from "./../mcx/index.js"
+import MCX from "@mbler/mcx-core"
 import os from "node:os"
 import LogNext from "./utils"
 export interface BuildData extends MblerConfigData {

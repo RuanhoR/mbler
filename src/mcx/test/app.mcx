@@ -1,4 +1,0 @@
-<script>
-  import Event from "./event.mcx"
-  Event.use()
-</script>
