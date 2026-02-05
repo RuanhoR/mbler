@@ -13,6 +13,11 @@ export default class CompileMain {
     if (!this.main) throw new Error("[mcx load]: mcx loader must has a main file")
     const mainCode = await readFile(this.main, "utf-8");
     const IR = this.compMain(mainCode);
+    if (!IR) throw new Error("[mcx compile]: compile main file error");
+    IR.setFilePath(this.main);
+    for (const importPackage of IR.BuildCache.import) {
+      
+    }
   }
   private compMain(code: string): CompileData.JsCompileData {
     const ext = extname(this.main);

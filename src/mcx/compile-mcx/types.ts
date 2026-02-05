@@ -46,7 +46,7 @@ export const _MCXstructureLocComponentTypes = {
 } as const
 type MCXstructureLocComponentType = typeof _MCXstructureLocComponentTypes[keyof typeof _MCXstructureLocComponentTypes]
 interface MCXstructureLoc {
-  script: JsCompileData
+  script: string
   Event: {
     on: "after" | "before"
     subscribe: Record<string, string>

@@ -398,11 +398,10 @@ class CompileMCX {
       JSIR,
       this.tempLoc,
     );
-    this.run();
   }
   private mcxCode: ParsedTagNode[];
   private tempLoc: MCXstructureLoc = {
-    script: new CompileData.JsCompileData(t.program([])),
+    script: "",
     Event: {
       on: "after",
       subscribe: {},
@@ -462,8 +461,7 @@ class CompileMCX {
     for (const node of this.mcxCode || []) {
       if (!MCXUtils.isTagNode(node)) continue;
       if (node.name == "script") {
-        temp.script =
-          node.content.length == 0 ? "" : this.commonTagNodeContent(node);
+        temp.script = node.content.length == 0 ? "" : this.commonTagNodeContent(node);
       } else if (node.name == "Event") {
         temp.Event = node;
       } else if (node.name == "Component") {
@@ -471,7 +469,7 @@ class CompileMCX {
       }
     }
     if (!temp.script) throw new Error("[compile error]: mcx must has a script");
-    this.tempLoc.script = compileJSFn(temp.script);
+    this.tempLoc.script = temp.script;
     if (temp.Event) {
       const on = this.getEventOn(temp.Event);
       const content = temp.Event.content;
@@ -530,8 +528,12 @@ class CompileMCX {
     }
   }
   private CompileData: CompileData.MCXCompileData;
-  private run() {}
-  private genenrateJSIR(): CompileData.JsCompileData {}
+  private genenrateJSIR(): CompileData.JsCompileData {
+    if (!this.tempLoc.script.trim())
+      throw new Error("[compile error]: mcx must has a script");
+    const comiler = compileJSFn(this.tempLoc.script);
+    return comiler;
+  }
 }
 export function compileJSFn(code: string): CompileData.JsCompileData {
   const comiler = new CompileJS(parse(code, { sourceType: "module" }).program);
