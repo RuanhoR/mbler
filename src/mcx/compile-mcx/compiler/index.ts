@@ -11,6 +11,8 @@ import Utils from "./utils";
 import { parse } from "@babel/parser";
 import { ParsedTagContentNode, ParsedTagNode } from "../../types";
 import McxAst, { MCXUtils } from "../../ast/tag";
+import { subscribe } from "node:diagnostics_channel";
+import PropParser from "../../ast/prop";
 interface ImportTemp extends ImportListImport {
   source: string;
   as: never;
@@ -383,15 +385,19 @@ export class CompileJS {
 }
 class CompileMCX {
   constructor(public code: string) {
-    const mcxCode = (new McxAst(code)).parseAST();
+    const mcxCode = new McxAst(code).parseAST();
     if (!MCXUtils.isParseNode(mcxCode))
       throw new Error(
         "[compile error]: mcxCompile can't work in a not mcxNode",
       );
-      this.mcxCode = mcxCode;
+    this.mcxCode = mcxCode;
     this.structureCheck();
     const JSIR = this.genenrateJSIR();
-    this.CompileData = new CompileData.MCXCompileData(mcxCode, JSIR, this.tempLoc);
+    this.CompileData = new CompileData.MCXCompileData(
+      mcxCode,
+      JSIR,
+      this.tempLoc,
+    );
     this.run();
   }
   private mcxCode: ParsedTagNode[];
@@ -406,13 +412,19 @@ class CompileMCX {
   public getCompileData(): CompileData.MCXCompileData {
     return this.CompileData;
   }
-  private checkComponentName(name: string): name is MCXstructureLocComponentType {
+  private checkComponentName(
+    name: string,
+  ): name is MCXstructureLocComponentType {
     return Object.values(_MCXstructureLocComponentTypes).includes(name as any);
   }
-  private checkComponentParentName(name: string): name is keyof typeof _MCXstructureLocComponentTypes {
+  private checkComponentParentName(
+    name: string,
+  ): name is keyof typeof _MCXstructureLocComponentTypes {
     return Object.keys(_MCXstructureLocComponentTypes).includes(name);
   }
-  private commonTagNodeContent(node: ParsedTagNode | ParsedTagContentNode): string {
+  private commonTagNodeContent(
+    node: ParsedTagNode | ParsedTagContentNode,
+  ): string {
     let content: string = "";
     if (MCXUtils.isTagContentNode(node)) {
       return node.data;
@@ -422,7 +434,22 @@ class CompileMCX {
     }
     throw new Error("[mcx compile]: internal error: unknown node type");
   }
+  private getEventOn(node: ParsedTagNode): "before" | "after" {
+    if (!MCXUtils.isTagNode(node))
+      throw new Error("[mcx compile]: internal error: not tag node");
+    let on: "before" | "after" = "after";
+    const isAfter = typeof node.arr["@after"] == "string";
+    const isBefore = typeof node.arr["@before"] == "string";
+    if (isAfter && isBefore)
+      throw new Error(
+        "[mcx compile]: Event node can't has both @after and @before",
+      );
+    if (isAfter) on = "after";
+    if (isBefore) on = "before";
+    return on;
+  }
   private structureCheck() {
+    let component: ParsedTagNode | null = null;
     const temp: {
       script: string;
       Event: ParsedTagNode | null;
@@ -430,40 +457,77 @@ class CompileMCX {
     } = {
       script: "",
       Event: null,
-      Component: {} as Record<MCXstructureLocComponentType, ParsedTagNode>
+      Component: {} as Record<MCXstructureLocComponentType, ParsedTagNode>,
     };
     for (const node of this.mcxCode || []) {
       if (!MCXUtils.isTagNode(node)) continue;
       if (node.name == "script") {
-        temp.script = node.content.length == 0 ? "": this.commonTagNodeContent(node);
+        temp.script =
+          node.content.length == 0 ? "" : this.commonTagNodeContent(node);
       } else if (node.name == "Event") {
         temp.Event = node;
-      } else if (this.checkComponentName(node.name)) {
-        temp.Component[node.name as MCXstructureLocComponentType] = node;
+      } else if (node.name == "Component") {
+        component = node;
       }
     }
-    if (!temp.script)
-      throw new Error("[compile error]: mcx must has a script");
+    if (!temp.script) throw new Error("[compile error]: mcx must has a script");
     this.tempLoc.script = compileJSFn(temp.script);
     if (temp.Event) {
-      for (const subNode of temp.Event.content || []) {
+      const on = this.getEventOn(temp.Event);
+      const content = temp.Event.content;
+      if (content.length == 0 || content.length > 1 || !MCXUtils.isTagContentNode(content[0]))
+        throw new Error("[compile error]: Event node has invalid content");
+      const subscribeData = content[0].data.trim();
+      this.tempLoc.Event = {
+        on: on,
+        subscribe: Object.fromEntries(PropParser(subscribeData).map((item) => [item.key, item.value.toString()])),
+      }
+    }
+    if (component) {
+      for (const subNode of component.content || []) {
         if (!MCXUtils.isTagNode(subNode)) continue;
         const subName = subNode.name;
         // if is a valid component name
-  
-          this.handlerChildComponent(subNode)
-        
+        this.handlerChildComponent(subNode);
       }
     }
   }
+  // 传入组件的节点，处理子组件（如 items entities）
   private handlerChildComponent(node: ParsedTagNode): void {
     const name = node.name;
-    if (!this.checkComponentName(name))
+    if (!this.checkComponentParentName(name))
       throw new Error(`[compile error]: invalid component name: ${name}`);
     const content = node.content;
     if (!content || content.length == 0)
       throw new Error(`[compile error]: component ${name} has no content`);
-    
+    for (const subNode of content) {
+      if (!MCXUtils.isTagNode(subNode)) continue;
+      const subName = subNode.name;
+      const _id = subNode.arr.id;
+      if (!_id || typeof _id != "string" || _id.trim() == "") {
+        throw new Error(
+          `[compile error]: component ${name} child component ${subName} has no id`,
+        );
+      }
+      const id = _id.trim();
+      const content = subNode.content;
+      if (content.length == 0) {
+        throw new Error(
+          `[compile error]: component ${name} child component ${subName} has no content`,
+        );
+      }
+      if (!content[0] || !MCXUtils.isTagContentNode(content[0]))
+        throw new Error(
+          `[compile error]: component ${name} child component ${subName} has invalid content`,
+        );
+      const useExpore = content[0].data.trim();
+      if (subName == _MCXstructureLocComponentTypes[name]) {
+        this.tempLoc.Component[`${name}/${id}`] = {
+          type: subName,
+          useExpore: useExpore,
+        };
+      }
+    }
   }
   private CompileData: CompileData.MCXCompileData;
   private run() {}
@@ -474,9 +538,7 @@ export function compileJSFn(code: string): CompileData.JsCompileData {
   comiler.run();
   return comiler.getCompileData();
 }
-export function compileMCXFn(
-  mcxCode: string,
-): CompileData.MCXCompileData {
+export function compileMCXFn(mcxCode: string): CompileData.MCXCompileData {
   const compiler = new CompileMCX(mcxCode);
   return compiler.getCompileData();
 }
