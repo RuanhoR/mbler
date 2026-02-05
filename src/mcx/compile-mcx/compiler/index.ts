@@ -449,13 +449,20 @@ class CompileMCX {
       for (const subNode of temp.Event.content || []) {
         if (!MCXUtils.isTagNode(subNode)) continue;
         const subName = subNode.name;
-        if (this.checkComponentParentName(subName)) {
-          this.handlerChildComponent()
-        }
+        // if is a valid component name
+  
+          this.handlerChildComponent(subNode)
+        
       }
     }
   }
-  private handlerChildComponent() {
+  private handlerChildComponent(node: ParsedTagNode): void {
+    const name = node.name;
+    if (!this.checkComponentName(name))
+      throw new Error(`[compile error]: invalid component name: ${name}`);
+    const content = node.content;
+    if (!content || content.length == 0)
+      throw new Error(`[compile error]: component ${name} has no content`);
     
   }
   private CompileData: CompileData.MCXCompileData;

@@ -9,7 +9,7 @@ import type {
   ParsedTagContentNode,
   MCXLoc,
   TokenType
-} from "./../types.js"
+} from "./../types.js";
 class Lexer {
   private text: string;
   private booleanProxyCache: WeakMap<object, Record<string, boolean>>;
