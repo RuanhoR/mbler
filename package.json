@@ -1,7 +1,7 @@
 {
   "name": "mbler",
-  "version": "0.1.2",
-  "description": "一个针对Minecraft JavaScript API 的lib库，让你的附加包版本管理更简单",
+  "version": "0.1.3",
+  "description": "一个针对Minecraft JavaScript API 的CLI工具，让你的附加包版本管理更简单",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RuanhoR/mbler.git"
@@ -31,7 +31,7 @@
     "dayjs": "1.11.18",
     "terser": "5.44.0",
     "typescript": "^5.9.3",
-    "@mbler/mcx-core": "0.0.2-alpha"
+    "@mbler/mcx-core": "latest"
   },
   "files": [
     "lib",
