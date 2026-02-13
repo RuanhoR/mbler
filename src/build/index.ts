@@ -156,7 +156,7 @@ export default class Build extends BaseBuild {
           },
           output: path.join(this.outdir, "scripts"),
           moduleList: this.Modules,
-          main: path.join(this.cwd, data.script?.main || "index.js"),
+          main: path.join(this.cwd, "scripts", data.script?.main || "index.js"),
           cacheDir: this.cacheDir,
           moduleDir: path.join(this.outdir, "scripts/node_modules"),
           isCache: true

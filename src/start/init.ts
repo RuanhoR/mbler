@@ -63,7 +63,7 @@ class Init {
       }
 
       await Promise.all([
-        fs.mkdir(path.join(this.dir, 'behavior', "script"), { recursive: true }),
+        fs.mkdir(path.join(this.dir, 'behavior', "scripts"), { recursive: true }),
         fs.mkdir(path.join(this.dir, 'resources'), { recursive: true }),
       ]);
 
