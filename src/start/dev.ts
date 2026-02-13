@@ -26,27 +26,57 @@ class Dev {
 
   startWatcher(): void {
     const watchPath = this.cwd;
-    const watcher = chokidar.watch(watchPath, {
-      ignoreInitial: true,
-      ignored: [
-        "**/dist/**",
-        "**/.git/**",
-        "**/node_modules/**",
-        "**/lib/data/cache/**",
-        "dist/**",
-      ],
-      persistent: true,
-      usePolling: true,
-      interval: 150,
-    });
-    watcher.on("all", async (event: string, filePath: string) => {
+    // load project config to determine output folders to ignore
+    (async () => {
+      let extraIgnored: string[] = [];
+      try {
+        const baseCwd = path.isAbsolute(this.cwd) ? this.cwd : path.join(this.baseDir, this.cwd);
+        const data: any = await utils.GetData(baseCwd).catch(() => ({}));
+        if (data && typeof data === 'object') {
+          // behavior outdir
+          if (data.outdir && data.outdir.behavior) {
+            extraIgnored.push(path.join(baseCwd, data.outdir.behavior, "**"));
+          } else {
+            extraIgnored.push(path.join(baseCwd, "dist/dep", "**"));
+          }
+          // resources outdir
+          if (data.outdir && data.outdir.resources) {
+            extraIgnored.push(path.join(baseCwd, data.outdir.resources, "**"));
+          } else {
+            extraIgnored.push(path.join(baseCwd, "dist/res", "**"));
+          }
+          // dist file (archive)
+          if (data.outdir && data.outdir.dist) {
+            extraIgnored.push(path.join(baseCwd, data.outdir.dist));
+          }
+        }
+      } catch (e) {
+        // ignore errors and continue with defaults
+      }
+
+      const watcher = chokidar.watch(watchPath, {
+        ignoreInitial: true,
+        ignored: [
+          "**/dist/**",
+          "**/.git/**",
+          "**/node_modules/**",
+          "**/lib/data/cache/**",
+          "dist/**",
+          ...extraIgnored,
+        ],
+        persistent: true,
+        usePolling: true,
+        interval: 150,
+      });
+      watcher.on("all", async (event: string, filePath: string) => {
       logger.i("Dev", `${lang.dev?.tip || "监听到变化"} ${event} ${filePath}`);
       if (this.isBuilding) {
         this.pending = true;
         return;
       }
       await this.rebuild();
-    });
+      });
+    })();
   }
 
   async rebuild(): Promise<void> {
