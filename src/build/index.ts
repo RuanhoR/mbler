@@ -144,24 +144,22 @@ export default class Build extends BaseBuild {
       this.handleIncludes(),
       this.processSubpacks(data)
     ]);
+    if (data.script?.lang) LogNext("对特定语言进行处理：" + data.script.lang)
     switch (data.script?.lang || "") {
       case "ts": // TypeScript 编译
         await this.compileTypeScriptUnified();
         break;
       case "mcx":
         await MCX.load({
-          ProjectDir: path.join(this.cwd, "scripts"),
-          config: {
-            useTS: true
-          },
+          ProjectDir: path.join(this.baseCwd),
+          config: {},
           output: path.join(this.outdir, "scripts"),
-          moduleList: this.Modules,
           main: path.join(this.cwd, "scripts", data.script?.main || "index.js"),
-          cacheDir: this.cacheDir,
-          moduleDir: path.join(this.outdir, "scripts/node_modules"),
-          isCache: true
+          moduleDir: path.join(this.outdir, "scripts/node_modules")
         });
         break;
+      default:
+        console.error("无效的语言设置")
     }
     await Promise.all([this.processMinification(data),
       // 资源包处理

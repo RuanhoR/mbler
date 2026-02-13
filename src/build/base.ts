@@ -1,39 +1,41 @@
-import fs from 'fs/promises';
-import path from 'path';
-import dayjs from 'dayjs';
-import lang from './../lang/index.js';
-import Temp from './../runTemp/index.js';
-import { spawn } from 'child_process';
-import { ManiFest } from './manifest.build.js';
-import type { MblerConfigData } from './../types.js';
-import type { BuildData } from './index.js';
-import os from "node:os"
-const time = (): string => dayjs().format('YYYY-MM-DD HH:mm:ss');
-import LogNext from "./utils"
-import * as utils from './../utils/index.js'
+import fs from "fs/promises";
+import path from "path";
+import dayjs from "dayjs";
+import lang from "./../lang/index.js";
+import Temp from "./../runTemp/index.js";
+import { spawn } from "child_process";
+import { ManiFest } from "./manifest.build.js";
+import type { MblerConfigData } from "./../types.js";
+import type { BuildData } from "./index.js";
+import os from "node:os";
+const time = (): string => dayjs().format("YYYY-MM-DD HH:mm:ss");
+import LogNext from "./utils";
+import * as utils from "./../utils/index.js";
 // 这里是主Build的底类，用于提供工具，主Build负责将工具连起来，进行完整的构建
 export abstract class BaseBuild {
   [x: string]: any;
   static times: string = time();
   outdir: string = "";
   ResOutDir: string | null = null;
-  baseCwd: string = '';
-  cwd: string = '';
-  ResCwd: string = '';
+  baseCwd: string = "";
+  cwd: string = "";
+  ResCwd: string = "";
   d_data: BuildData | null = null;
-  cacheDir: string = '';
+  cacheDir: string = "";
   dependencies: Record<string, string> = {};
   Modules: string[] = [];
 
-  protected constructor() { }
+  protected constructor() {}
 
   async rmPackScriptScriptCache(): Promise<void> {
     await Promise.all([
       this.rmNpmDes(),
-      fs.rm(path.join(this.outdir!, 'scripts/package-lock.json'), {
-        recursive: true,
-        force: true
-      }).catch(() => { })
+      fs
+        .rm(path.join(this.outdir!, "scripts/package-lock.json"), {
+          recursive: true,
+          force: true,
+        })
+        .catch(() => {}),
     ]);
   }
 
@@ -43,13 +45,17 @@ export abstract class BaseBuild {
         (await fs.readdir(this.ResCwd)).map((dir) =>
           utils.copy(
             path.join(this.ResCwd, dir),
-            path.join(this.ResOutDir!, dir)
-          )
-        )
+            path.join(this.ResOutDir!, dir),
+          ),
+        ),
       );
-      if (this.d_data == null) throw new Error("[build error]: not load config when init")
-      const manifest = (new ManiFest(this.d_data, "resources")).data;
-      await this.writeFile(path.join(this.ResOutDir!, "manifest.json"), JSON.stringify(manifest));
+      if (this.d_data == null)
+        throw new Error("[build error]: not load config when init");
+      const manifest = new ManiFest(this.d_data, "resources").data;
+      await this.writeFile(
+        path.join(this.ResOutDir!, "manifest.json"),
+        JSON.stringify(manifest),
+      );
     } else {
       LogNext(lang.build.no_resources);
     }
@@ -61,37 +67,34 @@ export abstract class BaseBuild {
       await temp.init();
       await Promise.all([
         utils.copy(this.outdir!, path.join(temp.dir, "behavior")),
-        (await utils.FileExsit(this.ResCwd)) ?
-          utils.copy(this.ResOutDir!, path.join(temp.dir, "resources")) :
-          Promise.resolve()
+        (await utils.FileExsit(this.ResCwd))
+          ? utils.copy(this.ResOutDir!, path.join(temp.dir, "resources"))
+          : Promise.resolve(),
       ]);
       let i = this.d_data?.outdir?.dist || "dist.mcaddon";
       if (path.extname(i) !== ".mcaddon") i += ".mcaddon";
       const dir = path.join(this.baseCwd, i);
-      const v = require('./../../package.json');
+      const v = require("./../../package.json");
       await fs.writeFile(
         path.join(temp.dir, "behavior", ".mbler.build.info"),
         JSON.stringify({
           mbler: {
             version: v.version,
-            git: v.repository
+            git: v.repository,
           },
-          time: BaseBuild.times
-        })
+          time: BaseBuild.times,
+        }),
       );
-      await utils.zip([
-        temp.dir
-      ], dir);
+      await utils.zip([temp.dir], dir);
       await temp.remove();
       LogNext(`${lang.build.ziped} ${dir}`);
     }
   }
 
   async loadPackageData(): Promise<MblerConfigData> {
-
     const data = await utils.GetData(this.baseCwd);
     if (!data) throw new Error(lang.buildBase.cannot_read_project_config);
-    if (typeof data !== 'object' || data === null)
+    if (typeof data !== "object" || data === null)
       throw new Error(lang.buildBase.invalid_project_config_format);
     return data;
   }
@@ -106,24 +109,24 @@ export abstract class BaseBuild {
   }
 
   async initNpmDes(): Promise<void> {
-    const packager = JSON.parse(await fs.readFile(path.join(this.baseCwd, 'package.json'), "utf-8")) as { dependencies?: Record<string, string> };
+    const packager = JSON.parse(
+      await fs.readFile(path.join(this.baseCwd, "package.json"), "utf-8"),
+    ) as { dependencies?: Record<string, string> };
     const desLength = Object.keys(packager.dependencies || {}).length;
-    if (desLength < 1) {
-      LogNext(lang.buildBase.npm_deps_skipped_no_json);
-      return;
-    }
-    await fs.writeFile(path.join(this.outdir!, 'scripts/package.json'), JSON.stringify(packager));
-    await this.#npmInstall(path.join(this.outdir!, 'scripts'));
+    await fs.writeFile(
+      path.join(this.outdir, "scripts/package.json"),
+      JSON.stringify(packager),
+    );
+    await this.#npmInstall(path.join(this.outdir, "scripts"));
   }
 
   #npmInstall(repo: string): Promise<number> {
     return new Promise((resolve, reject) => {
-      LogNext( lang.buildBase.starting_npm_install);
-      const processC = spawn('npm', ['install'], {
+      const processC = spawn("npm", ["install"], {
         cwd: repo,
-        stdio: 'ignore'
+        stdio: "ignore",
       });
-      processC.on('close', (code: number) => {
+      processC.on("close", (code: number) => {
         if (code === 0) {
           LogNext(lang.buildBase.npm_install_completed);
           resolve(code);
@@ -132,7 +135,7 @@ export abstract class BaseBuild {
           resolve(code);
         }
       });
-      processC.on('error', (err: Error) => {
+      processC.on("error", (err: Error) => {
         LogNext(`${lang.buildBase.npm_install_error} ${err.stack}`);
         reject(err);
       });
@@ -140,36 +143,47 @@ export abstract class BaseBuild {
   }
 
   async getFileHash(filePath: string): Promise<string | null> {
-
-    if (!await utils.FileExsit(filePath)) return null;
+    if (!(await utils.FileExsit(filePath))) return null;
     const content = await fs.readFile(filePath);
-    const hashSum = (await import('crypto')).createHash('sha1');
+    const hashSum = (await import("crypto")).createHash("sha1");
     hashSum.update(content);
-    return hashSum.digest('hex');
+    return hashSum.digest("hex");
   }
 
   async chackConfigHash(): Promise<{
     configChanged: boolean;
     packageChanged: boolean;
   }> {
-    const configPath = path.join(this.cwd, 'mbler.config.json');
-    const packagePath = path.join(this.cwd, 'package.json');
-    const configHashPath = this.getCachePath('config-hash.txt');
-    const packageHashPath = this.getCachePath('package-hash.txt');
+    const configPath = path.join(this.cwd, "mbler.config.json");
+    const packagePath = path.join(this.cwd, "package.json");
+    const configHashPath = this.getCachePath("config-hash.txt");
+    const packageHashPath = this.getCachePath("package-hash.txt");
     const currentConfigHash = await this.getFileHash(configPath);
     const currentPackageHash = await this.getFileHash(packagePath);
     let configHashStored: string | null = null;
     let packageHashStored: string | null = null;
 
-    if (await fs.access(configHashPath).then(() => true).catch(() => false)) {
+    if (
+      await fs
+        .access(configHashPath)
+        .then(() => true)
+        .catch(() => false)
+    ) {
       configHashStored = await fs.readFile(configHashPath, "utf-8");
     }
-    if (await fs.access(packageHashPath).then(() => true).catch(() => false)) {
+    if (
+      await fs
+        .access(packageHashPath)
+        .then(() => true)
+        .catch(() => false)
+    ) {
       packageHashStored = await fs.readFile(packageHashPath, "utf-8");
     }
 
-    const configChanged = !currentConfigHash || currentConfigHash !== configHashStored;
-    const packageChanged = !currentPackageHash || currentPackageHash !== packageHashStored;
+    const configChanged =
+      !currentConfigHash || currentConfigHash !== configHashStored;
+    const packageChanged =
+      !currentPackageHash || currentPackageHash !== packageHashStored;
 
     if (currentConfigHash) {
       await fs.writeFile(configHashPath, currentConfigHash);
@@ -180,20 +194,20 @@ export abstract class BaseBuild {
 
     return {
       configChanged,
-      packageChanged
+      packageChanged,
     };
   }
 
   async removeJsFiles(dir: string): Promise<void> {
     try {
       for (const f of await fs.readdir(dir, {
-        withFileTypes: true
+        withFileTypes: true,
       })) {
         const full = path.join(dir, f.name);
-        if (full.includes('node_modules')) continue;
+        if (full.includes("node_modules")) continue;
         if (f.isDirectory()) {
           await this.removeJsFiles(full);
-        } else if (f.isFile() && f.name.endsWith('.js')) {
+        } else if (f.isFile() && f.name.endsWith(".js")) {
           try {
             await fs.unlink(full);
           } catch (e) {
@@ -201,39 +215,49 @@ export abstract class BaseBuild {
           }
         }
       }
-    } catch (err) { }
+    } catch (err) {}
   }
 
   async rmNpmDes(): Promise<void> {
-    const moduleDir = path.join(this.outdir!, 'scripts/node_modules');
+    const moduleDir = path.join(this.outdir!, "scripts/node_modules");
     const modules = this.Modules || Object.keys(this.dependencies);
+    const run = [];
     for (let file of await fs.readdir(moduleDir).catch(() => [])) {
-      if (!modules.includes(file))
-        await fs.rm(path.join(moduleDir, file), {
-          recursive: true,
-          force: true
-        }).catch(() => { });
+      if (!modules.includes(file) && file !== "@mbler/mcx")
+        run.push(
+          fs
+            .rm(path.join(moduleDir, file), {
+              recursive: true,
+              force: true,
+            })
+            .catch(() => {}),
+        );
     }
+    await Promise.all(run);
   }
 
   async copyCompiledOnly(srcDir: string, destDir: string): Promise<void> {
     try {
       for (const ent of await fs.readdir(srcDir, {
-        withFileTypes: true
+        withFileTypes: true,
       })) {
         const srcFull = path.join(srcDir, ent.name);
         const destFull = path.join(destDir, ent.name);
         if (ent.isDirectory()) {
-          await fs.mkdir(destFull, {
-            recursive: true
-          }).catch(() => { });
+          await fs
+            .mkdir(destFull, {
+              recursive: true,
+            })
+            .catch(() => {});
           await this.copyCompiledOnly(srcFull, destFull);
         } else if (ent.isFile()) {
           const ext = path.extname(ent.name).toLowerCase();
           if ([".js", ".json"].includes(ext)) {
-            await fs.mkdir(path.dirname(destFull), {
-              recursive: true
-            }).catch(() => { });
+            await fs
+              .mkdir(path.dirname(destFull), {
+                recursive: true,
+              })
+              .catch(() => {});
             await fs.copyFile(srcFull, destFull).catch(() => {
               // 文件可能被占用，忽略单个错误
             });
@@ -241,7 +265,9 @@ export abstract class BaseBuild {
         }
       }
     } catch (err) {
-      LogNext(`ERR: ${err && (err as Error).stack ? (err as Error).stack : err}`);
+      LogNext(
+        `ERR: ${err && (err as Error).stack ? (err as Error).stack : err}`,
+      );
     }
   }
 
@@ -249,29 +275,31 @@ export abstract class BaseBuild {
     const list: string[] = [];
     try {
       for (const f of await fs.readdir(dir, {
-        withFileTypes: true
+        withFileTypes: true,
       })) {
         const full = path.join(dir, f.name);
         if (f.isDirectory()) {
           const sub = await this.getAllTsFiles(full);
           list.push(...sub);
-        } else if (f.isFile() && f.name.endsWith('.ts')) {
+        } else if (f.isFile() && f.name.endsWith(".ts")) {
           list.push(full);
         }
       }
-    } catch (err) { }
+    } catch (err) {}
     return list;
   }
 
   async writeFile(filePath: string, content: string | object): Promise<void> {
-
     try {
       await utils.waitGC();
       await fs.mkdir(path.dirname(filePath), {
-        recursive: true
+        recursive: true,
       });
-      const data = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
-      await fs.writeFile(filePath, data, 'utf-8');
+      const data =
+        typeof content === "string"
+          ? content
+          : JSON.stringify(content, null, 2);
+      await fs.writeFile(filePath, data, "utf-8");
     } catch (err) {
       LogNext(`WRITE FILE ERR: ${filePath}`);
       throw err;
