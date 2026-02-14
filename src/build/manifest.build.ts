@@ -82,7 +82,7 @@ export class ManiFest {
     if (!script) return;
     let entry = script.main || "index.js";
     // 如果是mcx，直接设为index.js，因为mcxLoad类会聚集mcx文件和其他文件将其编译输出到index.js
-    if (entry?.endsWith(".mcx") && script.lang === "mcx") entry = "index.js";
+    if (script.lang === "mcx") entry = "index.js";
     if (!isNonEmptyString(entry))
       throw new Error('Script main entry is missing or invalid');
     if (!manifest.dependencies) manifest.dependencies = [];

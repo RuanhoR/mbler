@@ -10,7 +10,7 @@ import {
 } from './../uuid/index.js';
 import minify from './../code-processor/index.js';
 import * as utils from './../utils/index.js';
-import getModule from './getModule.js';
+import getModule from './module.js';
 import includes from './../data/includes.json';
 import config from './build-g-config.json';
 import Clean from './../start/clean.js';

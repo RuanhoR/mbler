@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as utils from './../utils/index.js';
+import * as utils from '../utils/index.js';
 import { brotliCompress } from 'zlib';
 
 // 目录缓存

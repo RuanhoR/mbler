@@ -3,9 +3,7 @@ import * as path from 'path';
 import * as utils from '../utils/index.js';
 import imn from './c-handler-export';
 import { minify } from 'terser';
-import getModule from '../build/getModule.js';
-import { AnyCnameRecord } from 'dns';
-
+import getModule from '../build/module.js';
 interface ProcessOptions {
   modules?: string[];
   sourceDir: string;
