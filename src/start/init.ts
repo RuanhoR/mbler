@@ -72,6 +72,8 @@ class Init {
 
       if (e === "ts") {
         (packageer.dependencies as Record<string, string>)["@minecraft/server"] = mcVersionGeter.ToServer(mcVersion);
+      } else if (e == "mcx") {
+        (packageer.dependencies as Record<string, string>)["@mbler/mcx"] = "latest"
       }
     }
 

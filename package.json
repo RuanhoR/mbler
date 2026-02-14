@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.1.5-alpha",
+  "version": "0.1.5",
   "description": "一个针对Minecraft JavaScript API 的CLI工具，让你的附加包版本管理更简单",
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "@babel/parser": "7.28.5",
     "@babel/traverse": "7.28.5",
     "@babel/types": "7.28.6",
-    "@mbler/mcx-core": "0.0.2-beta.r2",
+    "@mbler/mcx-core": "0.0.2-beta.r3",
     "adm-zip": "0.5.16",
     "chokidar": "4.0.3",
     "dayjs": "1.11.18",
