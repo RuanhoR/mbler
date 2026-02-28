@@ -15,19 +15,19 @@ dependencies:
     specifier: 7.28.6
     version: 7.28.6
   '@mbler/mcx-core':
-    specifier: 0.0.3-dev.202602291200
-    version: 0.0.3-dev.202602291200
+    specifier: 0.0.3-alpha.r202406291200
+    version: 0.0.3-alpha.r202406291200
   '@rollup/plugin-commonjs':
-    specifier: ^29.0.0
+    specifier: 29.0.0
     version: 29.0.0(rollup@4.59.0)
   '@rollup/plugin-json':
-    specifier: ^6.1.0
+    specifier: 6.1.0
     version: 6.1.0(rollup@4.59.0)
   '@rollup/plugin-node-resolve':
-    specifier: ^16.0.3
+    specifier: 16.0.3
     version: 16.0.3(rollup@4.59.0)
   '@rollup/plugin-typescript':
-    specifier: ^12.3.0
+    specifier: 12.3.0
     version: 12.3.0(rollup@4.59.0)(typescript@5.9.3)
   adm-zip:
     specifier: 0.5.16
@@ -39,10 +39,10 @@ dependencies:
     specifier: 1.11.18
     version: 1.11.18
   npm-registry-fetch:
-    specifier: ^19.1.1
+    specifier: 19.1.1
     version: 19.1.1
   rollup:
-    specifier: ^4.59.0
+    specifier: 4.59.0
     version: 4.59.0
   terser:
     specifier: 5.44.0
@@ -65,7 +65,7 @@ devDependencies:
     specifier: 25.0.9
     version: 25.0.9
   '@types/npm-registry-fetch':
-    specifier: ^8.0.9
+    specifier: 8.0.9
     version: 8.0.9
   globals:
     specifier: 17.0.0
@@ -144,8 +144,8 @@ packages:
       '@jridgewell/sourcemap-codec': 1.5.5
     dev: false
 
-  /@mbler/mcx-core@0.0.3-dev.202602291200:
-    resolution: {integrity: sha512-xNBAUS4QQ7MhSDhLW+ruxxHkqRYe6H8vM8ulZ4DYJCrdu/37YeotGD+qiZtgJgNeyER1wrElFCXKVCWlnnALbg==}
+  /@mbler/mcx-core@0.0.3-alpha.r202406291200:
+    resolution: {integrity: sha512-2vJ1iRMRFTc44CLny4AT0QsvDzEVjzL0LP1jqYCFh1oZaLCQSJsY6XqRIY25bqa0uyaz1aejqqZ/0Q8AV9atKg==}
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5

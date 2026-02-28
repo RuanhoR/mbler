@@ -2,6 +2,7 @@ import * as path from "node:path";
 import * as fs from "node:fs";
 import config from "../config";
 import { json } from "npm-registry-fetch";
+import { compareVersion } from "../utils";
 export interface cacheValue {
   formal: string;
   beta: string;
@@ -38,16 +39,6 @@ export interface npmFetchData {
  * Compare two dotted version strings ("major.minor.patch").
  * Returns negative if a < b, positive if a > b, zero if equal.
  */
-function compareVersion(a: string, b: string): number {
-  const pa = a.split(".").map((x) => parseInt(x, 10) || 0);
-  const pb = b.split(".").map((x) => parseInt(x, 10) || 0);
-  for (let i = 0; i < 3; i++) {
-    const na = pa[i] || 0;
-    const nb = pb[i] || 0;
-    if (na !== nb) return na - nb;
-  }
-  return 0;
-}
 
 const exp = (function (): {
   refresh: () => Promise<void>;

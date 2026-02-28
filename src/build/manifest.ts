@@ -43,21 +43,25 @@ async function generateManifest(
     manifest.dependencies = [
       {
         module_name: "@minecraft/server",
-        version: (await Sapi.generateVersion(
-          "@minecraft/server",
-          config.mcVersion,
-          config.script?.UseBeta || false,
-        )).split("-")[0] as string, // only major.minor.patch, remove -beta or -rc
+        version: (
+          await Sapi.generateVersion(
+            "@minecraft/server",
+            config.mcVersion,
+            config.script?.UseBeta || false,
+          )
+        ).split("-")[0] as string, // only major.minor.patch, remove -beta or -rc
       },
     ];
     if (config.script.ui) {
       manifest.dependencies.push({
         module_name: "@minecraft/server-ui",
-        version: await Sapi.generateVersion(
-          "@minecraft/server-ui",
-          config.mcVersion,
-          config.script?.UseBeta || false,
-        ),
+        version: (
+          await Sapi.generateVersion(
+            "@minecraft/server-ui",
+            config.mcVersion,
+            config.script?.UseBeta || false,
+          )
+        ).split("-")[0] as string, // only major.minor.patch, remove -beta or -rc
       });
     }
   }
