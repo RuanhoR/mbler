@@ -18,14 +18,14 @@ git https://github.com/RuanhoR/mbler/`,
     h: "$help",
     work: "mbler [work/c] [?:相对或绝对路径]\n  - 没有输入路径：查询当前工作目录\n  - 输入路径：设置工作目录",
     c: "$work",
-    init: "mbler init\n  - 初始化当前工作目录，可使用 mbler work 指定工作目录或使用参数一次确定(例： mbler init -in ./)\n  - 将会询问选项以完成初始化"
+    init: "mbler init\n  - 初始化当前工作目录，可使用 mbler work 指定工作目录或使用参数一次确定(例： mbler init -in ./)\n  - 将会询问选项以完成初始化",
   },
   default: {
     unexpected: "不正确的命令，",
-    youis: "你是否想说: "
+    youis: "你是否想说: ",
   },
   workdir: {
     set: "[工作目录] 设置为: ",
-    nfound: "找不到输入文件夹(无法创建或不是文件夹)"
-  }
-} as language
+    nfound: "找不到输入文件夹(无法创建或不是文件夹)",
+  },
+} as language;

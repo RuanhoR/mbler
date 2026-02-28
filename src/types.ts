@@ -1,38 +1,38 @@
-export const LanguageNames = ["zh", "en"]
-export const cmdList = ["c", "work", "help", "h", "init"] as const
+export const LanguageNames = ["zh", "en"];
+export const cmdList = ["c", "work", "help", "h", "init"] as const;
 export interface language {
   description: string;
   help: {
-    [K in (typeof cmdList[number] | "cmds")]: string | readonly string[];
+    [K in (typeof cmdList)[number] | "cmds"]: string | readonly string[];
   };
   default: {
     unexpected: string;
     youis: string;
   };
   workdir: {
-    set: string,
-    nfound: string
-  }
+    set: string;
+    nfound: string;
+  };
 }
 export interface MblerConfigScript {
-  ui ?: boolean; // use minecraft module "@minecraft/server-ui"
+  ui?: boolean; // use minecraft module "@minecraft/server-ui"
   lang?: "ts" | "mcx" | "js"; // languare
-  main : string;  // main file point(start <project>/behavior), be like: index.js
-  UseBeta ?: boolean   // use beta minecraft api
+  main: string; // main file point(start <project>/behavior), be like: index.js
+  UseBeta?: boolean; // use beta minecraft api
 }
 export interface MblerConfigOutdir {
-  behavior ?: string  // behavior output dir, default: ./dist/dep
-  resources ?: string  // resources output dir, default: ./dist/res
-  dist : string  // build use "-dist" option to build to a mcaddon file.
+  behavior?: string; // behavior output dir, default: ./dist/dep
+  resources?: string; // resources output dir, default: ./dist/res
+  dist: string; // build use "-dist" option to build to a mcaddon file.
 }
 export interface MblerConfigData {
-  name: string;  // addon name
-  outdir ?: MblerConfigOutdir  // output
-  description: string;  // addon description
-  version: string;  // version, like be "0.0.1-beta"
-  mcVersion: string | string[];  // use mcVersion, be like "1.21.100"
-  script?: MblerConfigScript;  // sapi option
-  minify?: boolean;  // use minify
+  name: string; // addon name
+  outdir?: MblerConfigOutdir; // output
+  description: string; // addon description
+  version: string; // version, like be "0.0.1-beta"
+  mcVersion: string | string[]; // use mcVersion, be like "1.21.100"
+  script?: MblerConfigScript; // sapi option
+  minify?: boolean; // use minify
 }
 export const templateMblerConfig: MblerConfigData = {
   name: "demo",
@@ -40,16 +40,44 @@ export const templateMblerConfig: MblerConfigData = {
   version: "0.0.0",
   mcVersion: "1.21.100",
   script: {
-    main: ""
+    main: "",
   },
   minify: false,
   outdir: {
     behavior: "",
     resources: "",
-    dist: ""
-  }
-}
+    dist: "",
+  },
+};
 export interface CliParam {
   params: string[];
   opts: Record<string, string>;
+}
+export interface ManifestData {
+  format_version: number;
+  header: {
+    name: string;
+    description: string;
+    uuid: string;
+    version: number[];
+    min_engine_version: number[];
+  };
+  modules: Array<{
+    type: "script" | "data" | "resources";
+    uuid: string;
+    description?: string;
+    version: number[];
+    language?: string;
+    entry?: string;
+  }>;
+  dependencies?: Array<{
+    module_name: string;
+    version: string;
+  }>;
+  subpack?: Array<{
+    folder_name: string;
+    name: string;
+    memory_tier: number;
+  }>;
+  capabilities?: string[];
 }

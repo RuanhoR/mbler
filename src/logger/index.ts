@@ -1,34 +1,32 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import os from "node:os"
-import {
-  FileExsit
-} from "./../utils/index";
-const logFile = path.join(os.homedir(), ".cache/mbler/latest.log")
+import os from "node:os";
+import { FileExsit } from "./../utils/index";
+const logFile = path.join(os.homedir(), ".cache/mbler/latest.log");
 
-function _clean(promise: Promise < void > ): () => void {
+function _clean(promise: Promise<void>): () => void {
   return () => {
     Logger.run = Logger.run.filter((item: Promise<void>) => {
-      return item !== promise
+      return item !== promise;
     });
-  }
+  };
 }
 
 function writeLog(logContent: string): void {
   async function write() {
-    if (!await FileExsit(logFile)) {
+    if (!(await FileExsit(logFile))) {
       try {
         await fs.mkdir(path.dirname(logFile)).catch(() => void 0);
-        await fs.writeFile(logFile, "")
+        await fs.writeFile(logFile, "");
       } catch (err: any) {
         console.error("[logger] init error " + err.stack);
         process.exit(1);
       }
-    };
+    }
     await fs.appendFile(logFile, "\n" + logContent);
-  };
+  }
   const asy = write();
-  Logger.run.push(asy.then(_clean(asy)))
+  Logger.run.push(asy.then(_clean(asy)));
 }
 export default class Logger {
   // 写入日志池
@@ -39,7 +37,7 @@ export default class Logger {
     const logContent = [
       `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`,
       `[${t} ${tag}]`,
-      msg
+      msg,
     ].join(" ");
     writeLog(logContent);
   }
@@ -47,12 +45,12 @@ export default class Logger {
     Logger._b(tag, msg, "WARN");
   }
   public static e(tag: string, msg: string): void {
-    Logger._b(tag, msg, "ERROR")
+    Logger._b(tag, msg, "ERROR");
   }
   public static i(tag: string, msg: string): void {
-    Logger._b(tag, msg, "INFO")
+    Logger._b(tag, msg, "INFO");
   }
   public static d(tag: string, msg: string): void {
-    Logger._b(tag, msg, "DEBUG")
+    Logger._b(tag, msg, "DEBUG");
   }
 }

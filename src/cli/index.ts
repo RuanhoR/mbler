@@ -34,10 +34,7 @@ const main = (function (): () => Promise<void> {
     };
   }
 
-  function handlerHelp(
-    cliParam: CliParam,
-    _: string,
-  ): number {
+  function handlerHelp(cliParam: CliParam, _: string): number {
     if (!cliParam || !_) return 1;
     const seeCmd = cliParam.params[1] as string;
     if (!seeCmd) {
@@ -123,10 +120,7 @@ const main = (function (): () => Promise<void> {
     const cmdMap: Record<
       string,
       | undefined
-      | ((
-          cliParam: CliParam,
-          workDir: string,
-        ) => number | Promise<number>)
+      | ((cliParam: CliParam, workDir: string) => number | Promise<number>)
     > = {
       help: handlerHelp,
       h: handlerHelp,

@@ -1,11 +1,17 @@
+type includesGroup = Record<string, "file" | "directory" | "skip">;
 export const BuildConfig = {
-  ConfigFile: "mbler.config.json",
-  behavior: "behavior",
-  resources: "resources",
+  ConfigFile: "mbler.config.json" as const,
+  salt: {
+    header: "d61e721d-a2c9-4535-8054-0183bce24767",
+    sapi: "33e2c698-908f-45ab-8a9f-66018f8486ed",
+    module: "cbbacfa4-8b1e-4a9c-9cbd-7a0d2e5f0b3c",
+  } as const,
+  behavior: "behavior" as const,
+  resources: "resources" as const,
   includes: {
     public: {
       "pack_icon.png": "file",
-      "manifest.json": "file"
+      "manifest.json": "file",
     },
     resources: {
       "biomes_client.json": "file",
@@ -52,7 +58,7 @@ export const BuildConfig = {
       items: "directory",
       loot_tables: "directory",
       recipes: "directory",
-      scripts: "directory",
+      scripts: "skip",  // special handling
       spawn_rules: "directory",
       structures: "directory",
       texts: "directory",
@@ -62,5 +68,9 @@ export const BuildConfig = {
       "manifest_publish.json": "file",
       "signatures.json": "file",
     },
+  } as {
+    public: includesGroup;
+    behavior: includesGroup;
+    resources: includesGroup;
   },
-} as const;
+};
