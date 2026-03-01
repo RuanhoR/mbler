@@ -48,6 +48,14 @@ export function sleep(time: number): Promise<void> {
     setTimeout(resolve, time);
   });
 }
+/**
+ * Print a single-line message to stdout with a trailing newline.
+ * Exported here so other modules (for example `build`) do not need
+ * to import from `cli`, avoiding a circular dependency.
+ */
+export function showText(text: string) {
+  process.stdout.write(text + "\n");
+}
 export function stringToNumberArray(str: string): [number, number, number] {
   return str
     .split(".")

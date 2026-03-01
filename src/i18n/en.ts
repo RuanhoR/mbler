@@ -12,6 +12,10 @@ export default {
     work: "mbler [work/c] [?: path]\n  - No input path: see current work dir\n  - input path: set as  current dir",
     c: "$work",
     init: "mbler init\n  - Init current work dir, you can use `mbler work` command or use command param(like be： mbler init -in ./)",
+    build: "mbler build\n  - perform a build using the library API",
+    b: "$build",
+    watch: "mbler watch\n  - run build and enter watch mode; changes will trigger rebuilds",
+    w: "$watch",
   },
   default: {
     unexpected: "Not found this command，",

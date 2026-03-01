@@ -1,12 +1,12 @@
 import assert from "node:assert";
 import path from "node:path";
-import fs from "node:fs/promises";
 import { existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
-import Build, { build, watch } from "../../src/build";
-import { cli } from "../../src/cli";
-import i18n from "../../src/i18n";
-import { CliParam } from "../../src/types";
+// import from built distribution instead of source code
+import Build, { build, watch } from "../../dist/index.js";
+import { cli } from "../../dist/index.js";
+import i18n from "../../dist/index.js";
+import type { CliParam } from "../../dist/index.js";
 
 // helper to create a temporary minimal addon project
 async function createTempProject(): Promise<string> {

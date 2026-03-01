@@ -14,16 +14,27 @@ function _clean(promise: Promise<void>): () => void {
 
 function writeLog(logContent: string): void {
   async function write() {
-    if (!(await FileExsit(logFile))) {
-      try {
-        await fs.mkdir(path.dirname(logFile)).catch(() => void 0);
-        await fs.writeFile(logFile, "");
-      } catch (err: any) {
-        console.error("[logger] init error " + err.stack);
-        process.exit(1);
+    try {
+      const dir = path.dirname(logFile);
+      if (!(await FileExsit(dir))) {
+        // ensure the directory exists, root-to-leaf
+        await fs.mkdir(dir, { recursive: true }).catch(() => void 0);
       }
+      // if file does not exist, create it (touch)
+      if (!(await FileExsit(logFile))) {
+        await fs.writeFile(logFile, "");
+      }
+    } catch (err: any) {
+      // if we can't prepare the log file, output to stderr but don't crash
+      console.error("[logger] unable to prepare log file:", err);
+      return;
     }
-    await fs.appendFile(logFile, "\n" + logContent);
+
+    try {
+      await fs.appendFile(logFile, "\n" + logContent);
+    } catch (err: any) {
+      console.error("[logger] failed to append to log file:", err);
+    }
   }
   const asy = write();
   Logger.run.push(asy.then(_clean(asy)));

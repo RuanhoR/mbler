@@ -9,5 +9,8 @@
     "dev": "mbler dev",
     "build": "MBLER_BUILD_MODULE=dist mbler build",
     "dev-build": "MBLER_BUILD_MODULE=dev mbler build"
+  },
+  "devDependencies": {
+    "@minecraft/server": "^2.5.0"
   }
 }

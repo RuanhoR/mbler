@@ -5,6 +5,7 @@
   "version": "0.0.1",
   "script": {
     "main": "index.js",
+    "lang": "js",
     "ui": true,
     "dependencies": {
       "gameLib": "inner"

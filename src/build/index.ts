@@ -2,7 +2,7 @@ import path, { isAbsolute } from 'node:path'
 import type { CliParam, MblerConfigData } from '../types'
 import { FileExsit, join, ReadProjectMblerConfig, writeJSON } from '../utils'
 import Logger from '../logger'
-import { showText } from '../cli'
+import { showText } from '../utils'
 import * as fs from 'node:fs/promises'
 import { BuildConfig } from './config'
 import generateManifest from './manifest'
@@ -11,8 +11,9 @@ import jsonPlugin from '@rollup/plugin-json'
 import resolvePlugin from '@rollup/plugin-node-resolve'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import typescriptPlugin from '@rollup/plugin-typescript'
-import mcxCore from '@mbler/mcx-core'
+import mcxDef from '@mbler/mcx-core'
 import { watch as chokidarWatch } from 'chokidar'
+import minifyPlugin from '@rollup/plugin-terser'
 import { onEnd } from '../commander'
 class Build {
   currentConfig: MblerConfigData | null = null
@@ -38,10 +39,7 @@ class Build {
    * Returns the watcher handles once they are created so that callers
    * (for example tests) can clean them up later.
    */
-  public async watch(): Promise<{
-    rollup: rollup.RollupWatcher
-    chokidar: ReturnType<typeof chokidarWatch>
-  } | null> {
+  public async watch() {
     try {
       onEnd(() => {
         if (this.watchers) {
@@ -50,7 +48,6 @@ class Build {
         }
       })
       await this._watch()
-      return this.watchers
     } catch (e) {
       if (e instanceof Error) {
         Logger.e('Watcher', e.stack || e.message)
@@ -71,7 +68,9 @@ class Build {
       } else {
         Logger.e('Build', e + '')
       }
-      showText('MBLER__ERR__BUILD: ' + e + ' Log at ' + Logger.LogFile)
+      showText(
+        'MBLER__ERR__BUILD: ' + (e as Error).stack + ' Log at ' + Logger.LogFile
+      )
       this.resolve(1)
     }
   }
@@ -105,7 +104,7 @@ class Build {
       this.watchers = null
     }
   }
-  private rollupPlugin: rollup.Plugin | null = null
+  private rollupPlugin: rollup.Plugin[] | null = null
   public init: boolean = false
   /**
    * Which modules are present in the current project.
@@ -204,6 +203,7 @@ class Build {
       }),
       commonjsPlugin(),
     ]
+
     const moduleDir = path.join(this.baseBuildDir, 'node_modules')
     if (!(await FileExsit(moduleDir))) {
       throw new Error(
@@ -231,15 +231,35 @@ class Build {
         })
       )
     }
-    if (this.currentConfig.script?.lang == 'mcx') {
-      // 历史遗留的opt选项，后续可能会改掉
+    if (this.currentConfig.minify) {
       plugin.push(
-        mcxCore.plugin({
-          moduleDir: moduleDir,
-          main: main,
+        minifyPlugin({
+          format: {
+            comments: false,
+          },
+          compress: {
+            unused: true,
+          },
         })
       )
     }
+    if (this.currentConfig.script?.lang == 'mcx') {
+      // 历史遗留的opt选项，后续可能会改掉
+      try {
+        plugin.push(
+          mcxDef.plugin({
+            moduleDir: moduleDir,
+            main: main,
+          })
+        )
+      } catch (err) {
+        throw new Error(
+          `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`
+        )
+      }
+    }
+    // save plugin array for watcher re-use
+    this.rollupPlugin = plugin
     return await rollup.rollup({
       input: main,
       external: ['@minecraft/server', '@minecraft/server-ui'],
@@ -372,6 +392,7 @@ class Build {
       const oldConfig = this.currentConfig
       Logger.i('Watcher', 'detected mbler.config.json change, reload config')
       this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
+      this.loadData()
       if (
         this.isChange(oldConfig, this.currentConfig, [
           'name',
@@ -382,7 +403,7 @@ class Build {
       ) {
         await this.handlerManifest()
       }
-      if (this.isChange(oldConfig, this.currentConfig, ['script'])) {
+      if (this.isChange(oldConfig, this.currentConfig, ['script', 'outdir'])) {
         this.watchers.rollup.close()
         await this.createRollup()
         this.watchers.rollup = rollup.watch({
@@ -402,6 +423,41 @@ class Build {
             format: 'esm',
           },
         })
+      }
+    }
+    // if behavior or resources change, we can just copy the changed file instead of copy all files again.
+    if (isBehaviorChange || isResourcesChange) {
+      const handlerBP = async () => {
+        if (!this.srcDirs || !this.outdirs)
+          throw new Error(`[build addon]: can't first can this method`)
+        const relativePath = path.relative(this.srcDirs.behavior, filePath)
+        await fs.cp(
+          path.join(this.srcDirs.behavior, relativePath),
+          path.join(this.outdirs.behavior, relativePath),
+          {
+            recursive: true,
+            force: true,
+          }
+        )
+      }
+      const handlerRP = async () => {
+        if (!this.srcDirs || !this.outdirs)
+          throw new Error(`[build addon]: can't first can this method`)
+        const relativePath = path.relative(this.srcDirs.resources, filePath)
+        await fs.cp(
+          path.join(this.srcDirs.resources, relativePath),
+          path.join(this.outdirs.resources, relativePath),
+          {
+            recursive: true,
+            force: true,
+          }
+        )
+      }
+      if (isBehaviorChange) {
+        await handlerBP()
+      }
+      if (isResourcesChange) {
+        await handlerRP()
       }
     }
   }
@@ -524,8 +580,9 @@ class Build {
       if (!this.srcDirs || !this.outdirs)
         throw new Error("[build addon]: can't first can this method")
       for (const f of await fs.readdir(this.srcDirs.behavior)) {
-        const fType = await this.fileType(f)
-        const includeType = BuildConfig.includes.behavior[f]
+        const fType = await this.fileType(path.join(this.srcDirs.behavior, f))
+        const includeType =
+          BuildConfig.includes.behavior[f] || BuildConfig.includes.public[f]
         if (includeType == fType) {
           await fs.cp(
             path.join(this.srcDirs.behavior, f),
@@ -548,8 +605,9 @@ class Build {
       if (!this.srcDirs || !this.outdirs)
         throw new Error("[build addon]: can't first can this method")
       for (const f of await fs.readdir(this.srcDirs.resources)) {
-        const fType = await this.fileType(f)
-        const includeType = BuildConfig.includes.resources[f]
+        const fType = await this.fileType(path.join(this.srcDirs.resources, f))
+        const includeType =
+          BuildConfig.includes.resources[f] || BuildConfig.includes.public[f]
         if (includeType == fType) {
           await fs.cp(
             path.join(this.srcDirs.resources, f),
@@ -612,3 +670,4 @@ function watch(cliParam: CliParam, work: string): Promise<number> {
 }
 export { build, watch }
 export default Build
+export { Build }
