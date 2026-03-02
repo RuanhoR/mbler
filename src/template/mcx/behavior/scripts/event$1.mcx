@@ -1,0 +1,8 @@
+<Event @before tick=100>
+EntityHitBlock = default
+ <!-- 100 tick only use one --></Event>
+<script>
+export default function Handler(event) {
+  console.log(`${event.entity.typeId} break block `)
+}
+</script>

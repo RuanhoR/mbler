@@ -106,7 +106,7 @@ export class Input {
    * @param arr 选项数组
    * @returns 用户选中的选项内容（Promise<string>）
    */
-  static select(tip: string, arr: string[]): Promise<any> {
+  static select<_, T extends Array<any>>(tip: string, arr: T): Promise<T[number]> {
     let index: number = 0;
     let win = false;
 

@@ -1,10 +1,14 @@
 import path from 'node:path'
 import Sapi from '../build/sapi'
 import { CliParam, MblerConfigData } from '../types'
-import { input, showText, writeJSON } from '../utils'
+import { FileExsit, input, showText, writeJSON } from '../utils'
 import { Input } from '../commander'
 import { BuildConfig } from '../build/config'
-
+import { cp, readdir } from 'node:fs/promises'
+async function findTemplatedir() {
+  if (await FileExsit(path.join(import.meta.dirname, "../template"))) return path.join(import.meta.dirname, "../template")
+  if (await FileExsit(path.join(import.meta.dirname, "./template"))) return path.join(import.meta.dirname, "./template")
+}
 export async function initCommand(
   cliParam: CliParam,
   workdir: string
@@ -24,7 +28,7 @@ export async function initCommand(
     description: cmdParams[1] || (await input('Project description: ')),
     lang:
       cmdParams[2] ||
-      (await Input.select('Project language: ', ['ts', 'js', 'mcx'])),
+      (await Input.select('Project language: ', ['ts', 'js', 'mcx'] as const)),
     initDeependencies:
       (await input('Initialize dependencies? (y/n): ')) === 'y',
     useUI: (await input('Use UI? (y/n): ')) === 'y',
@@ -108,7 +112,24 @@ export async function initCommand(
   }
   await writeJSON(mblerConfigPath, mblerConfig)
   await writeJSON(packageJSONPath, packageJSON)
-
   // write template
+  const templatedir = await findTemplatedir();
+  if (!templatedir) {
+    showText("can't find template folder");
+    return 1;
+  }
+  const templateTagerFolder = path.join(templatedir, initOpts.lang)
+  if (!await FileExsit(templateTagerFolder)) {
+    showText("can't resolve template folder");
+    return 1;
+  }
+  const tasks: Promise<void>[] = []
+  for (const item of await readdir(templateTagerFolder)) {
+    tasks.push(cp(path.join(templateTagerFolder, item), path.join(workdir, item), {
+      recursive: true,
+      force: true
+    }));
+  }
+  await Promise.all(tasks)
   return 0
 }

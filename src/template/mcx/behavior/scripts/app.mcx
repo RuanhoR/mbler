@@ -1,0 +1,5 @@
+
+<script>
+import Event from "./event.mcx";
+Event.event.subscribe();
+</script>
