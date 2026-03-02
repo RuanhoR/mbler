@@ -43,7 +43,9 @@ const main = {
           }
         )
         for (const f of await readdir(path.resolve('dist'))) {
-          if (!['index.js', 'index.js.map', 'index.d.ts'].includes(f)) {
+          if (
+            !['template', 'index.js', 'index.js.map', 'index.d.ts'].includes(f)
+          ) {
             await rm(path.join(import.meta.dirname, './dist', f), {
               recursive: true,
               force: true,
