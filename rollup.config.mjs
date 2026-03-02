@@ -2,10 +2,12 @@ import resolve from '@rollup/plugin-node-resolve'
 import json from '@rollup/plugin-json'
 import ts from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { fstat, readFileSync, writeFileSync } from 'node:fs'
 import * as path from 'node:path'
-import { cp } from 'node:fs/promises'
+import { cp, readdir, rm } from 'node:fs/promises'
 import { execSync } from 'node:child_process'
+import Dts from 'rollup-plugin-dts'
+import minify from '@rollup/plugin-terser'
 writeFileSync(
   path.join(process.cwd(), 'src/version.ts'),
   `export default { commit: \`${execSync('git log -1').toString().replace(/`/g, '\\`')}\`, version: "${JSON.parse(readFileSync(path.join(import.meta.dirname, 'package.json')).toString()).version}" }`
@@ -24,7 +26,11 @@ const main = {
     resolve(),
     json(),
     commonjs(),
-    ts(),
+    ts({
+      tsconfig: path.resolve('tsconfig.json'),
+      declaration: false,
+      declarationDir: undefined,
+    }),
     {
       name: 'copyResources',
       async buildEnd() {
@@ -36,6 +42,14 @@ const main = {
             force: true,
           }
         )
+        for (const f of await readdir(path.resolve('dist'))) {
+          if (!['index.js', 'index.js.map', 'index.d.ts'].includes(f)) {
+            await rm(path.join(import.meta.dirname, './dist', f), {
+              recursive: true,
+              force: true,
+            })
+          }
+        }
       },
     },
   ],
@@ -49,4 +63,20 @@ const main = {
       )
     : [],
 }
-export default [main]
+if (process.env.BUILD_MODULE == 'release') {
+  main.plugins.push(minify())
+}
+const dts = {
+  input: 'src/index.ts',
+  output: [
+    {
+      file: 'dist/index.d.ts',
+    },
+  ],
+  plugins: [
+    Dts({
+      tsconfig: path.resolve('tsconfig.json'),
+    }),
+  ],
+}
+export default [main, dts]

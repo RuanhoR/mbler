@@ -1,47 +1,69 @@
 import path from 'node:path'
 import Sapi from '../build/sapi'
 import { CliParam, MblerConfigData } from '../types'
-import { FileExsit, input, showText, writeJSON } from '../utils'
+import {
+  FileExsit,
+  input,
+  isVaildVersion,
+  runCommand,
+  showText,
+  writeJSON,
+} from '../utils'
 import { Input } from '../commander'
 import { BuildConfig } from '../build/config'
 import { cp, readdir } from 'node:fs/promises'
+import exp from '../i18n'
+async function isInit(dir: string) {
+  return (await Promise.all(
+    [BuildConfig.ConfigFile, "package.json", "behavior"].map(
+      (item) => {
+        return FileExsit(path.join(dir, item));
+      }
+    )
+  )).every((value: boolean) => {
+    return value;
+  })
+}
 async function findTemplatedir() {
-  if (await FileExsit(path.join(import.meta.dirname, "../template"))) return path.join(import.meta.dirname, "../template")
-  if (await FileExsit(path.join(import.meta.dirname, "./template"))) return path.join(import.meta.dirname, "./template")
+  if (await FileExsit(path.join(__dirname, '../template')))
+    return path.join(__dirname, '../template')
+  if (await FileExsit(path.join(__dirname, './template')))
+    return path.join(__dirname, './template')
 }
 export async function initCommand(
   cliParam: CliParam,
   workdir: string
 ): Promise<number> {
-  const cmdParams = cliParam.params.slice(1)
-  const initOpts: {
-    name: string
-    description: string
-    lang: string
-    initDeependencies: boolean
-    useUI: boolean
-    useGIT: boolean
-    useBetaApi: boolean
-    mcVersion: string
-  } = {
-    name: cmdParams[0] || (await input('Project name: ')),
-    description: cmdParams[1] || (await input('Project description: ')),
+  const cmdParams = cliParam.params.slice(1);
+  if (await isInit(workdir)) {
+    return 0;
+  }
+  const initOpts = {
+    name: cmdParams[0] || (await input(exp.init.name)),
+    description: cmdParams[1] || (await input(exp.init.description)),
     lang:
       cmdParams[2] ||
-      (await Input.select('Project language: ', ['ts', 'js', 'mcx'] as const)),
-    initDeependencies:
-      (await input('Initialize dependencies? (y/n): ')) === 'y',
-    useUI: (await input('Use UI? (y/n): ')) === 'y',
-    useGIT: (await input('Initialize GIT repository? (y/n): ')) === 'y',
-    useBetaApi: (await input('Use beta API? (y/n): ')) === 'y',
-    mcVersion: await input('Minecraft version(be like: x.x.x): '),
+      (await Input.select(exp.init.lang, ['ts', 'js', 'mcx'] as const)),
+    initDeependencies: await Input.select(exp.init.initDes, [
+      'no',
+      'pnpm',
+      'npm',
+    ] as const),
+    useUI: (await input(exp.init.useUI)) === 'y',
+    useGIT: (await input(exp.init.useGIT)) === 'y',
+    useBetaApi: (await input(exp.init.betaApi)) === 'y',
+    mcVersion: await input(exp.init.mcVersion),
   }
   if (!initOpts.name) {
-    showText('Project name is required.')
+    showText(exp.init.noName)
     return 1
   }
   if (!initOpts.lang) {
-    showText('Project language is required.')
+    showText(exp.init.noLanguare)
+    return 1
+  }
+  if (!initOpts.mcVersion || !isVaildVersion(initOpts.mcVersion)) {
+    showText(exp.init.noMCVersion)
     return 1
   }
   const mblerConfig: MblerConfigData = {
@@ -113,23 +135,38 @@ export async function initCommand(
   await writeJSON(mblerConfigPath, mblerConfig)
   await writeJSON(packageJSONPath, packageJSON)
   // write template
-  const templatedir = await findTemplatedir();
+  const templatedir = await findTemplatedir()
   if (!templatedir) {
-    showText("can't find template folder");
-    return 1;
+    showText("can't find template folder")
+    return 1
   }
   const templateTagerFolder = path.join(templatedir, initOpts.lang)
-  if (!await FileExsit(templateTagerFolder)) {
-    showText("can't resolve template folder");
-    return 1;
+  if (!(await FileExsit(templateTagerFolder))) {
+    showText("can't resolve template folder")
+    return 1
   }
-  const tasks: Promise<void>[] = []
+  const tasks: Promise<void | string>[] = []
   for (const item of await readdir(templateTagerFolder)) {
-    tasks.push(cp(path.join(templateTagerFolder, item), path.join(workdir, item), {
-      recursive: true,
-      force: true
-    }));
+    tasks.push(
+      cp(path.join(templateTagerFolder, item), path.join(workdir, item), {
+        recursive: true,
+        force: true,
+      })
+    )
   }
   await Promise.all(tasks)
+  tasks.length = 0
+  if (initOpts.initDeependencies !== 'no') {
+    tasks.push(
+      runCommand([initOpts.initDeependencies, 'install'], workdir, 'pipe')
+    )
+  }
+  if (initOpts.useGIT) {
+    tasks.push(
+      runCommand(['git', 'init', '-b', 'main'], workdir, 'pipe')
+    )
+  }
+  await Promise.all(tasks)
+  tasks.length = 0
   return 0
 }

@@ -31,11 +31,11 @@
     "test": "pnpm build && cd __test__ && pnpm test"
   },
   "dependencies": {
-    "@rollup/plugin-terser": "0.4.4",
     "@mbler/mcx-core": "0.0.3-alpha.r202603291200",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",
+    "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "12.3.0",
     "adm-zip": "0.5.16",
     "chokidar": "4.0.3",
@@ -65,6 +65,7 @@
     "@types/node": "25.0.9",
     "@types/npm-registry-fetch": "8.0.9",
     "globals": "17.0.0",
+    "rollup-plugin-dts": "^6.3.0",
     "tslib": "^2.8.1"
   }
 }

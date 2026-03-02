@@ -25,6 +25,19 @@ git https://github.com/RuanhoR/mbler/`,
     w: "$watch",
     version: "mbler version - 版本管理命令\n- 无参数：显示当前版本和提交哈希\n- --show=<commit|version>：筛选显示内容\n- <新版本号>：更新package.json和配置文件的版本"
   },
+  init: {
+    useUI: '使用UI模块? (y/n): ',
+    useGIT: '初始化GIT仓库? (y/n): ',
+    name: '项目名称: ',
+    description: "项目描述: ",
+    initDes: "初始化依赖? (y/n): ",
+    lang: "选择项目语言： ",
+    betaApi: "使用Beta Api? (y/n): ",
+    mcVersion: "项目使用的mc版本(x.x.x): ",
+    noLanguare: "没有输入项目语言，这是必要的",
+    noName: "没有项目名称，这是必要的",
+    noMCVersion: "输入的 '支持的mc版本' 格式不对"
+  },
   default: {
     unexpected: "不正确的命令，",
     youis: "你是否想说: ",

@@ -4,6 +4,7 @@ import { MblerConfigData, npmFetchData, templateMblerConfig } from '../types'
 import { BuildConfig } from '../build/config'
 import { Input } from '../commander'
 import { json } from 'npm-registry-fetch'
+import { spawn } from 'node:child_process'
 export async function FileExsit(file: string): Promise<boolean> {
   try {
     const f = await fs.stat(file)
@@ -150,4 +151,29 @@ export function isVaildVersion(version: string): boolean {
   if (!split[0]) return false;
   if ((split[0] as string).split(".").map(Number).filter(i => !Number.isNaN(i)).length !== 3) return false
   return true;
+}
+export function runCommand(param: string[], cwd: string, stdio: "ignore" | "pipe"): Promise<string> {
+  let resolve: (data: string) => void;
+  let data = "";
+  const promise = new Promise<string>((r) => resolve = r);
+  const p = spawn(param[0] as string, param.slice(1), {
+    cwd: cwd,
+    shell: false,
+    stdio: stdio,
+    timeout: 1000 * 60 * 10
+  })
+  p.on("error", (err) => {
+    resolve(data + "(code: error)")
+  });
+  p.on("data", (...args) => {
+    data += args.join("");
+  })
+  p.on("exit", (code) => {
+    if (!code) {
+      resolve(`${data}(code: ${code})`);
+    } else {
+      resolve(data)
+    }
+  })
+  return promise;
 }

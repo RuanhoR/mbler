@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
+    "noEmit": true,
     "outDir": "./dist",
     "module": "esnext",
     "target": "esnext",
@@ -8,7 +9,7 @@
     "types": ["node"],
     "sourceMap": true,
     "declaration": true,
-    "declarationDir": "./dist/",
+    "declarationDir": "./dist/types",
     "declarationMap": false,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,

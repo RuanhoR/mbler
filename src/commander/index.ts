@@ -1,5 +1,3 @@
-// input-handler.ts
-
 import * as readline from "readline";
 
 // 启用 raw mode 和键盘事件
@@ -156,7 +154,7 @@ export class Input {
   }
 }
 // 监听键盘输入事件
-process.stdin.on("keypress", (str: string, key: any) => {
+process.stdin.on("keypress", (str: string, key) => {
   const rawKeyName = key?.name || "";
   const ctrl = Boolean(key?.ctrl);
   const alt = Boolean(key?.alt);
