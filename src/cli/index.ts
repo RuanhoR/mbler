@@ -6,6 +6,8 @@ import { build, watch } from '../build'
 import { showText } from '../utils'
 import path from 'node:path'
 import WorkDirManage from './WorkDirManage'
+import { initCommand } from './init'
+import { handlerVersion } from './version'
 // `showText` moved to `utils` to avoid circular dependency with `build`.
 const main = (function (): () => Promise<void> {
   let currentWDManage: WorkDirManage
@@ -143,6 +145,8 @@ const main = (function (): () => Promise<void> {
       b: handlerBuild,
       watch: handlerWatch,
       w: handlerWatch,
+      init: initCommand,
+      version: handlerVersion
     }
     const cmd = cliParam.params[0]
     if (cliParam.opts.cwp) {

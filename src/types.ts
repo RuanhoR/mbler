@@ -1,5 +1,5 @@
 export const LanguageNames = ["zh", "en"];
-export const cmdList = ["c", "work", "help", "h", "init"] as const;
+export const cmdList = ["c", "work", "help", "h", "init", "version"] as const;
 export interface language {
   description: string;
   help: {
@@ -80,4 +80,31 @@ export interface ManifestData {
     memory_tier: number;
   }>;
   capabilities?: string[];
+}
+export interface npmFetchData {
+  name: string;
+  "dist-tags": Record<string, string>;
+  versions: Record<
+    string,
+    {
+      maintainers: {
+        name: string;
+        mail: string;
+      }[];
+      dist: {
+        shasum: string;
+        tarball: string;
+      };
+      author: {
+        name: string;
+        mail: string;
+      };
+      license: string;
+      version: string;
+    }
+  >;
+  readme: string;
+  keywords: string[];
+  homepage: string;
+  time: Record<string, string>;
 }

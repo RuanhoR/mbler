@@ -23,6 +23,7 @@ git https://github.com/RuanhoR/mbler/`,
     b: "$build",
     watch: "mbler watch\n  - 启动构建并开启监视模式，文件变化会自动重新构建",
     w: "$watch",
+    version: "mbler version - 版本管理命令\n- 无参数：显示当前版本和提交哈希\n- --show=<commit|version>：筛选显示内容\n- <新版本号>：更新package.json和配置文件的版本"
   },
   default: {
     unexpected: "不正确的命令，",

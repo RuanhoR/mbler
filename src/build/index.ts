@@ -11,7 +11,7 @@ import jsonPlugin from '@rollup/plugin-json'
 import resolvePlugin from '@rollup/plugin-node-resolve'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import typescriptPlugin from '@rollup/plugin-typescript'
-import mcxDef from '@mbler/mcx-core'
+import * as mcxDef from '@mbler/mcx-core'
 import { watch as chokidarWatch } from 'chokidar'
 import minifyPlugin from '@rollup/plugin-terser'
 import { onEnd } from '../commander'
@@ -30,7 +30,8 @@ class Build {
   constructor(
     opts: Record<string, string>,
     private baseBuildDir: string,
-    private resolve: (a: number) => void
+    private resolve: (a: number) => void,
+    private isWatch: boolean = false
   ) {}
   /**
    * Start the watch mode.
@@ -171,8 +172,9 @@ class Build {
           this.currentConfig.script?.main
         ),
         format: 'esm',
+        sourcemap: true,
       })
-    this.resolve(0)
+    if (!this.isWatch) this.resolve(0)
   }
   /**
    * Create and return a Rollup build instance configured for the
@@ -220,7 +222,8 @@ class Build {
       plugin.push(
         typescriptPlugin({
           tsconfig: tsconfigPath,
-          rootDir: this.srcDirs.behavior,
+          rootDir: path.join(this.srcDirs.behavior, 'scripts'),
+          outDir: path.join(this.outdirs.behavior, 'scripts'),
           include: [path.join(this.srcDirs.behavior, 'scripts/**/*')],
           exclude: [
             moduleDir,
@@ -521,11 +524,11 @@ class Build {
           const content = await fs.readFile(filePath, 'utf-8')
           const json = JSON.parse(content)
           otherManifestOption.behavior = json
-          await handlerBP()
         } catch (err) {
           Logger.w('Build', 'invalid manifest.json in behavior')
         }
       }
+      await handlerBP()
     }
     if (this.module == 'resources' || this.module == 'all') {
       const filePath = path.join(this.srcDirs.resources, 'manifest.json')
@@ -534,11 +537,11 @@ class Build {
           const content = await fs.readFile(filePath, 'utf-8')
           const json = JSON.parse(content)
           otherManifestOption.resources = json
-          await handlerRP()
         } catch (err) {
           Logger.w('Build', 'invalid manifest.json in resources')
         }
       }
+      await handlerRP()
     }
   }
 
@@ -655,7 +658,7 @@ function build(cliParam: CliParam, work: string): Promise<number> {
 function watch(cliParam: CliParam, work: string): Promise<number> {
   return new Promise<number>((resolve, reject) => {
     try {
-      const build = new Build(cliParam.opts, work, resolve)
+      const build = new Build(cliParam.opts, work, resolve, true)
       build.start().then(() => {
         build.watch()
       })

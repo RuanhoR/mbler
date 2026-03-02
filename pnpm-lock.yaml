@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@mbler/mcx-core':
-    specifier: 0.0.3-alpha.r202406291200
-    version: 0.0.3-alpha.r202406291200
+    specifier: 0.0.3-alpha.r202603291200
+    version: 0.0.3-alpha.r202603291200
   '@rollup/plugin-commonjs':
     specifier: 29.0.0
     version: 29.0.0(rollup@4.59.0)
@@ -141,8 +141,8 @@ packages:
       '@jridgewell/sourcemap-codec': 1.5.5
     dev: false
 
-  /@mbler/mcx-core@0.0.3-alpha.r202406291200:
-    resolution: {integrity: sha512-2vJ1iRMRFTc44CLny4AT0QsvDzEVjzL0LP1jqYCFh1oZaLCQSJsY6XqRIY25bqa0uyaz1aejqqZ/0Q8AV9atKg==}
+  /@mbler/mcx-core@0.0.3-alpha.r202603291200:
+    resolution: {integrity: sha512-iWbD7uDJk59M6pO8r6zOiuipw1coszfuM4cW6frXQu21NBnkLinf11lDxzw1Aove8S3PU23b0VUfSyC94UR2Hw==}
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5

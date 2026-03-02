@@ -16,6 +16,7 @@ export default {
     b: "$build",
     watch: "mbler watch\n  - run build and enter watch mode; changes will trigger rebuilds",
     w: "$watch",
+    version: "mbler version\n - Version control command\n- No args: Shows version + commit hash\n- --show=<commit|version>: Filters output\n- <new_version>: Updates version in both package.json and config file"
   },
   default: {
     unexpected: "Not found this command，",

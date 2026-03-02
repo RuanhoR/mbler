@@ -3,37 +3,12 @@ import * as fs from "node:fs";
 import config from "../config";
 import { json } from "npm-registry-fetch";
 import { compareVersion } from "../utils";
+import { npmFetchData } from "../types";
 export interface cacheValue {
   formal: string;
   beta: string;
 }
-export interface npmFetchData {
-  name: string;
-  "dist-tags": Record<string, string>;
-  versions: Record<
-    string,
-    {
-      maintainers: {
-        name: string;
-        mail: string;
-      }[];
-      dist: {
-        shasum: string;
-        tarball: string;
-      };
-      author: {
-        name: string;
-        mail: string;
-      };
-      license: string;
-      version: string;
-    }
-  >;
-  readme: string;
-  keywords: string[];
-  homepage: string;
-  time: Record<string, string>;
-}
+
 
 /**
  * Compare two dotted version strings ("major.minor.patch").
