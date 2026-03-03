@@ -1,5 +1,5 @@
 export const LanguageNames = ['zh', 'en']
-export const cmdList = ['c', 'work', 'help', 'h', 'init', 'version'] as const
+export const cmdList = ['c', 'work', 'help', 'h', 'init', 'version', 'build', 'watch', 'lang'] as const
 export interface language {
   description: string
   help: {

@@ -54,14 +54,12 @@ interface lang extends language {
     set: (newLang: (typeof LanguageNames)[number]) => void;
   };
 }
-let exp: lang = {
-  ...ZhLang,
-  __internal: {} as any,
-};
+const lang = new Lang();
+let i18n: lang = {} as any
 async function Export(lang: Lang) {
   const obj = await lang.get();
   // 用原型来让导入后切换语言不需要再次导入，相同引用
-  Object.setPrototypeOf(exp, {
+  Object.setPrototypeOf(i18n, {
     ...obj,
     __internal: {
       class: lang,
@@ -72,7 +70,7 @@ async function Export(lang: Lang) {
     },
   });
 }
-const lang = new Lang();
+
 lang.init();
 Export(lang);
-export default exp;
+export default i18n;

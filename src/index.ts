@@ -1,5 +1,11 @@
 export { cli } from "./cli";
-export * from "./types";
-export * from "./commander";
-export * from "./i18n";
-export * from "./build";
+import * as Types from "./types";
+import * as commander from "./commander";
+import * as i18n from "./i18n"
+import * as Build from "./build"
+export {
+  Types,
+  commander,
+  i18n,
+  Build
+}

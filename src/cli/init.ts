@@ -14,14 +14,14 @@ import { BuildConfig } from '../build/config'
 import { cp, readdir } from 'node:fs/promises'
 import exp from '../i18n'
 async function isInit(dir: string) {
-  return (await Promise.all(
-    [BuildConfig.ConfigFile, "package.json", "behavior"].map(
-      (item) => {
-        return FileExsit(path.join(dir, item));
-      }
+  return (
+    await Promise.all(
+      [BuildConfig.ConfigFile, 'package.json', 'behavior'].map((item) => {
+        return FileExsit(path.join(dir, item))
+      })
     )
-  )).every((value: boolean) => {
-    return value;
+  ).every((value: boolean) => {
+    return value
   })
 }
 async function findTemplatedir() {
@@ -34,16 +34,19 @@ export async function initCommand(
   cliParam: CliParam,
   workdir: string
 ): Promise<number> {
-  const cmdParams = cliParam.params.slice(1);
+  await Sapi.refresh()
+  const cmdParams = cliParam.params.slice(1)
   if (await isInit(workdir)) {
-    return 0;
+    return 0
   }
   const initOpts = {
     name: cmdParams[0] || (await input(exp.init.name)),
     description: cmdParams[1] || (await input(exp.init.description)),
-    lang:
-      cmdParams[2] ||
-      (await Input.select(exp.init.lang, ['ts', 'js', 'mcx'] as const)),
+    lang: (cmdParams[2] ||
+      (await Input.select(exp.init.lang, ['ts', 'js', 'mcx'] as const))) as
+      | 'js'
+      | 'mcx'
+      | 'ts',
     initDeependencies: await Input.select(exp.init.initDes, [
       'no',
       'pnpm',
@@ -71,6 +74,7 @@ export async function initCommand(
     description: initOpts.description,
     version: '0.0.0',
     script: {
+      lang: initOpts.lang,
       main: 'index.js',
       ui: initOpts.useUI,
       UseBeta: initOpts.useBetaApi,
@@ -83,8 +87,10 @@ export async function initCommand(
     version: '0.0.0',
     description: initOpts.description,
     scripts: {
-      build: 'mbler build',
-      dev: 'mbler watch',
+      build: 'BUILD_MODULE=release mbler build',
+      'dev:build': 'mbler build',
+      install: 'pnpm i -g mbler',
+      watch: 'mbler watch',
     },
     devDependencies: {
       '@minecraft/server': await Sapi.generateVersion(
@@ -162,9 +168,7 @@ export async function initCommand(
     )
   }
   if (initOpts.useGIT) {
-    tasks.push(
-      runCommand(['git', 'init', '-b', 'main'], workdir, 'pipe')
-    )
+    tasks.push(runCommand(['git', 'init', '-b', 'main'], workdir, 'pipe'))
   }
   await Promise.all(tasks)
   tasks.length = 0

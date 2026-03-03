@@ -1,38 +1,38 @@
-import path, { isAbsolute } from 'node:path'
-import type { CliParam, MblerConfigData } from '../types'
-import { FileExsit, join, ReadProjectMblerConfig, writeJSON } from '../utils'
-import Logger from '../logger'
-import { showText } from '../utils'
-import * as fs from 'node:fs/promises'
-import { BuildConfig } from './config'
-import generateManifest from './manifest'
-import * as rollup from 'rollup'
+import * as mcxDef from '@mbler/mcx-core'
+import commonjsPlugin from '@rollup/plugin-commonjs'
 import jsonPlugin from '@rollup/plugin-json'
 import resolvePlugin from '@rollup/plugin-node-resolve'
-import commonjsPlugin from '@rollup/plugin-commonjs'
-import typescriptPlugin from '@rollup/plugin-typescript'
-import * as mcxDef from '@mbler/mcx-core'
-import { watch as chokidarWatch } from 'chokidar'
 import minifyPlugin from '@rollup/plugin-terser'
+import typescriptPlugin from '@rollup/plugin-typescript'
+import { watch as chokidarWatch } from 'chokidar'
+import * as fs from 'node:fs/promises'
+import path, { isAbsolute } from 'node:path'
+import * as rollup from 'rollup'
 import { onEnd } from '../commander'
+import Logger from '../logger'
+import type { CliParam, MblerConfigData } from '../types'
+import { FileExsit, join, ReadProjectMblerConfig, showText, writeJSON } from '../utils'
+import { BuildConfig } from './config'
+import generateManifest from './manifest'
+import { generateRelease } from './release'
 class Build {
   currentConfig: MblerConfigData | null = null
   srcDirs:
     | {
-        [key in 'behavior' | 'resources']: string
-      }
+      [key in 'behavior' | 'resources']: string
+    }
     | null = null
   outdirs:
     | {
-        [key in 'behavior' | 'resources' | 'dist']: string
-      }
+      [key in 'behavior' | 'resources' | 'dist']: string
+    }
     | null = null
   constructor(
     opts: Record<string, string>,
     private baseBuildDir: string,
     private resolve: (a: number) => void,
     private isWatch: boolean = false
-  ) {}
+  ) { }
   /**
    * Start the watch mode.
    * This will perform an initial build (if not already done) and then
@@ -60,6 +60,7 @@ class Build {
       return null
     }
   }
+
   public async start() {
     try {
       return await this.build()
@@ -174,6 +175,7 @@ class Build {
         format: 'esm',
         sourcemap: true,
       })
+    await generateRelease(this);
     if (!this.isWatch) this.resolve(0)
   }
   /**
@@ -364,9 +366,9 @@ class Build {
         Logger.e('Watcher', `rollup error: ${event.error.stack || event.error}`)
         showText(
           'MBLER__ERR__ROLLUP: ' +
-            (event.error.stack || event.error) +
-            ' Log at ' +
-            Logger.LogFile
+          (event.error.stack || event.error) +
+          ' Log at ' +
+          Logger.LogFile
         )
       } else if (event.code === 'END') {
         Logger.i('Watcher', `rebuild success`)

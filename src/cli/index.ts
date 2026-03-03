@@ -8,6 +8,7 @@ import path from 'node:path'
 import WorkDirManage from './WorkDirManage'
 import { initCommand } from './init'
 import { handlerVersion } from './version'
+import { langCommand } from './lang'
 // `showText` moved to `utils` to avoid circular dependency with `build`.
 const main = (function (): () => Promise<void> {
   let currentWDManage: WorkDirManage
@@ -133,7 +134,7 @@ const main = (function (): () => Promise<void> {
     }
 
     const cmdMap: Record<
-      string,
+      typeof cmdList[number],
       | undefined
       | ((cliParam: CliParam, workDir: string) => number | Promise<number>)
     > = {
@@ -142,11 +143,10 @@ const main = (function (): () => Promise<void> {
       work: handlerWorkDirCommand,
       c: handlerWorkDirCommand,
       build: handlerBuild,
-      b: handlerBuild,
       watch: handlerWatch,
-      w: handlerWatch,
       init: initCommand,
-      version: handlerVersion
+      version: handlerVersion,
+      lang: langCommand
     }
     const cmd = cliParam.params[0]
     if (cliParam.opts.cwp) {
