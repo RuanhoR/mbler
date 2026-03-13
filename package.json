@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.1.8",
+  "version": "0.1.9-alpha.r2026031302",
   "description": "一个针对Minecraft JavaScript API 的CLI工具，让你的附加包版本管理更简单",
   "repository": {
     "type": "git",
@@ -31,7 +31,7 @@
     "test": "pnpm build && cd __test__ && pnpm test"
   },
   "dependencies": {
-    "@mbler/mcx-core": "0.0.3-alpha.r20260312",
+    "@mbler/mcx-core": "0.0.3-beta",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",

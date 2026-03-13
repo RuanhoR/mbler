@@ -59,10 +59,10 @@ const main = {
     readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
   ).dependencies
     ? Object.keys(
-        JSON.parse(
-          readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
-        ).dependencies
-      )
+      JSON.parse(
+        readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
+      ).dependencies
+    )
     : [],
 }
 if (process.env.BUILD_MODULE == 'release') {
