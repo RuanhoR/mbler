@@ -110,19 +110,18 @@ export async function initCommand(
   }
   const tsconfig = {
     compilerOptions: {
-      module: 'nodenext',
+      module: 'esnext',
       noEmit: true,
-      target: 'esnext',
-      lib: ['esnext'],
+      target: 'es2022',
       types: [],
       sourceMap: true,
-      declaration: true,
+      declaration: false,
       declarationMap: false,
       noUncheckedIndexedAccess: true,
       exactOptionalPropertyTypes: true,
       allowJs: true,
       strict: true,
-      moduleResolution: 'nodenext',
+      moduleResolution: 'bundler',
       verbatimModuleSyntax: false,
       isolatedModules: true,
       noUncheckedSideEffectImports: true,
