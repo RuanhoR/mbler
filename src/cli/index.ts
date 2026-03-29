@@ -74,6 +74,24 @@ const main = (function (): () => Promise<void> {
     return 0
   }
 
+  async function handlerSetWorkDirCommand(
+    cliParam: CliParam,
+    _: string
+  ): Promise<number> {
+    if (!currentWDManage) return 0
+    const param = cliParam.params[1] as string | undefined
+    if (param === 'off') {
+      await currentWDManage.setDisabled(true)
+      showText(i18n.workdir.disabled)
+    } else if (param === 'on') {
+      await currentWDManage.setDisabled(false)
+      showText(i18n.workdir.enabled)
+    } else {
+      showText(i18n.workdir.invalidParam)
+    }
+    return 0
+  }
+
   function defaultCommand(commandcc: string): void {
     console.log(`\x1b[31m${i18n.default.unexpected}: ${commandcc}\x1b[0m`)
     const didvalue = cmdList
@@ -146,7 +164,8 @@ const main = (function (): () => Promise<void> {
       watch: handlerWatch,
       init: initCommand,
       version: handlerVersion,
-      lang: langCommand
+      lang: langCommand,
+      'set-work-dir': handlerSetWorkDirCommand
     }
     const cmd = cliParam.params[0]
     if (cliParam.opts.cwp) {

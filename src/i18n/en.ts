@@ -19,6 +19,7 @@ export default {
     lang: 'mbler lang [?:languare]\n- No args: show current languare\n- languare = "zh” | “en": set languare',
     version:
       'mbler version\n - Version control command\n- No args: Shows version + commit hash\n- --show=<commit|version>: Filters output\n- <new_version>: Updates version in both package.json and config file',
+    'set-work-dir': "mbler set-work-dir <on|off>\n  - on: Enable work dir feature\n  - off: Disable work dir feature, use process.cwd() directly"
   },
   init: {
     useUI: 'Use UI? (y/n): ',
@@ -40,5 +41,8 @@ export default {
   workdir: {
     set: '[path to]: ',
     nfound: "not found this dir(can't create or not directory)",
+    disabled: "Work dir disabled, will use current directory",
+    enabled: "Work dir enabled",
+    invalidParam: "Invalid parameter, use on or off",
   },
 } as language

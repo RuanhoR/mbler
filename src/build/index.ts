@@ -15,6 +15,7 @@ import { FileExsit, join, ReadProjectMblerConfig, showText, writeJSON } from '..
 import { BuildConfig } from './config'
 import generateManifest from './manifest'
 import { generateRelease } from './release'
+import runTSC from './plugin-mcx-tsc'
 class Build {
   currentConfig: MblerConfigData | null = null
   srcDirs:
@@ -676,3 +677,6 @@ function watch(cliParam: CliParam, work: string): Promise<number> {
 export { build, watch }
 export default Build
 export { Build }
+export {
+  default as McxTsc
+} from "./plugin-mcx-tsc"

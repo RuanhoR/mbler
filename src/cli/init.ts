@@ -87,7 +87,7 @@ export async function initCommand(
     version: '0.0.0',
     description: initOpts.description,
     scripts: {
-      build: 'BUILD_MODULE=release mbler build',
+      build: 'mcx-tsc && mbler build',
       'dev:build': 'mbler build',
       install: 'pnpm i -g mbler',
       watch: 'mbler watch',

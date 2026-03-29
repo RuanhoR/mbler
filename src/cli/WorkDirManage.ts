@@ -15,9 +15,32 @@ async function tryMkdir(point: string): Promise<boolean> {
 }
 export default class WorkDirManage {
   private currentWorkPoint: string | null = null;
+  private enabledPath = path.join(homedir(), ".cache/mbler/workdir_enabled.db");
   constructor(
     private cacheDir: string = path.join(homedir(), ".cache/mbler/mp.db"),
-  ) {}
+  ) { }
+  async isDisabled(): Promise<boolean> {
+    try {
+      await readFile(this.enabledPath, "utf-8");
+      return false; // 文件存在，表示启用
+    } catch {
+      return true; // 文件不存在，默认禁用
+    }
+  }
+  async setDisabled(disabled: boolean): Promise<void> {
+    if (!disabled) {
+      // 启用：创建文件
+      await writeFile(this.enabledPath, "1", { encoding: "utf-8" });
+    } else {
+      // 禁用：删除文件
+      const { unlink } = await import("node:fs/promises");
+      try {
+        await unlink(this.enabledPath);
+      } catch {
+        // 文件不存在，忽略
+      }
+    }
+  }
   async set(newPointDir: string): Promise<string> {
     // check
     try {
@@ -50,6 +73,9 @@ export default class WorkDirManage {
     return i18n.workdir.set + newPointDir;
   }
   async get() {
+    if (await this.isDisabled()) {
+      return cwd();
+    }
     if (this.currentWorkPoint) {
       return this.currentWorkPoint;
     }

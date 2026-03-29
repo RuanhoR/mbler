@@ -21,6 +21,11 @@ const main = {
       format: 'cjs',
       sourcemap: true,
     },
+    {
+      file: 'dist/index.esm.js', // CommonJS
+      format: 'esm',
+      sourcemap: true,
+    },
   ],
   plugins: [
     resolve(),
@@ -55,7 +60,7 @@ const main = {
       },
     },
   ],
-  external: JSON.parse(
+  external: ["@volar/typescript/lib/quickstart/runTsc", ...(JSON.parse(
     readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
   ).dependencies
     ? Object.keys(
@@ -63,7 +68,7 @@ const main = {
         readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
       ).dependencies
     )
-    : [],
+    : [])],
 }
 if (process.env.BUILD_MODULE == 'release') {
   main.plugins.push(minify())

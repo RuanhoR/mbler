@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.1.9-alpha.r2026031302",
+  "version": "0.1.9-alpha.r2026032901",
   "description": "一个针对Minecraft JavaScript API 的CLI工具，让你的附加包版本管理更简单",
   "repository": {
     "type": "git",
@@ -31,20 +31,23 @@
     "test": "pnpm build && cd __test__ && pnpm test"
   },
   "dependencies": {
-    "@mbler/mcx-core": "0.0.3-beta",
+    "@mbler/mcx-core": "0.0.3-beta.r20260329112602",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "12.3.0",
+    "@volar/language-core": "^2.4.28",
+    "@volar/typescript": "^2.4.28",
     "adm-zip": "0.5.16",
     "chokidar": "4.0.3",
     "dayjs": "1.11.18",
     "npm-registry-fetch": "19.1.1",
     "rollup": "4.59.0",
     "terser": "5.44.0",
+    "tslib": "2.8.1",
     "typescript": "5.9.3",
-    "tslib": "2.8.1"
+    "vscode-uri": "^3.1.0"
   },
   "files": [
     "dist",
@@ -56,7 +59,8 @@
     "registry": "https://registry.npmjs.org"
   },
   "bin": {
-    "mbler": "bin/mbler.js"
+    "mbler": "bin/mbler.js",
+    "mcx-tsc": "bin/mcx-tsc.js"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "29.0.0",

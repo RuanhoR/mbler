@@ -22,7 +22,8 @@ git https://github.com/RuanhoR/mbler/`,
     build: "mbler build\n  - 在工作目录执行构建",
     watch: "mbler watch\n  - 启动构建并开启监视模式，文件变化会自动重新构建",
     lang: 'mbler lang\n- 无参数：显示当前语言\n- 跟 zh 或 en(如 mbler lang en): 设置语言',
-    version: "mbler version - 版本管理命令\n- 无参数：显示当前版本和提交哈希\n- --show=<commit|version>：筛选显示内容\n- <新版本号>：更新package.json和配置文件的版本"
+    version: "mbler version - 版本管理命令\n- 无参数：显示当前版本和提交哈希\n- --show=<commit|version>：筛选显示内容\n- <新版本号>：更新package.json和配置文件的版本",
+    'set-work-dir': "mbler set-work-dir <on|off>\n  - on: 启用工作目录功能\n  - off: 禁用工作目录功能，直接使用 process.cwd()"
   },
   init: {
     useUI: '使用UI模块? (y/n): ',
@@ -44,5 +45,8 @@ git https://github.com/RuanhoR/mbler/`,
   workdir: {
     set: "[工作目录] 设置为: ",
     nfound: "找不到输入文件夹(无法创建或不是文件夹)",
+    disabled: "工作目录功能已禁用，将使用当前目录",
+    enabled: "工作目录功能已启用",
+    invalidParam: "参数错误，请使用 on 或 off",
   },
 } as language;
