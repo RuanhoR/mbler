@@ -31,7 +31,7 @@
     "test": "pnpm build && cd __test__ && pnpm test"
   },
   "dependencies": {
-    "@mbler/mcx-core": "0.0.3-beta.r20260329112602",
+    "@mbler/mcx-core": "0.0.3",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",
