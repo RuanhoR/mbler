@@ -1,4 +1,4 @@
-import { mkdir, stat, writeFile, readFile } from "node:fs/promises";
+import { mkdir, stat, writeFile, readFile, unlink } from "node:fs/promises";
 import { homedir } from "node:os";
 import i18n from "./../i18n";
 import path from "node:path";
@@ -32,8 +32,6 @@ export default class WorkDirManage {
       // 启用：创建文件
       await writeFile(this.enabledPath, "1", { encoding: "utf-8" });
     } else {
-      // 禁用：删除文件
-      const { unlink } = await import("node:fs/promises");
       try {
         await unlink(this.enabledPath);
       } catch {

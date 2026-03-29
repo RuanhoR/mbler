@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@mbler/mcx-core':
-        specifier: 0.0.3
-        version: 0.0.3
+        specifier: 0.0.4-beta.r1
+        version: 0.0.4-beta.r1
       '@rollup/plugin-commonjs':
         specifier: 29.0.0
         version: 29.0.0(rollup@4.59.0)
@@ -133,8 +133,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@mbler/mcx-core@0.0.3':
-    resolution: {integrity: sha512-rVC4dYwKyUeYYMTH/1E0YLoDMWmx6Q9kjRaBeDuuqRydHfBehJ7EaGM0gvtKWKsEhCWcxBot2wClrmSz2j5YeA==}
+  '@mbler/mcx-core@0.0.4-beta.r1':
+    resolution: {integrity: sha512-p3FMe+nmiid1qACBUXUNgzr/zG+DRlfH++2NGpzmxx6kLKZmsdPVcuJ2U1l6R37WrQ4XB8Flhs09cpLi4XDGnw==}
 
   '@npmcli/agent@4.0.0':
     resolution: {integrity: sha512-kAQTcEN9E8ERLVg5AsGwLNoFb+oEG6engbqAU2P43gD4JEIkNGMHdVQ096FsOAAYpZPB0RSt0zgInKIAS1l5QA==}
@@ -848,7 +848,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@mbler/mcx-core@0.0.3':
+  '@mbler/mcx-core@0.0.4-beta.r1':
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5

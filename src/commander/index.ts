@@ -1,8 +1,10 @@
 import * as readline from "readline";
 
-// 启用 raw mode 和键盘事件
-process.stdin.setRawMode(true);
-readline.emitKeypressEvents(process.stdin);
+// 启用 raw mode 和键盘事件（仅在 TTY 环境中）
+if (process.stdin.isTTY) {
+  process.stdin.setRawMode(true);
+  readline.emitKeypressEvents(process.stdin);
+}
 
 // 用于存储注册的异步按键处理器
 interface KeyPromise {

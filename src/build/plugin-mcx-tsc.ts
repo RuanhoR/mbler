@@ -1,7 +1,6 @@
 import { TSC } from '@mbler/mcx-core';
-import { LanguagePlugin, VirtualCode } from '@volar/language-core';
+import { LanguagePlugin } from '@volar/language-core';
 import { runTsc } from "@volar/typescript/lib/quickstart/runTsc";
-import type * as ts from 'typescript';
 
 /**
  * 运行 MCX TypeScript 编译器
@@ -10,37 +9,14 @@ import type * as ts from 'typescript';
 export function runTSC(
   tscpath: string = require.resolve("typescript/lib/tsc"),
 ): void {
-  const extraSupportedExtensions = ['.mcx'];
-  const extraExtensionsToRemove = ['.mcx'];
-
-  return runTsc(
+  runTsc(
     tscpath,
     {
-      extraSupportedExtensions,
-      extraExtensionsToRemove,
+      extraSupportedExtensions: ['.mcx'],
+      extraExtensionsToRemove: ['.mcx'],
     },
     (ts): LanguagePlugin<string>[] => {
-      return [
-        {
-          getLanguageId(scriptId: string): string | undefined {
-            if (scriptId.endsWith('.mcx')) {
-              return 'mcx';
-            }
-            return undefined;
-          },
-
-          createVirtualCode(
-            scriptId: string,
-            languageId: string,
-            snapshot: ts.IScriptSnapshot
-          ): VirtualCode | undefined {
-            if (languageId === 'mcx') {
-              return TSC.createMCXVirtualCode(snapshot);
-            }
-            return undefined;
-          },
-        },
-      ];
+      return [TSC.createMCXLanguagePlugin(ts)];
     }
   );
 }
