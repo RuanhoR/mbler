@@ -1,4 +1,5 @@
 import * as mcxDef from '@mbler/mcx-core'
+import _chalk from 'chalk'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import jsonPlugin from '@rollup/plugin-json'
 import resolvePlugin from '@rollup/plugin-node-resolve'
@@ -15,7 +16,8 @@ import { FileExsit, join, ReadProjectMblerConfig, showText, writeJSON } from '..
 import { BuildConfig } from './config'
 import generateManifest from './manifest'
 import { generateRelease } from './release'
-import runTSC from './plugin-mcx-tsc'
+// cjs support
+const chalk = _chalk instanceof Function ? _chalk : (_chalk as unknown as typeof import("chalk")).default
 class Build {
   currentConfig: MblerConfigData | null = null
   srcDirs:
@@ -234,6 +236,7 @@ class Build {
             this.outdirs.resources,
             this.outdirs.dist,
           ],
+          sourceMap: true,
         })
       )
     }
@@ -250,7 +253,6 @@ class Build {
       )
     }
     if (this.currentConfig.script?.lang == 'mcx') {
-      // 历史遗留的opt选项，后续可能会改掉
       try {
         plugin.push(
           mcxDef.plugin({
@@ -346,6 +348,7 @@ class Build {
           this.currentConfig?.script?.main || ''
         ),
         format: 'esm',
+        sourcemap: true,
       },
       cache: true,
       watch: {
@@ -373,7 +376,6 @@ class Build {
         )
       } else if (event.code === 'END') {
         Logger.i('Watcher', `rebuild success`)
-        showText('MBLER__INFO__REBUILD_SUCCESS')
       }
     })
     return rollupWatcher
@@ -392,7 +394,7 @@ class Build {
         path.join(this.baseBuildDir, 'mbler.config.json'),
         filePath
       ) === ''
-    const isBehaviorChange = this.isParent(this.srcDirs.behavior, filePath)
+    const isBehaviorChange = this.isParent(this.srcDirs.behavior, filePath) && !this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
     const isResourcesChange = this.isParent(this.srcDirs.resources, filePath)
     if (isConfigChange) {
       const oldConfig = this.currentConfig
@@ -466,6 +468,7 @@ class Build {
         await handlerRP()
       }
     }
+    showText(`[${chalk.green('mbler')}] ${chalk.bgYellow(`file changed: ${filePath}`)}`)
   }
 
   private createWatcher() {
@@ -550,7 +553,7 @@ class Build {
 
   private loadData() {
     // check run time
-    if (!this.currentConfig || !this.baseBuildDir || this.srcDirs)
+    if (!this.currentConfig || !this.baseBuildDir)
       throw new Error("[build data]: can't resolve again")
     // source code dir
     this.srcDirs = {
@@ -664,6 +667,7 @@ function watch(cliParam: CliParam, work: string): Promise<number> {
       const build = new Build(cliParam.opts, work, resolve, true)
       build.start().then(() => {
         build.watch()
+        showText(`[${chalk.green('mbler')}] ${chalk.bgYellow('watching for file changes...')}`)
       })
     } catch (err) {
       if (err instanceof Error) {
