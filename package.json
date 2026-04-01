@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.1.9-beta.r1",
+  "version": "0.1.9-beta.r3",
   "description": "一个针对Minecraft JavaScript API 的CLI工具，让你的附加包版本管理更简单",
   "repository": {
     "type": "git",

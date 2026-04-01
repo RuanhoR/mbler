@@ -28,6 +28,7 @@ export interface language {
     noName: string
     noMCVersion: string
     noLanguare: string
+    welcome: string
   }
 }
 export interface MblerConfigScript {

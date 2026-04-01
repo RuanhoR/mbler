@@ -1,4 +1,5 @@
 import { cmdList, language } from "../types";
+import version from "../version";
 
 export default {
   description: `MBLER
@@ -29,6 +30,7 @@ git https://github.com/RuanhoR/mbler/`,
     useUI: '使用UI模块? (y/n): ',
     useGIT: '初始化GIT仓库? (y/n): ',
     name: '项目名称: ',
+    welcome: '欢迎使用Mbler初始化向导 语言：中文 mbler 版本： ' + version.version,
     description: "项目描述: ",
     initDes: "初始化依赖? (y/n): ",
     lang: "选择项目语言： ",

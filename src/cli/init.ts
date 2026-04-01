@@ -39,6 +39,7 @@ export async function initCommand(
   if (await isInit(workdir)) {
     return 0
   }
+  showText(exp.init.welcome)
   const initOpts = {
     name: cmdParams[0] || (await input(exp.init.name)),
     description: cmdParams[1] || (await input(exp.init.description)),
@@ -87,7 +88,7 @@ export async function initCommand(
     version: '0.0.0',
     description: initOpts.description,
     scripts: {
-      build: 'mcx-tsc && mbler build',
+      build: 'mcx-tsc && BUILD_MODULE=release mbler build',
       'dev:build': 'mbler build',
       install: 'pnpm i -g mbler',
       watch: 'mbler watch',

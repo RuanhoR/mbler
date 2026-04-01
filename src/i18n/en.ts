@@ -1,4 +1,5 @@
 import { cmdList, language } from '../types'
+import version from '../version'
 
 export default {
   description:
@@ -27,6 +28,7 @@ export default {
     name: 'Project name: ',
     description: "Project description: ",
     initDes: "Initialize dependencies? (y/n): ",
+    welcome: 'Welcome to use Mbler init wizard! Language: English mbler version: ' + version.version,
     lang: "Project languare: ",
     betaApi: "use beta api(y/n): ",
     mcVersion: 'Minecraft version(be like: x.x.x): ',
