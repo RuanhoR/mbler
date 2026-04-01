@@ -28,7 +28,9 @@ const main = {
     },
   ],
   plugins: [
-    resolve(),
+    resolve({
+      requireReturnsDefault: 'auto',
+    }),
     json(),
     commonjs(),
     ts({

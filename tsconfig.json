@@ -17,7 +17,9 @@
     "strict": true,
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": false,
+    "esModuleInterop": true,
     "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true

@@ -39,7 +39,7 @@ class Lang {
     }
     return false;
   }
-  async get() {
+  get() {
     try {
       if (this.currenyLang == "zh") return ZhLang;
       return enLang;
@@ -56,8 +56,8 @@ interface lang extends language {
 }
 const lang = new Lang();
 let i18n: lang = {} as any
-async function Export(lang: Lang) {
-  const obj = await lang.get();
+function Export(lang: Lang) {
+  const obj = lang.get();
   // 用原型来让导入后切换语言不需要再次导入，相同引用
   Object.setPrototypeOf(i18n, {
     ...obj,
