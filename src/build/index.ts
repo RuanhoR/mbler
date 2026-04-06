@@ -258,6 +258,7 @@ class Build {
           mcxDef.plugin({
             moduleDir: moduleDir,
             main: main,
+            ProjectDir: this.baseBuildDir
           })
         )
       } catch (err) {
