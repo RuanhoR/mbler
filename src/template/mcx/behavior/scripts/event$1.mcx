@@ -2,7 +2,8 @@
 EntityHitBlock = default
  <!-- 100 tick only use one --></Event>
 <script>
+import { PlayerGetItem } from "./utils.ts"
 export default function Handler(event) {
-  console.log(`${event.entity.typeId} break block `)
+  console.log(`${event.entity.typeId} break block`)
 }
 </script>

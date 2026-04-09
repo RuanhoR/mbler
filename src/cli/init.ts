@@ -13,6 +13,7 @@ import { Input } from '../commander'
 import { BuildConfig } from '../build/config'
 import { cp, readdir } from 'node:fs/promises'
 import exp from '../i18n'
+import config from '../config'
 async function isInit(dir: string) {
   return (
     await Promise.all(
@@ -70,7 +71,7 @@ export async function initCommand(
     showText(exp.init.noMCVersion)
     return 1
   }
-  const mblerConfig: MblerConfigData = {
+  const mblerConfig = {
     name: initOpts.name,
     description: initOpts.description,
     version: '0.0.0',
@@ -82,11 +83,12 @@ export async function initCommand(
     },
     mcVersion: initOpts.mcVersion,
     minify: false,
-  }
+  } satisfies MblerConfigData
   const packageJSON = {
     name: initOpts.name,
     version: '0.0.0',
     description: initOpts.description,
+    module: 'module',
     scripts: {
       build: 'mcx-tsc && BUILD_MODULE=release mbler build',
       'dev:build': 'mbler build',
@@ -111,18 +113,18 @@ export async function initCommand(
   }
   const tsconfig = {
     compilerOptions: {
-      module: 'esnext',
+      module: 'nodenext',
       noEmit: true,
-      target: 'es2022',
+      target: 'esnext',
       types: [],
       sourceMap: true,
-      declaration: false,
+      declaration: true,
       declarationMap: false,
       noUncheckedIndexedAccess: true,
       exactOptionalPropertyTypes: true,
       allowJs: true,
       strict: true,
-      moduleResolution: 'bundler',
+      moduleResolution: 'nodenext',
       verbatimModuleSyntax: false,
       isolatedModules: true,
       noUncheckedSideEffectImports: true,
@@ -135,6 +137,11 @@ export async function initCommand(
   const mblerConfigPath = path.join(workdir, BuildConfig.ConfigFile)
   const packageJSONPath = path.join(workdir, 'package.json')
   const tsconfigPath = path.join(workdir, 'tsconfig.json')
+
+  if (initOpts.lang == 'mcx') {
+    mblerConfig.script.main = 'index.mjs'
+    packageJSON.devDependencies['@mbler/mcx'] = config.mcxVersion
+  }
   if (initOpts.lang !== 'js') {
     await writeJSON(tsconfigPath, tsconfig)
   }

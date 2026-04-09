@@ -1,6 +1,5 @@
 import * as mcxDef from '@mbler/mcx-core'
 import _chalk from 'chalk'
-import commonjsPlugin from '@rollup/plugin-commonjs'
 import jsonPlugin from '@rollup/plugin-json'
 import resolvePlugin from '@rollup/plugin-node-resolve'
 import minifyPlugin from '@rollup/plugin-terser'
@@ -16,6 +15,7 @@ import { FileExsit, join, ReadProjectMblerConfig, showText, writeJSON } from '..
 import { BuildConfig } from './config'
 import generateManifest from './manifest'
 import { generateRelease } from './release'
+import commonjs from '@rollup/plugin-commonjs'
 // cjs support
 const chalk = _chalk instanceof Function ? _chalk : (_chalk as unknown as typeof import("chalk")).default
 class Build {
@@ -168,15 +168,14 @@ class Build {
       throw new Error(`[build addon]: can't resolve rollup instance`)
     }
     // write script
+    let output = this.currentConfig.script?.main;
+    if (!output) output = "index.js"
+    if (path.extname(output) !== "js") output = output.slice(0, output.length - path.extname(output).length) + ".js";
     if (this.currentConfig.script)
       await rBuild.write({
-        file: path.join(
-          this.outdirs.behavior,
-          'scripts',
-          this.currentConfig.script?.main
-        ),
+        file: join(path.join(this.outdirs.behavior, "scripts"), output),
         format: 'esm',
-        sourcemap: true,
+        sourcemap: false,
       })
     await generateRelease(this);
     if (!this.isWatch) this.resolve(0)
@@ -208,7 +207,7 @@ class Build {
       resolvePlugin({
         extensions: ['.ts', '.js', '.json'],
       }),
-      commonjsPlugin(),
+      commonjs()
     ]
 
     const moduleDir = path.join(this.baseBuildDir, 'node_modules')
@@ -236,7 +235,7 @@ class Build {
             this.outdirs.resources,
             this.outdirs.dist,
           ],
-          sourceMap: true,
+          sourceMap: false,
         })
       )
     }
