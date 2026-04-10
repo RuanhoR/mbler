@@ -255,10 +255,8 @@ class Build {
       try {
         plugin.push(
           mcxDef.plugin({
-            moduleDir: moduleDir,
-            main: main,
-            ProjectDir: this.baseBuildDir
-          })
+            moduleDir: moduleDir
+          }, this.outdirs)
         )
       } catch (err) {
         throw new Error(

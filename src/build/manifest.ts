@@ -13,20 +13,20 @@ async function generateManifest(
     header: {
       name: config.name,
       description: config.description,
-      uuid: fromString(config.name, BuildConfig.salt.header),
+      uuid: fromString(config.name, BuildConfig.salt.header + type),
       version: stringToNumberArray(config.version),
       min_engine_version: stringToNumberArray(
         typeof config.mcVersion === "string"
           ? config.mcVersion
           : (() => {
-              throw new Error("mcVersion in mblerconfig should be a string");
-            })(),
+            throw new Error("mcVersion in mblerconfig should be a string");
+          })(),
       ),
     },
     modules: [
       {
         type: type,
-        uuid: fromString(config.name, BuildConfig.salt.module),
+        uuid: fromString(config.name, BuildConfig.salt.module + type),
         description: `From Mbler(https://github.com/RuanhoR/mbler). welcome to star and contribute!`,
         version: stringToNumberArray(config.version),
       },
@@ -35,7 +35,7 @@ async function generateManifest(
   if (type === "data" && config.script) {
     manifest.modules.push({
       type: "script",
-      uuid: fromString(config.name, BuildConfig.salt.sapi),
+      uuid: fromString(config.name, BuildConfig.salt.sapi + type),
       description: `sapi generate by mbler, weclome to download and star at https://github.com/RuanhoR/mbler`,
       version: stringToNumberArray(config.version),
     });

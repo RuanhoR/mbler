@@ -1,7 +1,7 @@
 {
   "name": "mbler",
-  "version": "0.2.0-alpha.r2026040201",
-  "description": "一个针对Minecraft JavaScript API 的CLI工具，让你的附加包版本管理更简单",
+  "version": "0.2.0-beta.r20260410.2",
+  "description": "mcx DSL cli",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RuanhoR/mbler.git"
@@ -31,7 +31,7 @@
     "test": "pnpm build && cd __test__ && pnpm test"
   },
   "dependencies": {
-    "@mbler/mcx-core": "0.0.4-beta.r1",
+    "@mbler/mcx-core": "0.0.5-alpha.r20260410.8",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",
