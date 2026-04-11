@@ -4,14 +4,11 @@
   "mcVersion": "1.21.120",
   "version": "0.0.1",
   "script": {
-    "main": "index.js",
-    "lang": "js",
-    "ui": true,
-    "dependencies": {
-      "gameLib": "inner"
-    }
+    "main": "index.ts",
+    "lang": "ts",
+    "ui": true
   },
-  "minify": true,
+  "minify": false,
   "outdir": {
     "resources": "./dist/res",
     "behavior": "./dist/dep",

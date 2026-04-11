@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.0-beta.r20260410.2",
+  "version": "0.2.0-beta.r20260411.3",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -31,7 +31,8 @@
     "test": "pnpm build && cd __test__ && pnpm test"
   },
   "dependencies": {
-    "@mbler/mcx-core": "0.0.5-alpha.r20260410.8",
+    "@mbler/mcx-core": "0.0.5",
+    "@mbler/mcx-server": "0.1.1-alpha.r20260411.1",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",

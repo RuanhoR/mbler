@@ -1,4 +1,4 @@
-import { TSC } from '@mbler/mcx-core';
+import { createMCXLanguagePlugin } from '@mbler/mcx-server';
 import { LanguagePlugin } from '@volar/language-core';
 import { runTsc } from "@volar/typescript/lib/quickstart/runTsc";
 
@@ -16,7 +16,7 @@ export function runTSC(
       extraExtensionsToRemove: ['.mcx'],
     },
     (ts): LanguagePlugin<string>[] => {
-      return [TSC.createMCXLanguagePlugin(ts)];
+      return [createMCXLanguagePlugin(ts as unknown as any)];
     }
   );
 }

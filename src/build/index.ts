@@ -16,6 +16,7 @@ import { BuildConfig } from './config'
 import generateManifest from './manifest'
 import { generateRelease } from './release'
 import commonjs from '@rollup/plugin-commonjs'
+import { Postgress } from './postgress'
 // cjs support
 const chalk = _chalk instanceof Function ? _chalk : (_chalk as unknown as typeof import("chalk")).default
 class Build {
@@ -155,18 +156,22 @@ class Build {
    * emitted.
    */
   private async build() {
+    const progress = new Postgress(100)
     this.init = true
     if (!isAbsolute(this.baseBuildDir)) {
       throw new Error('[init build]: build dir is not absolute path')
     }
     this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
     this.loadData()
+    if (!this.isWatch) progress.update(10)
     await this.handlerOtherAddon()
     await this.handlerManifest()
+    if (!this.isWatch) progress.update(30)
     const rBuild = (await this.createRollup()) as rollup.RollupBuild
     if (!this.rollupPlugin || !this.outdirs) {
       throw new Error(`[build addon]: can't resolve rollup instance`)
     }
+    if (!this.isWatch) progress.update(50)
     // write script
     let output = this.currentConfig.script?.main;
     if (!output) output = "index.js"
@@ -176,9 +181,12 @@ class Build {
         file: join(path.join(this.outdirs.behavior, "scripts"), output),
         format: 'esm',
         sourcemap: false,
-      })
+      });
+    if (!this.isWatch) progress.update(70)
     await generateRelease(this);
+    if (!this.isWatch) progress.update(80)
     if (!this.isWatch) this.resolve(0)
+    if (!this.isWatch) progress.update(100)
   }
   /**
    * Create and return a Rollup build instance configured for the
@@ -346,7 +354,7 @@ class Build {
           this.currentConfig?.script?.main || ''
         ),
         format: 'esm',
-        sourcemap: true,
+        sourcemap: false,
       },
       cache: true,
       watch: {

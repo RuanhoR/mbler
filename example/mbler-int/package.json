@@ -1,5 +1,5 @@
 {
-  "name": "mbler/test mbler-int",
+  "name": "mbler-int",
   "description": "能存无数物品的袋子 ！",
   "version": "0.0.1",
   "engines": {
@@ -7,10 +7,13 @@
   },
   "scripts": {
     "dev": "mbler dev",
-    "build": "MBLER_BUILD_MODULE=dist mbler build",
-    "dev-build": "MBLER_BUILD_MODULE=dev mbler build"
+    "build": "BUILD_MODULE=release mbler build",
+    "dev-build": "mbler build"
   },
   "devDependencies": {
-    "@minecraft/server": "^2.5.0"
+    "@minecraft/server": "^2.5.0",
+    "@minecraft/server-ui": "^2.0.0",
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.2"
   }
 }
