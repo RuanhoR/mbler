@@ -1,6 +1,7 @@
 import {
+  Player,
   world
 } from "@minecraft/server"
-console.log('console in ts minecraft') 
+console.log("console in ts minecraft");
 
-world.getPlayers().sendMessage('text')
+(world.getPlayers()[0] as unknown as Player).sendMessage('text')

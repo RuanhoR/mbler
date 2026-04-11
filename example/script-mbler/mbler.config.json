@@ -6,10 +6,7 @@
   "script": {
     "ui": true,
     "lang": "ts",
-    "main": "main",
-    "dependencies": {
-      "gameLib": "inner"
-    }
+    "main": "index.ts"
   },
   "minify": true
 }
