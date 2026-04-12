@@ -6,6 +6,7 @@ export class Postgress {
   private max: number;
   constructor(max: number) {
     this.max = max;
+    showText("")
   }
 
   update(current: number) {

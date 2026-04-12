@@ -3,7 +3,6 @@ import _chalk from 'chalk'
 import jsonPlugin from '@rollup/plugin-json'
 import resolvePlugin from '@rollup/plugin-node-resolve'
 import minifyPlugin from '@rollup/plugin-terser'
-import typescriptPlugin from '@rollup/plugin-typescript'
 import { watch as chokidarWatch } from 'chokidar'
 import * as fs from 'node:fs/promises'
 import path, { isAbsolute } from 'node:path'
@@ -17,6 +16,10 @@ import generateManifest from './manifest'
 import { generateRelease } from './release'
 import commonjs from '@rollup/plugin-commonjs'
 import { Postgress } from './postgress'
+import { createMCXLanguagePlugin } from '@mbler/mcx-server'
+import { LanguagePlugin } from '@volar/language-core'
+import type { CompileOpt } from '@mbler/mcx-types'
+import typescript from '@rollup/plugin-typescript'
 // cjs support
 const chalk = _chalk instanceof Function ? _chalk : (_chalk as unknown as typeof import("chalk")).default
 class Build {
@@ -31,12 +34,25 @@ class Build {
       [key in 'behavior' | 'resources' | 'dist']: string
     }
     | null = null
+  mcxTs: typeof import("typescript")
+  mcxLanguagePluginCreator: ((ts: typeof import("typescript")) => LanguagePlugin<unknown>) | null = null;
   constructor(
     opts: Record<string, string>,
     private baseBuildDir: string,
     private resolve: (a: number) => void,
     private isWatch: boolean = false
-  ) { }
+  ) {
+    // 初始化 MCX 语言插件创建器，传入 tsHook.ts 使用
+    try {
+      const tsModule = require("typescript")
+      this.mcxLanguagePluginCreator = createMCXLanguagePlugin as unknown as typeof this.mcxLanguagePluginCreator
+      this.mcxTs = tsModule
+      Logger.i("Build", "MCX Volar language plugin creator initialized successfully")
+    } catch (error) {
+      this.mcxTs = require("typescript")
+      Logger.w("Build", `Failed to initialize MCX language plugin: ${error}`)
+    }
+  }
   /**
    * Start the watch mode.
    * This will perform an initial build (if not already done) and then
@@ -224,29 +240,6 @@ class Build {
         `[build addon]: node_modules is not exist in project root: can't resolve node_modules for rollup: ${moduleDir}`
       )
     }
-    if (this.currentConfig.script?.lang != 'js') {
-      const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
-      if (!(await FileExsit(tsconfigPath))) {
-        throw new Error(
-          `[build addon]: ts-lang: tsconfig.json is not exist in project root: can't resolve tsconfig for rollup: ${tsconfigPath}`
-        )
-      }
-      plugin.push(
-        typescriptPlugin({
-          tsconfig: tsconfigPath,
-          rootDir: path.join(this.srcDirs.behavior, 'scripts'),
-          outDir: path.join(this.outdirs.behavior, 'scripts'),
-          include: [path.join(this.srcDirs.behavior, 'scripts/**/*')],
-          exclude: [
-            moduleDir,
-            this.outdirs.behavior,
-            this.outdirs.resources,
-            this.outdirs.dist,
-          ],
-          sourceMap: false,
-        })
-      )
-    }
     if (this.currentConfig.minify) {
       plugin.push(
         minifyPlugin({
@@ -259,13 +252,44 @@ class Build {
         })
       )
     }
+    if (this.currentConfig.script.lang == "ts") {
+      const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
+      if (!(await FileExsit(tsconfigPath))) {
+        throw new Error(
+          `[build addon]: ts-lang: tsconfig.json is not exist in project root: can't resolve tsconfig for rollup: ${tsconfigPath}`
+        )
+      }
+      plugin.push(typescript({
+        sourceMap: false,
+        tsconfig: tsconfigPath,
+        exclude: [
+          this.outdirs.behavior,
+          this.outdirs.resources
+        ],
+        include: [
+          this.srcDirs.behavior
+        ]
+      }))
+    }
     if (this.currentConfig.script?.lang == 'mcx') {
       try {
-        plugin.push(
-          mcxDef.plugin({
-            moduleDir: moduleDir
-          }, this.outdirs)
-        )
+        const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
+        if (!(await FileExsit(tsconfigPath))) {
+          throw new Error(
+            `[build addon]: ts-lang: tsconfig.json is not exist in project root: can't resolve tsconfig for rollup: ${tsconfigPath}`
+          )
+        }
+        const pluginConfig: CompileOpt = {
+          moduleDir: moduleDir,
+          tsconfigPath: tsconfigPath,
+          sourcemap: false,
+          ts: this.mcxTs,
+          mcxLanguagePlugin: this.mcxLanguagePluginCreator
+        };
+        if (this.mcxLanguagePluginCreator) {
+          pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator;
+        }
+        plugin.push(mcxDef.plugin(pluginConfig, this.outdirs))
       } catch (err) {
         throw new Error(
           `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`

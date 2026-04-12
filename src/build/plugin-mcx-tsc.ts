@@ -16,7 +16,7 @@ export function runTSC(
       extraExtensionsToRemove: ['.mcx'],
     },
     (ts): LanguagePlugin<string>[] => {
-      return [createMCXLanguagePlugin(ts as unknown as any)];
+      return [createMCXLanguagePlugin(ts as any)];
     }
   );
 }
