@@ -362,7 +362,10 @@ class Build {
       !this.currentConfig ||
       !this.rollupPlugin
     )
-      throw new Error(`[build addon]: can't first can this method`)
+      throw new Error(`[build addon]: can't first can this method`);
+    let output = this.currentConfig.script?.main;
+    if (!output) output = "index.js"
+    if (path.extname(output) !== "js") output = output.slice(0, output.length - path.extname(output).length) + ".js";
     const rollupWatcher = rollup.watch({
       input: path.join(
         this.srcDirs.behavior,
@@ -372,11 +375,7 @@ class Build {
       external: ['@minecraft/server', '@minecraft/server-ui'],
       plugins: this.rollupPlugin,
       output: {
-        file: path.join(
-          this.outdirs.behavior,
-          'scripts',
-          this.currentConfig?.script?.main || ''
-        ),
+        file: join(path.join(this.outdirs.behavior, "scripts"), output),
         format: 'esm',
         sourcemap: false,
       },
