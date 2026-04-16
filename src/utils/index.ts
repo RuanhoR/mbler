@@ -22,13 +22,7 @@ export function join(baseDir: string, inputPath: string): string {
 export async function ReadProjectMblerConfig(
   project: string
 ): Promise<MblerConfigData> {
-  /* const file = await readFileAsJson<MblerConfigData>(
-    path.join(project, BuildConfig.ConfigFile)
-    )*/
-  const runner = new compile_component.RunScript(project, "esm", {
-    mblerVersion: version.version,
-  });
-  const fileExport = (await runner.run(await fs.readFile(path.join(project, BuildConfig.ConfigFile), "utf-8"), 0));
+  const fileExport = await import(path.join(project, BuildConfig.ConfigFile));
   const file = (fileExport as { default: MblerConfigData }).default;
   for (const key in file) {
     if (!(key in templateMblerConfig)) {

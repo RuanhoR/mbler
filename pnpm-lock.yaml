@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@mbler/mcx-core':
-        specifier: 0.0.6-alpha.r20260412.3
-        version: 0.0.6-alpha.r20260412.3(@minecraft/vanilla-data@1.26.13)
+        specifier: 0.0.6-alpha.r20260416.2
+        version: 0.0.6-alpha.r20260416.2(@minecraft/vanilla-data@1.26.13)
       '@mbler/mcx-server':
         specifier: 0.1.1-alpha.r20260411.1
         version: 0.1.1-alpha.r20260411.1(@minecraft/vanilla-data@1.26.13)
@@ -145,8 +145,8 @@ packages:
   '@mbler/mcx-core@0.0.5':
     resolution: {integrity: sha512-2vM10vA7yDqzgXK7iW0zPKQeGJpdI/tPnwB9mMARN138fqzLdJ+oxbXRHsdj+jNuAocUIo55XIPsDCpB+Yw7Ug==}
 
-  '@mbler/mcx-core@0.0.6-alpha.r20260412.3':
-    resolution: {integrity: sha512-XgsMDllOL4/ALKaM46Hu9uH8OIVZFSSP8T4eLRYjgBVH4ipfTTnw+5iFNhUCntSBMiwVHerNeB3RfCj5a0sSqw==}
+  '@mbler/mcx-core@0.0.6-alpha.r20260416.2':
+    resolution: {integrity: sha512-humdV7xd4FSbymb1cos6puRlkgy3onxQz4+iYkHgXtK/GFBD1Mk6K8J32PAWUabQiGfOyMhwVYb0bioUnKdPcg==}
 
   '@mbler/mcx-server@0.1.1-alpha.r20260411.1':
     resolution: {integrity: sha512-W40E1VuNcyapK+tQdjkZibnwUqFJfSxpqcJUfJHjMYad1VXQzxyiagR47evtJt2AGNCEh4j6XrhmSDfesZsjNw==}
@@ -1075,7 +1075,7 @@ snapshots:
     transitivePeerDependencies:
       - '@minecraft/vanilla-data'
 
-  '@mbler/mcx-core@0.0.6-alpha.r20260412.3(@minecraft/vanilla-data@1.26.13)':
+  '@mbler/mcx-core@0.0.6-alpha.r20260416.2(@minecraft/vanilla-data@1.26.13)':
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5

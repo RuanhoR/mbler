@@ -1,6 +1,6 @@
-export default { commit: `commit 981fbabe6dfebf339a7dd8161b6934bec04a9c9e
+export default { commit: `commit 1176c54e38beb1812dd46408cbe1cc69be96ebce
 Author: Ruanhor <3915264929@qq.com>
-Date:   Wed Apr 15 21:41:20 2026 +0800
+Date:   Thu Apr 16 20:22:54 2026 +0800
 
-    feat: add file output name replace when watcher
-`, version: "0.2.0-beta.r20260416.1" }
+    feat: defineConfig(define config with type) and script config and console io cache
+`, version: "0.2.0-beta.r20260416.3" }
