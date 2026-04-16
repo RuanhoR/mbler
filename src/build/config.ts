@@ -1,6 +1,6 @@
 type includesGroup = Record<string, "file" | "directory" | "skip">;
 export const BuildConfig = {
-  ConfigFile: "mbler.config.json" as const,
+  ConfigFile: "mbler.config.js" as const,
   salt: {
     header: "d61e721d-a2c9-4535-8054-0183bce24767",
     sapi: "33e2c698-908f-45ab-8a9f-66018f8486ed",

@@ -1,6 +1,6 @@
-export default { commit: `commit 8abc859dfad6a9b5b57066363d1ce5f59b54bb26
+export default { commit: `commit 981fbabe6dfebf339a7dd8161b6934bec04a9c9e
 Author: Ruanhor <3915264929@qq.com>
-Date:   Sat Apr 11 22:28:30 2026 +0800
+Date:   Wed Apr 15 21:41:20 2026 +0800
 
-    chore: fix example
-`, version: "0.2.0-beta.r20260411.3" }
+    feat: add file output name replace when watcher
+`, version: "0.2.0-beta.r20260416.1" }

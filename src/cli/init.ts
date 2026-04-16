@@ -116,7 +116,7 @@ export async function initCommand(
       module: 'nodenext',
       noEmit: true,
       target: 'esnext',
-      types: [],
+      types: ["@mbler/mcx-core/client"],
       sourceMap: true,
       declaration: true,
       declarationMap: false,

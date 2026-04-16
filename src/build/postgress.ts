@@ -6,12 +6,9 @@ export class Postgress {
   private max: number;
   constructor(max: number) {
     this.max = max;
-    showText("")
   }
 
   update(current: number) {
-    process.stdout.write('\x1b[1A');
-    process.stdout.write('\x1b[K');
     const percentage = Math.min(current, this.max) / this.max;
     const barWidth = 30;
     const filledWidth = Math.round(barWidth * percentage);
@@ -20,10 +17,10 @@ export class Postgress {
     const emptyBar = chalk.white('█'.repeat(emptyWidth));
     const progressBar = `${filledBar}${emptyBar}`;
     const percentText = chalk.blue(`${Math.round(percentage * 100)}%`);
-    const progressText = `[${progressBar}] ${percentText} (${current}/${this.max})`;
-    showText(progressText);
-    if (current >= this.max) {
-      showText('');
+    const progressText = `\n\u001B[1A\r[${progressBar}] ${percentText} (${current}/${this.max})`;
+    showText(progressText, false);
+    if (current == this.max) {
+      showText("", true)
     }
   }
 }

@@ -1,10 +1,12 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { MblerConfigData, npmFetchData, templateMblerConfig } from '../types'
-import { BuildConfig } from '../build/config'
 import { Input } from '../commander'
 import { json } from 'npm-registry-fetch'
 import { spawn } from 'node:child_process'
+import { compile_component } from '@mbler/mcx-core'
+import version from '../version'
+import { BuildConfig } from '../build/config'
 export async function FileExsit(file: string): Promise<boolean> {
   try {
     const f = await fs.stat(file)
@@ -20,9 +22,14 @@ export function join(baseDir: string, inputPath: string): string {
 export async function ReadProjectMblerConfig(
   project: string
 ): Promise<MblerConfigData> {
-  const file = await readFileAsJson<MblerConfigData>(
+  /* const file = await readFileAsJson<MblerConfigData>(
     path.join(project, BuildConfig.ConfigFile)
-  )
+    )*/
+  const runner = new compile_component.RunScript(project, "esm", {
+    mblerVersion: version.version,
+  });
+  const fileExport = (await runner.run(await fs.readFile(path.join(project, BuildConfig.ConfigFile), "utf-8"), 0));
+  const file = (fileExport as { default: MblerConfigData }).default;
   for (const key in file) {
     if (!(key in templateMblerConfig)) {
       throw new Error(
@@ -55,8 +62,33 @@ export function sleep(time: number): Promise<void> {
  * Exported here so other modules (for example `build`) do not need
  * to import from `cli`, avoiding a circular dependency.
  */
-export function showText(text: string) {
-  process.stdout.write(text + '\n')
+// IO缓冲队列，避免多线程写入冲突
+let outputQueue: string[] = []
+let isFlushing = false
+
+async function flushOutputQueue(): Promise<void> {
+  if (isFlushing || outputQueue.length === 0) return
+  isFlushing = true
+  try {
+    while (outputQueue.length > 0) {
+      const chunk = outputQueue.shift()
+      if (chunk) {
+        process.stdout.write(chunk)
+      }
+    }
+  } finally {
+    isFlushing = false
+  }
+}
+process.on("exit", flushOutputQueue)
+export function showText(text: string, needNextLine: boolean = true) {
+  outputQueue.push(text + (needNextLine ? '\n' : ""))
+  if (!isFlushing) {
+    Promise.resolve().then(() => flushOutputQueue()).catch(() => {
+      outputQueue = []
+      isFlushing = false
+    })
+  }
 }
 export function stringToNumberArray(str: string): [number, number, number] {
   return str
