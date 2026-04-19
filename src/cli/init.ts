@@ -3,17 +3,20 @@ import Sapi from '../build/sapi'
 import { CliParam, MblerConfigData } from '../types'
 import {
   FileExsit,
+  flushOutputQueue,
   input,
   isVaildVersion,
   runCommand,
   showText,
+  sleep,
   writeJSON,
 } from '../utils'
 import { Input } from '../commander'
 import { BuildConfig } from '../build/config'
-import { cp, readdir } from 'node:fs/promises'
+import { cp, readdir, writeFile } from 'node:fs/promises'
 import exp from '../i18n'
 import config from '../config'
+import { stdout } from 'node:process'
 async function isInit(dir: string) {
   return (
     await Promise.all(
@@ -35,12 +38,13 @@ export async function initCommand(
   cliParam: CliParam,
   workdir: string
 ): Promise<number> {
+  stdout.write(exp.init.welcome + "\n")
   await Sapi.refresh()
   const cmdParams = cliParam.params.slice(1)
   if (await isInit(workdir)) {
     return 0
   }
-  showText(exp.init.welcome)
+
   const initOpts = {
     name: cmdParams[0] || (await input(exp.init.name)),
     description: cmdParams[1] || (await input(exp.init.description)),
@@ -141,13 +145,14 @@ export async function initCommand(
   if (initOpts.lang == 'mcx') {
     mblerConfig.script.main = 'index.mjs'
     packageJSON.devDependencies['@mbler/mcx'] = config.mcxVersion
+    packageJSON.devDependencies['@mbler/mcx-core'] = config.mcxCoreVersion
   }
   if (initOpts.lang !== 'js') {
     await writeJSON(tsconfigPath, tsconfig)
   }
   await writeJSON(packageJSONPath, packageJSON)
-  await writeJSON(mblerConfigPath, `import { defineConfig } from "mbler";\nexport default ${JSON.stringify(mblerConfig, null, 2)}`)
-
+  const mblerConfigContent = `import { defineConfig } from "mbler";\nexport default ${JSON.stringify(mblerConfig, null, 2)}`
+  await writeFile(mblerConfigPath, mblerConfigContent)
   // write template
   const templatedir = await findTemplatedir()
   if (!templatedir) {

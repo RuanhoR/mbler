@@ -4,8 +4,6 @@ import { MblerConfigData, npmFetchData, templateMblerConfig } from '../types'
 import { Input } from '../commander'
 import { json } from 'npm-registry-fetch'
 import { spawn } from 'node:child_process'
-import { compile_component } from '@mbler/mcx-core'
-import version from '../version'
 import { BuildConfig } from '../build/config'
 export async function FileExsit(file: string): Promise<boolean> {
   try {
@@ -23,7 +21,7 @@ export async function ReadProjectMblerConfig(
   project: string
 ): Promise<MblerConfigData> {
   const fileExport = await import(path.join(project, BuildConfig.ConfigFile));
-  const file = (fileExport as { default: MblerConfigData }).default;
+  const file = (fileExport as { default: MblerConfigData }).default || {};
   for (const key in file) {
     if (!(key in templateMblerConfig)) {
       throw new Error(
@@ -60,7 +58,7 @@ export function sleep(time: number): Promise<void> {
 let outputQueue: string[] = []
 let isFlushing = false
 
-async function flushOutputQueue(): Promise<void> {
+export async function flushOutputQueue(): Promise<void> {
   if (isFlushing || outputQueue.length === 0) return
   isFlushing = true
   try {

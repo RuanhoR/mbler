@@ -1,6 +1,6 @@
-export default { commit: `commit 1176c54e38beb1812dd46408cbe1cc69be96ebce
+export default { commit: `commit da7bebe8ce53a502c75fcc7ad53e510fcb233137
 Author: Ruanhor <3915264929@qq.com>
-Date:   Thu Apr 16 20:22:54 2026 +0800
+Date:   Sun Apr 19 12:42:06 2026 +0800
 
-    feat: defineConfig(define config with type) and script config and console io cache
-`, version: "0.2.0-beta.r20260416.3" }
+    feat: use script config when init
+`, version: "0.2.1" }

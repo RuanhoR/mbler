@@ -20,7 +20,12 @@ export default {
     lang: 'mbler lang [?:languare]\n- No args: show current languare\n- languare = "zh” | “en": set languare',
     version:
       'mbler version\n - Version control command\n- No args: Shows version + commit hash\n- --show=<commit|version>: Filters output\n- <new_version>: Updates version in both package.json and config file',
-    'set-work-dir': "mbler set-work-dir <on|off>\n  - on: Enable work dir feature\n  - off: Disable work dir feature, use process.cwd() directly"
+    'set-work-dir': "mbler set-work-dir <on|off>\n  - on: Enable work dir feature\n  - off: Disable work dir feature, use process.cwd() directly",
+    publish: 'mbler publish\n - Publish your package to pmnx\n- Params:\n-   -tag: version tag name',
+    uninstall: 'mbler uninstall @<scope>/<name>@version\nRemove a package from your game',
+    install: 'mbler install @<scope>/<name>@version\nInstall a package to your game',
+    unpublish: 'mbler unpublish @<scope>/<name>@version\nUnpublish a package from pmnx',
+    login: 'mbler login <?:token>\nUse token login your pmnx account'
   },
   init: {
     useUI: 'Use UI? (y/n): ',

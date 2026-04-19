@@ -24,7 +24,12 @@ git https://github.com/RuanhoR/mbler/`,
     watch: "mbler watch\n  - 启动构建并开启监视模式，文件变化会自动重新构建",
     lang: 'mbler lang\n- 无参数：显示当前语言\n- 跟 zh 或 en(如 mbler lang en): 设置语言',
     version: "mbler version - 版本管理命令\n- 无参数：显示当前版本和提交哈希\n- --show=<commit|version>：筛选显示内容\n- <新版本号>：更新package.json和配置文件的版本",
-    'set-work-dir': "mbler set-work-dir <on|off>\n  - on: 启用工作目录功能\n  - off: 禁用工作目录功能，直接使用 process.cwd()"
+    'set-work-dir': "mbler set-work-dir <on|off>\n  - on: 启用工作目录功能\n  - off: 禁用工作目录功能，直接使用 process.cwd()",
+    publish: 'mbler publish\n - 将你的附加包发布到 pmnx\n- 参数:\n- -tag: 版本标签名称',
+    uninstall: 'mbler uninstall @<scope>/<name>@version\n从你的游戏中移除一个包',
+    install: 'mbler install @<scope>/<name>@version\n将一个包安装到你的游戏中',
+    unpublish: 'mbler unpublish @<scope>/<name>@version\n从 pmnx 取消发布一个包',
+    login: 'mbler login <?:token>\n使用 token 登录你的 pmnx 账户\n- 如果没有 token，会向你请求'
   },
   init: {
     useUI: '使用UI模块? (y/n): ',

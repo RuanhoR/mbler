@@ -1,14 +1,18 @@
-import { argv, stdout, cwd } from 'node:process'
-import { CliParam, cmdList, LanguageNames } from '../types'
+import { argv } from 'node:process'
+import { CliParam, cmdList } from '../types'
 import i18n from '../i18n'
 import Logger from './../logger/index'
-import { build, watch } from '../build'
 import { showText } from '../utils'
 import path from 'node:path'
 import WorkDirManage from './WorkDirManage'
 import { initCommand } from './init'
 import { handlerVersion } from './version'
 import { langCommand } from './lang'
+import { unpublishCommand } from './unpublish'
+import { publishCommand } from './publish'
+import { uninstallCommand } from './uninstall'
+import { installCommand } from './install'
+import { loginCommand } from './login'
 // `showText` moved to `utils` to avoid circular dependency with `build`.
 const main = (function (): () => Promise<void> {
   let currentWDManage: WorkDirManage
@@ -141,6 +145,7 @@ const main = (function (): () => Promise<void> {
       cliParam: CliParam,
       workDir: string
     ): Promise<number> => {
+      const { build } = require("mbler/build")
       return await build(cliParam, workDir)
     }
 
@@ -148,6 +153,7 @@ const main = (function (): () => Promise<void> {
       cliParam: CliParam,
       workDir: string
     ): Promise<number> => {
+      const { watch } = require("mbler/build")
       return await watch(cliParam, workDir)
     }
 
@@ -165,7 +171,12 @@ const main = (function (): () => Promise<void> {
       init: initCommand,
       version: handlerVersion,
       lang: langCommand,
-      'set-work-dir': handlerSetWorkDirCommand
+      'set-work-dir': handlerSetWorkDirCommand,
+      unpublish: unpublishCommand,
+      publish: publishCommand,
+      uninstall: uninstallCommand,
+      install: installCommand,
+      login: loginCommand
     }
     const cmd = cliParam.params[0]
     if (cliParam.opts.cwp) {

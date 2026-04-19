@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.0-beta.r20260416.3",
+  "version": "0.2.2",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -19,9 +19,14 @@
   "main": "./dist/index.js",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.js"
+    },
+    "./build": {
+      "types": "./dist/build.d.ts",
+      "import": "./dist/build.esm.js",
+      "require": "./dist/build.js"
     }
   },
   "types": "./dist/types/index.d.ts",

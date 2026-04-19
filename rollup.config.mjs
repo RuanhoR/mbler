@@ -1,3 +1,4 @@
+/**@ts-check */
 import resolve from '@rollup/plugin-node-resolve'
 import json from '@rollup/plugin-json'
 import ts from '@rollup/plugin-typescript'
@@ -49,20 +50,10 @@ const main = {
             force: true,
           }
         )
-        for (const f of await readdir(path.resolve('dist'))) {
-          if (
-            !['template', 'index.js', 'index.js.map', 'index.d.ts'].includes(f)
-          ) {
-            await rm(path.join(import.meta.dirname, './dist', f), {
-              recursive: true,
-              force: true,
-            })
-          }
-        }
       },
     },
   ],
-  external: ["@volar/typescript/lib/quickstart/runTsc", ...(JSON.parse(
+  external: ["@volar/typescript/lib/quickstart/runTsc", "mbler/build", ...(JSON.parse(
     readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
   ).dependencies
     ? Object.keys(
@@ -72,8 +63,22 @@ const main = {
     )
     : [])],
 }
-if (process.env.BUILD_MODULE == 'release') {
-  main.plugins.push(minify())
+const build = {
+  input: "src/index.build.ts",
+  output: [
+    {
+      file: "dist/build.js",
+      format: "cjs",
+      sourcemap: true
+    },
+    {
+      file: "dist/build.esm.js",
+      format: "esm",
+      sourcemap: true
+    }
+  ],
+  plugins: main.plugins,
+  external: main.external
 }
 const dts = {
   input: 'src/index.ts',
@@ -88,4 +93,21 @@ const dts = {
     }),
   ],
 }
-export default [main, dts]
+
+const buildDts = {
+  input: 'src/index.build.ts',
+  output: [
+    {
+      file: 'dist/build.d.ts',
+    },
+  ],
+  plugins: [
+    Dts({
+      tsconfig: path.resolve('tsconfig.json'),
+    }),
+  ],
+}
+if (process.env.BUILD_MODULE == 'release') {
+  main.plugins.push(minify());
+}
+export default [main, build, dts, buildDts]
