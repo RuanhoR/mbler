@@ -145,8 +145,9 @@ export async function initCommand(
   if (initOpts.lang !== 'js') {
     await writeJSON(tsconfigPath, tsconfig)
   }
-  await writeJSON(mblerConfigPath, mblerConfig)
   await writeJSON(packageJSONPath, packageJSON)
+  await writeJSON(mblerConfigPath, `import { defineConfig } from "mbler";\nexport default ${JSON.stringify(mblerConfig, null, 2)}`)
+
   // write template
   const templatedir = await findTemplatedir()
   if (!templatedir) {
