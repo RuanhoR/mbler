@@ -34,7 +34,7 @@ mbler init
 
 ### 发布平台
 
-[github](https://github.com/RuanhoR/mbler)
+[github](https://github.com/RuanhoR/mbler) | [gitee](https://gitee.com/n304sc-haoran/mbler.git) | [npm](https://npmjs.com/package/mbler)
 
 ## 文档
 
