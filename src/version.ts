@@ -1,6 +1,6 @@
-export default { commit: `commit da7bebe8ce53a502c75fcc7ad53e510fcb233137
+export default { commit: `commit 81c6f8bb0b33367bd219c7c9168f18ae83e1f2e1
 Author: Ruanhor <3915264929@qq.com>
-Date:   Sun Apr 19 12:42:06 2026 +0800
+Date:   Sun Apr 19 16:33:01 2026 +0800
 
-    feat: use script config when init
-`, version: "0.2.1" }
+    fix: init and add plan command
+`, version: "0.2.2" }
