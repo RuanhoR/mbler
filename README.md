@@ -2,7 +2,11 @@
 
 ### 介绍
 
-一个针对Minecraft JavaScript API 的nodejs包，让你的附加包版本管理更简单
+一个Minecraft Addon的开发工具，功能包括
+ - MCX DSL
+ - Manfiest Generator
+ - Bundle
+ - Component build
 
 ### 安装
 
@@ -10,7 +14,8 @@
 
 - Node.js 与 npm
 - Git
-- npm `npm install -g mbler`
+- npm  
+`npm install -g mbler`
   安装成功后，你可以直接使用：
 
 ```bash
