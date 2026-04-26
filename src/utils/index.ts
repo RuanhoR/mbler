@@ -127,7 +127,7 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
         curr(currstr)
         curr = null
         currstr = ''
-        console.log('')
+        console.log('\n')
         return
       }
       if (raw === 'backspace') {
@@ -200,4 +200,11 @@ export function runCommand(param: string[], cwd: string, stdio: "ignore" | "pipe
     }
   })
   return promise;
+}
+export async function fileExists(file: string) {
+  try {
+    await fs.stat(file)
+    return true;
+  } catch { return false }
+
 }

@@ -17,19 +17,26 @@ async function createZipWithMoreFolder(dir: [string, string][]): Promise<AdmZip>
   };
   return zip;
 }
-export async function generateRelease(build: Build) {
-  if (!build.srcDirs) throw new Error("invaild Build")
+export async function generateRelease(build: {
+  outdirs: {
+    behavior: string;
+    resources: string;
+    dist: string;
+  };
+  module: "all" | "behavior" | "resources";
+}) {
+  if (!build.outdirs) throw new Error("invalid Build");
   if (env.BUILD_MODULE !== "release") return;
   let zip: AdmZip;
   if (build.module == "all") {
     zip = await createZipWithMoreFolder([
-      [build.srcDirs?.behavior, "behavior"],
-      [build.srcDirs.resources, "resources"]
+      [build.outdirs?.behavior, "behavior"],
+      [build.outdirs?.resources, "resources"]
     ]);
   } else if (build.module == "behavior") {
-    zip = createFullZip(build.srcDirs.behavior);
+    zip = createFullZip(build.outdirs?.behavior);
   } else {
-    zip = createFullZip(build.srcDirs.resources)
+    zip = createFullZip(build.outdirs?.resources)
   }
   await zip.writeZipPromise(build.outdirs?.dist as string)
 }

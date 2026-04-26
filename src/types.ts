@@ -1,9 +1,12 @@
 export const LanguageNames = ['zh', 'en']
 export const cmdList = ['c', 'work', 'help', 'h', 'init', 'version', 'build', 'watch', 'lang', 'set-work-dir', 'publish', 'unpublish', 'install', 'uninstall', 'login'] as const
+type HelpCommand = (typeof cmdList)[number]
 export interface language {
   description: string
   help: {
-    [K in (typeof cmdList)[number] | 'cmds']: string | readonly string[]
+    cmds: readonly string[]
+  } & {
+    [K in HelpCommand]: string
   }
   default: {
     unexpected: string
@@ -29,6 +32,9 @@ export interface language {
     noMCVersion: string
     noLanguare: string
     welcome: string
+  },
+  publish: {
+    askTip: string
   }
 }
 export interface MblerConfigScript {
@@ -124,4 +130,48 @@ export interface npmFetchData {
   keywords: string[]
   homepage: string
   time: Record<string, string>
+}
+export interface PMNXProfile {
+  mail: string;
+  name: string;
+  uid: number;
+  avatar_url?: string;
+  ctime: string
+}
+
+export interface PublishMetadata {
+  readme: string;
+  scope: string;
+  name: string;
+  version: string;
+  version_tag: string;
+}
+export interface MNXPackageInfoResult {
+  id: string;
+  readmeTable: [number, string][];
+  versions: {
+    download_url: string,
+    version_tag: string;
+    name: string;
+    create_user: PMNXProfile;
+    readme: number;
+    create_time: string; // ISO Date string
+  }[];
+  download: number; /**下载量 */
+}
+export interface BaseResult {
+  code: 200 | -1,
+  message: string;
+  success: boolean;
+}
+export interface MNXPackageVersionInfoResult {
+  id: string;
+  versions: {
+    download_url: string,
+    version_tag: string;
+    name: string;
+    create_user: PMNXProfile;
+    readme: string;
+    create_time: string; // ISO Date string
+  }
 }

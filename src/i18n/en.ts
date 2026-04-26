@@ -52,4 +52,7 @@ export default {
     enabled: "Work dir enabled",
     invalidParam: "Invalid parameter, use on or off",
   },
+  publish: {
+    askTip: "Plase input the absolute path of your MCBE game directory (like /sdcard/Android/data/com.mojang.minecraftpe/files/games) for next step:  "
+  }
 } as language

@@ -16,10 +16,11 @@ import generateManifest from './manifest'
 import { generateRelease } from './release'
 import commonjs from '@rollup/plugin-commonjs'
 import { Postgress } from './postgress'
-import { createMCXLanguagePlugin } from '@mbler/mcx-server'
+import { createMCXLanguagePlugin, MCXLanguagePlugin } from '@mbler/mcx-server'
 import { LanguagePlugin } from '@volar/language-core'
 import type { CompileOpt } from '@mbler/mcx-types'
 import typescript from '@rollup/plugin-typescript'
+import ts from 'typescript'
 // cjs support
 const chalk = _chalk instanceof Function ? _chalk : (_chalk as unknown as typeof import("chalk")).default
 class Build {
@@ -199,7 +200,11 @@ class Build {
         sourcemap: false,
       });
     if (!this.isWatch) progress.update(70)
-    await generateRelease(this);
+    if (!this.outdirs || !this.module) throw new Error(`[build addon]: can't resolve outdirs`)
+    await generateRelease({
+      outdirs: this.outdirs,
+      module: this.module
+    });
     if (!this.isWatch) progress.update(80)
     if (!this.isWatch) this.resolve(0)
     if (!this.isWatch) progress.update(100)
@@ -284,7 +289,7 @@ class Build {
           tsconfigPath: tsconfigPath,
           sourcemap: false,
           ts: this.mcxTs,
-          mcxLanguagePlugin: this.mcxLanguagePluginCreator
+          mcxLanguagePlugin: this.mcxLanguagePluginCreator as any
         };
         if (this.mcxLanguagePluginCreator) {
           pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator;

@@ -56,4 +56,7 @@ git https://github.com/RuanhoR/mbler/`,
     enabled: "工作目录功能已启用",
     invalidParam: "参数错误，请使用 on 或 off",
   },
+  publish: {
+    askTip: "输入MCBE游戏绝对目录 (如 /sdcard/Android/data/com.mojang.minecraftpe/files/games)，以进行下一步:  "
+  }
 } as language;
