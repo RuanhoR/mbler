@@ -13,17 +13,16 @@ writeFileSync(
   path.join(process.cwd(), 'src/version.ts'),
   `export default { commit: \`${execSync('git log -1').toString().replace(/`/g, '\\`')}\`, version: "${JSON.parse(readFileSync(path.join(import.meta.dirname, 'package.json')).toString()).version}" }`
 )
-// 基础配置
 const main = {
-  input: 'src/index.ts', // 入口文件
+  input: 'src/index.ts',
   output: [
     {
-      file: 'dist/index.js', // CommonJS
+      file: 'dist/index.js',
       format: 'cjs',
       sourcemap: true,
     },
     {
-      file: 'dist/index.esm.js', // CommonJS
+      file: 'dist/index.esm.mjs',
       format: 'esm',
       sourcemap: true,
     },
@@ -72,7 +71,7 @@ const build = {
       sourcemap: true
     },
     {
-      file: "dist/build.esm.js",
+      file: "dist/build.esm.mjs",
       format: "esm",
       sourcemap: true
     }
