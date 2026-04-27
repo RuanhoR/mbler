@@ -1,6 +1,6 @@
 import { createMCXLanguagePlugin } from '@mbler/mcx-server';
 import { LanguagePlugin } from '@volar/language-core';
-import { runTsc } from "@volar/typescript/lib/quickstart/runTsc";
+import { runTsc } from "@volar/typescript/lib/quickstart/runTsc.js";
 
 /**
  * 运行 MCX TypeScript 编译器

@@ -1,7 +1,6 @@
-export default { commit: `commit fc1fee7f44a0ee08388276ad9288cbb5c0263414
-Merge: f36a4b5 c393c36
+export default { commit: `commit 8ee29d7291c0c3df2b6deb02be0cfe9ec7015dc3
 Author: Ruanhor <3915264929@qq.com>
-Date:   Sun Apr 26 17:05:29 2026 +0800
+Date:   Mon Apr 27 23:00:16 2026 +0800
 
-    Merge branch 'master' of github.com:RuanhoR/mbler
-`, version: "0.2.3-alpha.r2" }
+    chore: update version file
+`, version: "0.2.3-alpha.r3" }

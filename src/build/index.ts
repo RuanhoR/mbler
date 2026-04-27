@@ -45,12 +45,12 @@ class Build {
   ) {
     // 初始化 MCX 语言插件创建器，传入 tsHook.ts 使用
     try {
-      const tsModule = require("typescript")
+      const tsModule = ts;
       this.mcxLanguagePluginCreator = createMCXLanguagePlugin as unknown as typeof this.mcxLanguagePluginCreator
       this.mcxTs = tsModule
       Logger.i("Build", "MCX Volar language plugin creator initialized successfully")
     } catch (error) {
-      this.mcxTs = require("typescript")
+      this.mcxTs = ts
       Logger.w("Build", `Failed to initialize MCX language plugin: ${error}`)
     }
   }

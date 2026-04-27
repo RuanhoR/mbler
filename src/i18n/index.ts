@@ -3,8 +3,9 @@ import ZhLang from "./zh.js";
 import enLang from "./en.js";
 import path from "node:path";
 import { language, LanguageNames } from "../types.js";
+import { homedir } from "node:os";
 const configPath = path.join(
-  require("node:os").homedir(),
+  homedir(),
   ".cache/mbler/lang.db",
 );
 function isLanguareName(

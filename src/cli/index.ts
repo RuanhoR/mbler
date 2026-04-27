@@ -145,7 +145,7 @@ const main = (function (): () => Promise<void> {
       cliParam: CliParam,
       workDir: string
     ): Promise<number> => {
-      const { build } = require("mbler/build")
+      const { build } = typeof require == "function" ? require("mbler/build") : await import("mbler/build")
       return await build(cliParam, workDir)
     }
 

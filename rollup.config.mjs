@@ -52,7 +52,7 @@ const main = {
       },
     },
   ],
-  external: ["@volar/typescript/lib/quickstart/runTsc", "mbler/build", ...(JSON.parse(
+  external: ["@volar/typescript/lib/quickstart/runTsc.js", "mbler/build", ...(JSON.parse(
     readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
   ).dependencies
     ? Object.keys(
