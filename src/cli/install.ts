@@ -9,7 +9,9 @@ import { ConfigManger } from "../publisher/configManger";
 import { CliParam } from "../types";
 import { showText, compareVersion, isVaildVersion } from "../utils";
 import { InstallManger } from "../publisher/installManger";
-import { TokenManger } from "../publisher/tokenManger";
+function fmt(t: string, vars: Record<string, string | number>) {
+  return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+}
 
 function parsePackage(pkg: string): { scope: string; name: string; version?: string } | null {
   const result = /^(@[^/@\s]+)\/([^@\s]+)(?:@(.+))?$/.exec(pkg);
@@ -56,21 +58,21 @@ export async function installCommand(cliParam: CliParam, work: string) {
 
   const packageJsonPath = path.join(work, "package.json");
   if (!await fs.stat(packageJsonPath).catch(() => null)) {
-    showText("Install failed: work directory must contain package.json");
+    showText(i18n.install.failedNoPackageJson);
     return -1;
   }
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"));
   if (!packageJson.scripts?.build) {
-    showText("Install failed: package.json must contain a build script");
+    showText(i18n.install.failedNoBuildScript);
     return -1;
   }
 
-  showText(`Installing package ${pkg}...`);
+  showText(fmt(i18n.install.installing, { pkg }));
   try {
     if (!version) {
       const pkgInfo = await InstallManger.info(scope, name);
       if (!pkgInfo.versions || pkgInfo.versions.length === 0) {
-        showText(`Package ${scope}/${name} not found`);
+        showText(fmt(i18n.install.packageNotFound, { pkg: `${scope}/${name}` }));
         return -1;
       }
       const versionCandidates = pkgInfo.versions
@@ -78,10 +80,10 @@ export async function installCommand(cliParam: CliParam, work: string) {
         .filter((name): name is string => typeof name === "string" && name.length > 0);
       version = pickLatestVersion(versionCandidates);
       if (!version) {
-        showText(`Package ${scope}/${name} has no available version`);
+        showText(fmt(i18n.install.noVersion, { pkg: `${scope}/${name}` }));
         return -1;
       }
-      showText(`Using latest version ${version}`);
+      showText(fmt(i18n.install.usingLatest, { version }));
     }
 
     const tmpDir = path.join(config.tmpdir, "tmp_mbler_install", `${Date.now()}`);
@@ -121,7 +123,7 @@ export async function installCommand(cliParam: CliParam, work: string) {
 
     const addons = await findAddonRoots(tmpDir);
     if (addons.length === 0) {
-      throw new Error("No valid addon found in package");
+      throw new Error(i18n.install.noValidAddon);
     }
 
     const id = `${scope.slice(1)}-${name}-${version}`;
@@ -141,14 +143,14 @@ export async function installCommand(cliParam: CliParam, work: string) {
       const child = spawn("pnpm", ["build"], { cwd: work });
       child.on("close", (code) => {
         if (code === 0) resolve();
-        else reject(new Error(`Build failed with code ${code}`));
+        else reject(new Error(i18n.publish.buildFailed.replace("{code}", String(code))));
       });
     });
 
-    showText(`Package ${scope}/${name}@${version} installed successfully as ${id}`);
+    showText(fmt(i18n.install.success, { pkg: `${scope}/${name}`, version, id }));
     return 0;
   } catch (error) {
-    showText(`Install failed: ${error instanceof Error ? error.message : String(error)}`);
+    showText(fmt(i18n.install.failed, { error: error instanceof Error ? error.message : String(error) }));
     return -1;
   }
 }

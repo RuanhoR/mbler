@@ -6,7 +6,6 @@ import { TokenManger } from "../publisher/tokenManger";
 export async function loginCommand(cliParam: CliParam, work: string) {
   let token = cliParam.params[1];
   if (!token) {
-    showText(i18n.help.login);
     token = await input("Token: ", true);
   }
 
@@ -16,9 +15,14 @@ export async function loginCommand(cliParam: CliParam, work: string) {
   }
 
   try {
-    TokenManger.setToken(token.trim());
+    const prevToken = await TokenManger.getToken();
+    await TokenManger.setToken(token.trim());
     await TokenManger.waitVeirfy();
     if (!TokenManger.isLogin) {
+      if (prevToken && typeof prevToken === "string") {
+        await TokenManger.setToken(prevToken);
+        await TokenManger.waitVeirfy();
+      }
       showText("Login failed: invalid token");
       return -1;
     }

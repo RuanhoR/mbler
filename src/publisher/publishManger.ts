@@ -6,6 +6,11 @@ import config from "../config";
 import { PublishMetadata } from "../types";
 import { readFile } from "node:fs/promises";
 import { TokenManger } from "./tokenManger";
+import i18n from "../i18n";
+
+function fmt(t: string, vars: Record<string, string | number>) {
+  return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+}
 
 export class PublishManger {
   static async publish(projectPath: string, options: {
@@ -16,19 +21,20 @@ export class PublishManger {
   }) {
     if (TokenManger.isLoading) await TokenManger.init()
     if (!await fileExists(projectPath)) {
-      throw new Error("Project path does not exist");
+      throw new Error(i18n.publish.projectPathNotExist);
     }
     const { onProgress = (p) => { }, onMessage = (m) => { }, build, tag } = options;
     onProgress(1);
-    onMessage("Publishing...");
+    onMessage(i18n.publish.publishing);
     if (build == "enable") {
-      onMessage("Building project...");
+      onMessage(i18n.publish.building);
       await this.buildProject(projectPath);
       onProgress(30);
     }
     const mblerConfig = await ReadProjectMblerConfig(projectPath);
     const pkgData = await readFileAsJson<any>(path.join(projectPath, "package.json"));
     const outputPath = path.join(config.tmpdir, "mbler/0b09/release.zip")
+    process.env.BUILD_MODULE = "release"
     const option: Parameters<typeof generateRelease>[0] = {
       outdirs: {
         behavior: mblerConfig.outdir?.behavior || path.join(projectPath, "dist", "behavior"),
@@ -38,10 +44,10 @@ export class PublishManger {
       module: "all"
     }
     if (!option.outdirs.behavior || !option.outdirs.resources) {
-      throw new Error("Build output directories not found");
+      throw new Error(i18n.publish.outdirNotFound);
     }
     if (!await fileExists(option.outdirs.behavior) || !await fileExists(option.outdirs.resources)) {
-      throw new Error("Build output directories do not exist");
+      throw new Error(i18n.publish.outdirNotExist);
     }
     if (await fileExists(option.outdirs.behavior)) {
       option.module = "behavior";
@@ -85,7 +91,7 @@ export class PublishManger {
       readmePath = path.join(projectPath, "README");
     }
     if (!await fileExists(readmePath)) {
-      throw new Error("README file not found");
+      throw new Error(i18n.publish.readmeNotFound);
     }
     const metadata: PublishMetadata = {
       readme: await readFile(readmePath, "utf-8"),
@@ -95,26 +101,26 @@ export class PublishManger {
       version_tag: tag || "latest"
     }
     if (!metadata.name || !metadata.version || !metadata.readme || !metadata.scope) {
-      throw new Error("Invalid metadata");
+      throw new Error(i18n.publish.metadataInvalid);
     }
     if (!/^@\w+\/\w+$/.test(mblerConfig.name)) {
       console.log(mblerConfig.name);
-      throw new Error("Package name must be in the format of @scope/name");
+      throw new Error(i18n.publish.packageNameInvalid);
     }
     await generateRelease(option);
     onProgress(70);
-    onMessage("Publishing to marketplace...");
+    onMessage(i18n.publish.publishToMarket);
     const session = await PublishManger.createSession(metadata);
     await PublishManger.publishToMarketplace(outputPath, session);
     onProgress(100);
-    onMessage("Publish successful");
-    onMessage(`+ ${pkgData.name}@${metadata.version} (${metadata.version_tag})`);
+    onMessage(i18n.publish.publishSuccess);
+    onMessage(fmt(i18n.publish.publishResult, { name: pkgData.name, version: metadata.version, tag: metadata.version_tag }));
   }
   static async unpublish(scope: string, name: string, version: string) {
     if (TokenManger.isLoading) await TokenManger.waitVeirfy();
-    if (!TokenManger.isLogin) throw new Error("Not logged in");
+    if (!TokenManger.isLogin) throw new Error(i18n.publish.notLoginError);
     const token = await TokenManger.getToken();
-    if (!token) throw new Error("Failed to get token");
+    if (!token) throw new Error(i18n.publish.tokenMissing);
     const response = await fetch(`${config.defaultPmnxBASE}/unpublish/${scope}/${name}/${version}`, {
       method: "POST",
       headers: {
@@ -122,19 +128,19 @@ export class PublishManger {
       }
     });
     if (!response.ok) {
-      throw new Error("Failed to unpublish package");
+      throw new Error(i18n.publish.unpublishReqFailed);
     }
     const result = await response.json() as any;
     if (result.code !== 200) {
-      throw new Error(`Failed to unpublish package: ${result.data}`);
+      throw new Error(`${i18n.publish.unpublishReqFailed}: ${result.data}`);
     }
     return true;
   }
   static async createSession(metadata: PublishMetadata) {
     if (TokenManger.isLoading) await TokenManger.waitVeirfy();
-    if (!TokenManger.isLogin) throw new Error("Not logged in");
+    if (!TokenManger.isLogin) throw new Error(i18n.publish.notLoginError);
     const token = await TokenManger.getToken();
-    if (!token) throw new Error("Failed to get token");
+    if (!token) throw new Error(i18n.publish.tokenMissing);
     const response = await fetch(`${config.defaultPmnxBASE}/publish/session/${metadata.scope}/${metadata.name}/create`, {
       method: "POST",
       headers: {
@@ -144,14 +150,14 @@ export class PublishManger {
       body: JSON.stringify(metadata)
     });
     const session = await response.json() as any;
-    console.log(session)
     if (!response.ok) {
-      throw new Error("Failed to create publish session");
+      throw new Error(i18n.publish.createSessionFailed);
     }
-    if (typeof session.data !== "object" || typeof session.data.sessionKey !== "string") {
-      throw new Error(`${response.status} ${response.statusText}: ${session.data}`);
+    const sessionKey = session?.data?.sessionKey || session?.data?.sessionId;
+    if (typeof session.data !== "object" || typeof sessionKey !== "string") {
+      throw new Error(`${i18n.publish.createSessionFailed}: ${response.status} ${response.statusText}: ${session.data}`);
     }
-    return session.data.sessionKey as string;
+    return sessionKey as string;
   }
   static async publishToMarketplace(zipPath: string, session: string) {
     const formData = new FormData();
@@ -162,7 +168,7 @@ export class PublishManger {
     }
     formData.append("file", new File([fileBit], fileName, { type: "application/zip" }));
     const token = await TokenManger.getToken();
-    if (!token) throw new Error("Failed to get token");
+    if (!token) throw new Error(i18n.publish.tokenMissing);
     const response = await fetch(`${config.defaultPmnxBASE}/publish/session/${session}/upload`, {
       method: "POST",
       headers: {
@@ -170,22 +176,25 @@ export class PublishManger {
       },
       body: formData
     });
-    if (!response.ok) {
-      throw new Error("Failed to upload zip file");
-    }
     const result = await response.json() as any;
-    if (result.code !== 200) {
-      throw new Error(`Failed to upload zip file: ${result.data}`);
+    if (!(typeof result.data == "string" && result.data.includes("successfully"))) {
+      throw new Error(`${i18n.publish.uploadZipFailed}: ${result.data}` + JSON.stringify({
+        url: `${config.defaultPmnxBASE}/publish/session/${session}/upload`,
+        status: response.status,
+        statusText: response.statusText,
+        body: result,
+        file: zipPath
+      }, null, 2));
     }
     return true;
   }
   static async buildProject(projectPath: string) {
     const pkgData = await readFileAsJson<any>(path.join(projectPath, "package.json"));
     if (!pkgData) {
-      throw new Error("package.json not found");
+      throw new Error(i18n.publish.packageJsonNotFound);
     }
     if (!pkgData.scripts || !pkgData.scripts.build) {
-      throw new Error("No build script found in package.json");
+      throw new Error(i18n.publish.noBuildScript);
     }
     const pkgManager = pkgData.packageManager || "npm";
     await new Promise((resolve, reject) => {
@@ -194,7 +203,7 @@ export class PublishManger {
         if (code === 0) {
           resolve(void 0);
         } else {
-          reject(new Error(`Build failed with code ${code}`));
+          reject(new Error(fmt(i18n.publish.buildFailed, { code: code ?? -1 })));
         }
       });
     });

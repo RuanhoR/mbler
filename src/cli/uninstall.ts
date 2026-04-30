@@ -5,7 +5,9 @@ import { CliParam } from "../types";
 import { showText } from "../utils";
 import { GamePath } from "../publisher/GamePath";
 import { ConfigManger } from "../publisher/configManger";
-import { TokenManger } from "../publisher/tokenManger";
+function fmt(t: string, vars: Record<string, string | number>) {
+  return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+}
 
 function parsePackage(pkg: string): { scope: string; name: string; version: string } | null {
   const result = /^(@[^/@\s]+)\/([^@\s]+)@(.+)$/.exec(pkg);
@@ -49,10 +51,10 @@ export async function uninstallCommand(cliParam: CliParam, work: string) {
     const filtered = installed.filter((pkg) => pkg.id !== id);
     await ConfigManger.setKey("installedPackages", filtered);
 
-    showText(`Package ${parsed.scope}/${parsed.name}@${parsed.version} uninstalled successfully`);
+    showText(fmt(i18n.uninstall.success, { pkg: `${parsed.scope}/${parsed.name}`, version: parsed.version }));
     return 0;
   } catch (error) {
-    showText(`Uninstall failed: ${error instanceof Error ? error.message : String(error)}`);
+    showText(fmt(i18n.uninstall.failed, { error: error instanceof Error ? error.message : String(error) }));
     return -1;
   }
 }

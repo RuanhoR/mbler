@@ -5,11 +5,11 @@ import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import Logger from "../logger";
 export class ConfigManger {
-  static defaultConfigPoint = path.join(homedir(), ".config", "_config.json")
+  static defaultConfigPoint = path.join(homedir(), ".mbler.config.global.cli.json")
   static cacheValue: Record<string, unknown> = {}
   private static lockPromise: Promise<void> | null = null;
   private static lockResolver: (() => void) | null = null;
-  private static cacheTTL = 5000; // 5秒缓存
+  private static cacheTTL = 5000;
   private static lastAccess = 0;
   private static currentConfigPath = '';
   private static async acquireLock(): Promise<void> {
@@ -51,6 +51,20 @@ export class ConfigManger {
       throw error;
     }
   }
+  private static async ensureConfigFile(configPath: string): Promise<void> {
+    if (!await fileExists(configPath)) {
+      await writeJSON(configPath, {});
+      return;
+    }
+    try {
+      const data = await readJSON<Record<string, unknown>>(configPath);
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        await writeJSON(configPath, {});
+      }
+    } catch {
+      await writeJSON(configPath, {});
+    }
+  }
 
   private static async saveCacheToFile(configPath: string): Promise<void> {
     try {
@@ -82,7 +96,7 @@ export class ConfigManger {
   }
   static async setConfigPoint(point: string) {
     if (!await fileExists(point)) {
-      throw new Error("[mbler config]: can't bind config file: " + point)
+      await writeJSON(point, {});
     }
     await writeJSON(path.join(config.tmpdir, "_config_point.json"), {
       point,
@@ -92,6 +106,7 @@ export class ConfigManger {
   static async getKey<T>(key: string): Promise<T | undefined> {
     try {
       const configPath = await this.getConfigPoint();
+      await this.ensureConfigFile(configPath);
 
       // 使用缓存，避免频繁文件读取
       if (!this.isCacheValid(configPath)) {
@@ -107,18 +122,16 @@ export class ConfigManger {
   static async setKey<T>(key: string, value: T): Promise<boolean> {
     try {
       const configPath = await this.getConfigPoint();
-
-      // 确保缓存是最新的
+      await this.ensureConfigFile(configPath);
       if (!this.isCacheValid(configPath)) {
         await this.loadConfigToCache(configPath);
       }
       this.cacheValue[key] = value;
-      this.saveCacheToFile(configPath).catch(error => {
-        Logger.e('ConfigManger', 'Failed to save config to file:' + error);
-      });
+      await this.saveCacheToFile(configPath);
 
       return true;
     } catch (error) {
+      Logger.e('ConfigManger', 'Failed to set key: ' + (error instanceof Error ? error.message : String(error)));
       return false;
     }
   }

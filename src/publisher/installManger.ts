@@ -3,8 +3,14 @@ import config from "../config";
 import { MNXPackageInfoResult, MNXPackageVersionInfoResult } from "../types";
 
 export class InstallManger {
+  private static encodeScope(scope: string): string {
+    return encodeURIComponent(scope.startsWith("@") ? scope : `@${scope}`);
+  }
+  private static encodePart(v: string): string {
+    return encodeURIComponent(v);
+  }
   static async download(scope: string, name: string, version: string, outputPath: string) {
-    const response = await fetch(`${config.defaultPmnxBASE}/package/${scope}/${name}/v/${version}/download`);
+    const response = await fetch(`${config.defaultPmnxBASE}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/download`);
     if (!response.ok) {
       throw new Error(`Failed to download package: ${response.status} ${response.statusText}`);
     }
@@ -12,10 +18,7 @@ export class InstallManger {
     await writeFile(outputPath, Buffer.from(buffer));
   }
   static async info(scope: string, name: string): Promise<MNXPackageInfoResult> {
-    const response = await fetch(`${config.defaultPmnxBASE}/package/${scope}/${name}/info`);
-    if (!response.ok) {
-      throw new Error(`Failed to get package info: ${response.status} ${response.statusText}`);
-    }
+    const response = await fetch(`${config.defaultPmnxBASE}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/info`);
     const data = await response.json() as any;
     if (data.code !== 200) {
       throw new Error(`Failed to get package info: ${data.data}`);
@@ -23,7 +26,7 @@ export class InstallManger {
     return data.data;
   }
   static async versionInfo(scope: string, name: string, version: string): Promise<MNXPackageVersionInfoResult> {
-    const response = await fetch(`${config.defaultPmnxBASE}/package/${scope}/${name}/v/${version}/info`);
+    const response = await fetch(`${config.defaultPmnxBASE}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/info`);
     if (!response.ok) {
       throw new Error(`Failed to get package version info: ${response.status} ${response.statusText}`);
     }

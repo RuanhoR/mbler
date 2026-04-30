@@ -5,8 +5,12 @@
     "outDir": "./dist",
     "module": "esnext",
     "target": "esnext",
-    "lib": ["esnext"],
-    "types": ["node"],
+    "lib": [
+      "esnext"
+    ],
+    "types": [
+      "node"
+    ],
     "sourceMap": true,
     "declaration": true,
     "declarationDir": "./dist/types",
@@ -22,7 +26,10 @@
     "allowSyntheticDefaultImports": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
-  "include": ["./src/**/*", "rollup.config.mjs"]
+  "include": [
+    "./src/**/*",
+    "rollup.config.mjs"
+  ]
 }

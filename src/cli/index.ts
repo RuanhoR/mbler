@@ -13,6 +13,9 @@ import { publishCommand } from './publish'
 import { uninstallCommand } from './uninstall'
 import { installCommand } from './install'
 import { loginCommand } from './login'
+import { profileCommand } from './profile'
+import { viewCommand } from './view'
+import { configCommand } from './config'
 // `showText` moved to `utils` to avoid circular dependency with `build`.
 const main = (function (): () => Promise<void> {
   let currentWDManage: WorkDirManage
@@ -176,7 +179,10 @@ const main = (function (): () => Promise<void> {
       publish: publishCommand,
       uninstall: uninstallCommand,
       install: installCommand,
-      login: loginCommand
+      login: loginCommand,
+      profile: profileCommand,
+      view: viewCommand,
+      config: configCommand
     }
     const cmd = cliParam.params[0]
     if (cliParam.opts.cwp) {

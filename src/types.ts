@@ -1,5 +1,7 @@
+import { Plugin } from "rollup"
+
 export const LanguageNames = ['zh', 'en']
-export const cmdList = ['c', 'work', 'help', 'h', 'init', 'version', 'build', 'watch', 'lang', 'set-work-dir', 'publish', 'unpublish', 'install', 'uninstall', 'login'] as const
+export const cmdList = ['c', 'work', 'help', 'h', 'init', 'version', 'build', 'watch', 'lang', 'set-work-dir', 'publish', 'unpublish', 'install', 'uninstall', 'login', 'profile', 'view', 'config'] as const
 type HelpCommand = (typeof cmdList)[number]
 export interface language {
   description: string
@@ -35,6 +37,64 @@ export interface language {
   },
   publish: {
     askTip: string
+    notLoggedIn: string
+    progress: string
+    publishFailed: string
+    publishing: string
+    building: string
+    publishToMarket: string
+    publishSuccess: string
+    publishResult: string
+    projectPathNotExist: string
+    outdirNotFound: string
+    outdirNotExist: string
+    readmeNotFound: string
+    metadataInvalid: string
+    packageNameInvalid: string
+    notLoginError: string
+    tokenMissing: string
+    unpublishReqFailed: string
+    createSessionFailed: string
+    uploadZipFailed: string
+    packageJsonNotFound: string
+    noBuildScript: string
+    buildFailed: string
+  }
+  install: {
+    failedNoPackageJson: string
+    failedNoBuildScript: string
+    installing: string
+    packageNotFound: string
+    noVersion: string
+    usingLatest: string
+    noValidAddon: string
+    success: string
+    failed: string
+  }
+  uninstall: {
+    success: string
+    failed: string
+  }
+  unpublish: {
+    success: string
+    failed: string
+  }
+  view: {
+    usage: string
+    packageNotFound: string
+    title: string
+    versionLine: string
+    failed: string
+  }
+  config: {
+    usage: string
+    missingArg: string
+    getResult: string
+    setSuccess: string
+    pointGet: string
+    pointSetSuccess: string
+    pointSetFailed: string
+    failed: string
   }
 }
 export interface MblerConfigScript {
@@ -48,6 +108,14 @@ export interface MblerConfigOutdir {
   resources?: string // resources output dir, default: ./dist/res
   dist: string // build use "-dist" option to build to a mcaddon file.
 }
+export interface MblerBuildConfig {
+  rollupPlugins: Plugin[];
+  cache: "none" | "memory" | "file" | "filesystem" | "auto";
+  bundle: boolean;
+  onEnd: (ctx: MblerConfigData) => void | Promise<void>;
+  onStart: (ctx: MblerConfigData) => void | Promise<void>;
+  onWarn: (ctx: MblerConfigData, warning: Error) => void | Promise<void>;
+}
 export interface MblerConfigData {
   name: string // addon name
   outdir?: MblerConfigOutdir // output
@@ -56,6 +124,7 @@ export interface MblerConfigData {
   mcVersion: string | string[] // use mcVersion, be like "1.21.100"
   script?: MblerConfigScript // sapi option
   minify?: boolean // use minify
+  build?: Partial<MblerBuildConfig> // build config
 }
 export const templateMblerConfig: MblerConfigData = {
   name: 'demo',
@@ -71,6 +140,14 @@ export const templateMblerConfig: MblerConfigData = {
     resources: '',
     dist: '',
   },
+  build: {
+    rollupPlugins: [],
+    cache: "auto",
+    bundle: true,
+    onEnd: () => { },
+    onStart: () => { },
+    onWarn: () => { }
+  }
 }
 export interface CliParam {
   params: string[]

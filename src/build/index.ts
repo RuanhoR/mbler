@@ -9,9 +9,10 @@ import path, { isAbsolute } from 'node:path'
 import * as rollup from 'rollup'
 import { onEnd } from '../commander'
 import Logger from '../logger'
-import type { CliParam, MblerConfigData } from '../types'
+import type { CliParam, MblerBuildConfig, MblerConfigData } from '../types'
 import { FileExsit, join, ReadProjectMblerConfig, showText, writeJSON } from '../utils'
 import { BuildConfig } from './config'
+import { BuildCacheManager } from './cache'
 import generateManifest from './manifest'
 import { generateRelease } from './release'
 import commonjs from '@rollup/plugin-commonjs'
@@ -43,12 +44,10 @@ class Build {
     private resolve: (a: number) => void,
     private isWatch: boolean = false
   ) {
-    // 初始化 MCX 语言插件创建器，传入 tsHook.ts 使用
     try {
       const tsModule = ts;
       this.mcxLanguagePluginCreator = createMCXLanguagePlugin as unknown as typeof this.mcxLanguagePluginCreator
       this.mcxTs = tsModule
-      Logger.i("Build", "MCX Volar language plugin creator initialized successfully")
     } catch (error) {
       this.mcxTs = ts
       Logger.w("Build", `Failed to initialize MCX language plugin: ${error}`)
@@ -128,7 +127,9 @@ class Build {
     }
   }
   private rollupPlugin: rollup.Plugin[] | null = null
+  private cacheManager: BuildCacheManager | null = null
   public init: boolean = false
+  private buildConfig: Partial<MblerBuildConfig> | null = null
   /**
    * Which modules are present in the current project.
    * - "behavior" when only behavior code exists
@@ -179,6 +180,13 @@ class Build {
       throw new Error('[init build]: build dir is not absolute path')
     }
     this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
+    if (this.currentConfig.build) this.buildConfig = this.currentConfig.build;
+    this.cacheManager = new BuildCacheManager(
+      this.baseBuildDir,
+      this.buildConfig?.cache,
+      this.isWatch
+    )
+    if (this.buildConfig?.onStart) await this.buildConfig.onStart(this.currentConfig);
     this.loadData()
     if (!this.isWatch) progress.update(10)
     await this.handlerOtherAddon()
@@ -199,6 +207,7 @@ class Build {
         format: 'esm',
         sourcemap: false,
       });
+    await this.cacheManager?.saveRollupCache(rBuild.cache)
     if (!this.isWatch) progress.update(70)
     if (!this.outdirs || !this.module) throw new Error(`[build addon]: can't resolve outdirs`)
     await generateRelease({
@@ -257,6 +266,9 @@ class Build {
         })
       )
     }
+    if (this.buildConfig?.rollupPlugins) {
+      plugin.push(...this.buildConfig.rollupPlugins)
+    }
     if (this.currentConfig.script.lang == "ts") {
       const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
       if (!(await FileExsit(tsconfigPath))) {
@@ -303,11 +315,31 @@ class Build {
     }
     // save plugin array for watcher re-use
     this.rollupPlugin = plugin
-    return await rollup.rollup({
+    const rollupOption: rollup.RollupOptions = {
       input: main,
       external: ['@minecraft/server', '@minecraft/server-ui'],
       plugins: plugin,
-    })
+      cache: await this.cacheManager?.getRollupCache(),
+    };
+    if (this.buildConfig?.onWarn) rollupOption.onwarn = (warning) => {
+      this.buildConfig?.onWarn?.(this.currentConfig!, warning instanceof Error ? warning : new Error(warning.message))
+    }
+    if (this.buildConfig?.onEnd) {
+      plugin.push({
+        name: 'build-end-plugin',
+        buildEnd: () => {
+          return this.buildConfig?.onEnd?.(this.currentConfig!)
+        }
+      })
+    }
+    if (this.buildConfig?.bundle === false) {
+      rollupOption.output = {
+        dir: path.join(this.outdirs.behavior, 'scripts'),
+        format: 'esm',
+        sourcemap: false,
+      }
+    }
+    return await rollup.rollup(rollupOption)
   }
 
   /**
@@ -384,7 +416,7 @@ class Build {
         format: 'esm',
         sourcemap: false,
       },
-      cache: true,
+      cache: this.cacheManager?.getWatchCacheOption() ?? true,
       watch: {
         clearScreen: false,
         include: path.join(this.srcDirs.behavior, 'scripts/**/*'),
@@ -410,6 +442,8 @@ class Build {
         )
       } else if (event.code === 'END') {
         Logger.i('Watcher', `rebuild success`)
+      } else if (event.code === 'BUNDLE_END') {
+        await this.cacheManager?.saveRollupCache(event.result?.cache)
       }
     })
     return rollupWatcher
@@ -434,6 +468,12 @@ class Build {
       const oldConfig = this.currentConfig
       Logger.i('Watcher', 'detected mbler.config.json change, reload config')
       this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
+      this.buildConfig = this.currentConfig.build || null
+      this.cacheManager = new BuildCacheManager(
+        this.baseBuildDir,
+        this.buildConfig?.cache,
+        this.isWatch
+      )
       this.loadData()
       if (
         this.isChange(oldConfig, this.currentConfig, [
@@ -448,23 +488,7 @@ class Build {
       if (this.isChange(oldConfig, this.currentConfig, ['script', 'outdir'])) {
         this.watchers.rollup.close()
         await this.createRollup()
-        this.watchers.rollup = rollup.watch({
-          input: path.join(
-            this.srcDirs.behavior,
-            'scripts',
-            this.currentConfig?.script?.main || ''
-          ),
-          external: ['@minecraft/server', '@minecraft/server-ui'],
-          plugins: this.rollupPlugin,
-          output: {
-            file: path.join(
-              this.outdirs.behavior,
-              'scripts',
-              this.currentConfig?.script?.main || ''
-            ),
-            format: 'esm',
-          },
-        })
+        this.watchers.rollup = this.createRollupWatcher()
       }
     }
     // if behavior or resources change, we can just copy the changed file instead of copy all files again.

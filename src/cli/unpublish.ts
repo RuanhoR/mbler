@@ -2,7 +2,9 @@ import i18n from "../i18n";
 import { CliParam } from "../types";
 import { showText } from "../utils";
 import { PublishManger } from "../publisher/publishManger";
-import { TokenManger } from "../publisher/tokenManger";
+function fmt(t: string, vars: Record<string, string | number>) {
+  return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+}
 
 function parsePackage(pkg: string): { scope: string; name: string; version: string } | null {
   const result = /^(@[^/@\s]+)\/([^@\s]+)@(.+)$/.exec(pkg);
@@ -29,10 +31,10 @@ export async function unpublishCommand(cliParam: CliParam, work: string) {
 
   try {
     await PublishManger.unpublish(parsed.scope, parsed.name, parsed.version);
-    showText(`Package ${parsed.scope}/${parsed.name}@${parsed.version} unpublished successfully`);
+    showText(fmt(i18n.unpublish.success, { pkg: `${parsed.scope}/${parsed.name}`, version: parsed.version }));
     return 0;
   } catch (error) {
-    showText(`Unpublish failed: ${error instanceof Error ? error.message : String(error)}`);
+    showText(fmt(i18n.unpublish.failed, { error: error instanceof Error ? error.message : String(error) }));
     return -1;
   }
 }
