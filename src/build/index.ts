@@ -202,11 +202,18 @@ class Build {
     if (!output) output = "index.js"
     if (path.extname(output) !== "js") output = output.slice(0, output.length - path.extname(output).length) + ".js";
     if (this.currentConfig.script)
-      await rBuild.write({
+      await rBuild.write(this.currentConfig.build?.bundle ? {
         file: join(path.join(this.outdirs.behavior, "scripts"), output),
         format: 'esm',
         sourcemap: false,
-      });
+      } :
+        {
+          dir: path.join((this.outdirs as { behavior: string }).behavior, "scripts"),
+          format: 'esm',
+          sourcemap: false,
+          chunkFileNames: '[name].js',
+        }
+      )
     await this.cacheManager?.saveRollupCache(rBuild.cache)
     if (!this.isWatch) progress.update(70)
     if (!this.outdirs || !this.module) throw new Error(`[build addon]: can't resolve outdirs`)
@@ -332,13 +339,6 @@ class Build {
         }
       })
     }
-    if (this.buildConfig?.bundle === false) {
-      rollupOption.output = {
-        dir: path.join(this.outdirs.behavior, 'scripts'),
-        format: 'esm',
-        sourcemap: false,
-      }
-    }
     return await rollup.rollup(rollupOption)
   }
 
@@ -411,9 +411,14 @@ class Build {
       ),
       external: ['@minecraft/server', '@minecraft/server-ui'],
       plugins: this.rollupPlugin,
-      output: {
+      output: this.currentConfig.build?.bundle ? {
         file: join(path.join(this.outdirs.behavior, "scripts"), output),
         format: 'esm',
+        sourcemap: false,
+      } : {
+        dir: join(path.join(this.outdirs.behavior, "scripts"), output),
+        format: 'esm',
+        chunkFileNames: '[name].js',
         sourcemap: false,
       },
       cache: this.cacheManager?.getWatchCacheOption() ?? true,

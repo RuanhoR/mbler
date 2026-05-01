@@ -1,3 +1,4 @@
+import { extname } from "node:path";
 import { ManifestData, MblerConfigData } from "../types";
 import { stringToNumberArray } from "../utils";
 import { fromString } from "../uuid";
@@ -8,12 +9,13 @@ async function generateManifest(
   config: MblerConfigData,
   type: "data" | "resources",
 ): Promise<ManifestData> {
+  const hashRaw = `${config.name}-${type}-${config.script?.lang || "js"}--mbler-hash-raw--:build-manifest`;
   const manifest: ManifestData = {
     format_version: 2,
     header: {
       name: config.name,
       description: config.description,
-      uuid: fromString(config.name, BuildConfig.salt.header + type),
+      uuid: fromString(hashRaw, BuildConfig.salt.header),
       version: stringToNumberArray(config.version),
       min_engine_version: stringToNumberArray(
         typeof config.mcVersion === "string"
@@ -26,16 +28,28 @@ async function generateManifest(
     modules: [
       {
         type: type,
-        uuid: fromString(config.name, BuildConfig.salt.module + type),
+        uuid: fromString(hashRaw, BuildConfig.salt.module),
         description: `From Mbler(https://github.com/RuanhoR/mbler). welcome to star and contribute!`,
         version: stringToNumberArray(config.version),
       },
     ],
   };
   if (type === "data" && config.script) {
+    let entry = config.script.main || "scripts/index.js";
+    if (config.script.lang == "mcx" && config.build?.bundle) {
+      entry = "scripts/index.js";
+    } else {
+      entry = `scripts/${entry}`
+    }
+    const extName = extname(entry);
+    if (extName !== ".js") {
+      entry = entry.slice(0, -extName.length) + ".js";
+    }
     manifest.modules.push({
       type: "script",
-      uuid: fromString(config.name, BuildConfig.salt.sapi + type),
+      entry: entry,
+      language: "javascript",
+      uuid: fromString(hashRaw, BuildConfig.salt.sapi),
       description: `sapi generate by mbler, weclome to download and star at https://github.com/RuanhoR/mbler`,
       version: stringToNumberArray(config.version),
     });
@@ -49,7 +63,7 @@ async function generateManifest(
             config.mcVersion,
             config.script?.UseBeta || false,
           )
-        ).split("-")[0] as string, // only major.minor.patch, remove -beta or -rc
+        ), // only major.minor.patch, remove -beta or -rc
       },
     ];
     if (config.script.ui) {
@@ -61,7 +75,7 @@ async function generateManifest(
             config.mcVersion,
             config.script?.UseBeta || false,
           )
-        ).split("-")[0] as string, // only major.minor.patch, remove -beta or -rc
+        ), // only major.minor.patch, remove -beta or -rc
       });
     }
   }

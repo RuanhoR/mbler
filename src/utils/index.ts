@@ -153,10 +153,12 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
    */
   return async function (t: string = '', g: boolean = true): Promise<string> {
     return new Promise((resolve) => {
-      show = g
-      tip = t
-      refreshInput()
-      curr = resolve
+      flushOutputQueue().then(() => {
+        show = g
+        tip = t
+        refreshInput()
+        curr = resolve
+      })
     })
   }
 })()
