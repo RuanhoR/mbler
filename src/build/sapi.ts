@@ -177,6 +177,9 @@ const exp = (function (): {
       // fall back to whatever is available
       result = entryModule.formal || entryModule.beta;
     }
+    const tmp = result.split("-").slice(0, 2) as [string, string];
+    tmp[1] = tmp[1].split(".")[0] as string;
+    result = tmp.join("-")
     return result || "";
   }
 
