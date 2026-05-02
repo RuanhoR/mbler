@@ -26,7 +26,6 @@ mbler -v
 初始化目录配置文件
 
 ```bash
-mbler -c <项目路径>
 mbler init
 ```
 
