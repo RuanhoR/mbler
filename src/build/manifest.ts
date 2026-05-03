@@ -4,7 +4,7 @@ import { stringToNumberArray } from "../utils";
 import { fromString } from "../uuid";
 import { BuildConfig } from "./config";
 import Sapi from "./sapi";
-
+import { evalVersion } from "./sapi"
 async function generateManifest(
   config: MblerConfigData,
   type: "data" | "resources",
@@ -58,11 +58,11 @@ async function generateManifest(
       {
         module_name: "@minecraft/server",
         version: (
-          await Sapi.generateVersion(
+          evalVersion(await Sapi.generateVersion(
             "@minecraft/server",
             config.mcVersion,
             config.script?.UseBeta || false,
-          )
+          ))
         ), // only major.minor.patch, remove -beta or -rc
       },
     ];
@@ -70,11 +70,11 @@ async function generateManifest(
       manifest.dependencies.push({
         module_name: "@minecraft/server-ui",
         version: (
-          await Sapi.generateVersion(
+          evalVersion(await Sapi.generateVersion(
             "@minecraft/server-ui",
             config.mcVersion,
             config.script?.UseBeta || false,
-          )
+          ))
         ), // only major.minor.patch, remove -beta or -rc
       });
     }

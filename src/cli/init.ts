@@ -105,6 +105,7 @@ export async function initCommand(
         initOpts.mcVersion,
         initOpts.useBetaApi
       ),
+      'mbler': '0.2.4-rc.2'
     } as Record<string, string>,
   }
   if (initOpts.useUI) {
