@@ -1,6 +1,0 @@
-
-<script>
-import Event from "./event.mcx";
-if (Event.type !== "event") throw new Error("")
-Event.event.subscribe();
-</script>

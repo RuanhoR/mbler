@@ -1,9 +1,0 @@
-<Event @after>
-McxExtendsBy = ./event$1.mcx
-PlayerJoin = eventHandler
-</Event>
-<script>
-export const eventHandler = function(event) {
-  event.player.sendMessage("欢迎进入游戏")
-}
-</script>
