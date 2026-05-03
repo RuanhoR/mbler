@@ -55,18 +55,6 @@ export async function installCommand(cliParam: CliParam, work: string) {
     showText(i18n.help.install);
     return -1;
   }
-
-  const packageJsonPath = path.join(work, "package.json");
-  if (!await fs.stat(packageJsonPath).catch(() => null)) {
-    showText(i18n.install.failedNoPackageJson);
-    return -1;
-  }
-  const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"));
-  if (!packageJson.scripts?.build) {
-    showText(i18n.install.failedNoBuildScript);
-    return -1;
-  }
-
   showText(fmt(i18n.install.installing, { pkg }));
   try {
     if (!version) {
@@ -138,15 +126,6 @@ export async function installCommand(cliParam: CliParam, work: string) {
     await ConfigManger.setKey("installedPackages", installed);
 
     await fs.rm(tmpDir, { recursive: true, force: true });
-
-    await new Promise<void>((resolve, reject) => {
-      const child = spawn("pnpm", ["build"], { cwd: work });
-      child.on("close", (code) => {
-        if (code === 0) resolve();
-        else reject(new Error(i18n.publish.buildFailed.replace("{code}", String(code))));
-      });
-    });
-
     showText(fmt(i18n.install.success, { pkg: `${scope}/${name}`, version, id }));
     return 0;
   } catch (error) {

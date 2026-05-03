@@ -151,6 +151,7 @@ export class PublishManger {
     });
     const session = await response.json() as any;
     if (!response.ok) {
+      console.log(session)
       throw new Error(i18n.publish.createSessionFailed);
     }
     const sessionKey = session?.data?.sessionKey || session?.data?.sessionId;
