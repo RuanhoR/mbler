@@ -33,7 +33,7 @@
   "scripts": {
     "cli": "node bin/mbler.js",
     "build": "rollup -c",
-    "test": "pnpm build && cd __test__ && pnpm test"
+    "test": "cd __test__ && pnpm test"
   },
   "dependencies": {
     "@mbler/mcx": "0.0.3-alpha.r1",

@@ -12,11 +12,15 @@
     "allowJs": true,
     "strict": true,
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["./behavior/scripts/**/*"]
+  "include": [
+    "./behavior/scripts/**/*",
+    "./mbler.config.js"
+  ]
 }
