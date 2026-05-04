@@ -1,5 +1,5 @@
 import { Container, EntityComponentTypes, EquipmentSlot, ItemStack, Player, world } from '@minecraft/server';
-import { GameLib } from './gameLib/index'
+import { GameLib } from './gameLib'
 interface LayoutConfig {
   title: string;
   layout: Array<{
