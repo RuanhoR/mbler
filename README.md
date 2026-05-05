@@ -2,11 +2,12 @@
 
 ### 介绍
 
-一个Minecraft Addon的开发工具，功能包括
- - MCX DSL
- - Manfiest Generator
- - Bundle
- - Component build
+一个基于Rooldown的Minecraft Addon的开发工具，功能包括
+
+- MCX DSL
+- Manfiest Generator
+- Bundle
+- Component build
 
 ### 安装
 
@@ -15,7 +16,7 @@
 - Node.js 与 npm
 - Git
 - npm  
-`npm install -g mbler`
+  `npm install -g mbler`
   安装成功后，你可以直接使用：
 
 ```bash
@@ -29,7 +30,7 @@ mbler -v
 mbler init
 ```
 
-** 详细请看 : [文档](https://mbler-docs.ruanhor.dpdns.org/) **
+详细请看 : [文档](https://mbler-docs.ruanhor.dpdns.org/)
 
 ### 发布平台
 
@@ -37,4 +38,4 @@ mbler init
 
 ## 文档
 
-[中文](https://zh-mbler-docs.ruanhor.dpdns.org/) | [英文](https://mbler-docs.ruanhor.dpdns.org/)
+[中文](https://zh-mbler-docs.ruanhor.dpdns.org/) | [English](./README_en.md) | [한국어](./README_ko.md) | [日本語](./README_ja.md)

@@ -1,13 +1,13 @@
 import * as mcxDef from '@mbler/mcx-core'
 import _chalk from 'chalk'
-import jsonPlugin from '@rollup/plugin-json'
-import resolvePlugin from '@rollup/plugin-node-resolve'
 import minifyPlugin from '@rollup/plugin-terser'
 import { watch as chokidarWatch } from 'chokidar'
 import * as fs from 'node:fs/promises'
 import path, { isAbsolute } from 'node:path'
-import * as rollup from 'rolldown'
-import { rolldown as buildBundle, watch as rolldownWatch, type Plugin, type WarningHandlerWithDefault, type RolldownWatcherEvent, type RolldownOptions, type RolldownBuild, type RolldownWatcher } from 'rolldown'
+import {
+  rolldown as buildBundle, watch as rolldownWatch, type Plugin,
+  type RolldownWatcherEvent, type RolldownOptions, type RolldownBuild, type RolldownWatcher
+} from 'rolldown'
 import { onEnd } from '../commander'
 import Logger from '../logger'
 import type { CliParam, ManifestData, MblerBuildConfig, MblerConfigData } from '../types'
@@ -16,7 +16,6 @@ import { BuildConfig } from './config'
 import { BuildCacheManager } from './cache'
 import generateManifest from './manifest'
 import { generateRelease } from './release'
-import commonjs from '@rollup/plugin-commonjs'
 import { Postgress } from './postgress'
 import { createMCXLanguagePlugin, MCXLanguagePlugin } from '@mbler/mcx-server'
 import { LanguagePlugin } from '@volar/language-core'
@@ -248,14 +247,7 @@ class Build {
         `[build addon]: main script ${main} is not exist: can't resolve entry`
       )
     }
-    const plugin: Plugin[] = [
-      jsonPlugin() as unknown as Plugin,
-      resolvePlugin({
-        extensions: ['.ts', '.js', '.json'],
-      }) as unknown as Plugin,
-      commonjs() as unknown as Plugin
-    ]
-
+    const plugin: Plugin[] = []
     const moduleDir = path.join(this.baseBuildDir, 'node_modules')
     if (!(await FileExsit(moduleDir))) {
       throw new Error(

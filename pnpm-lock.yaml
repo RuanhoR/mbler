@@ -20,15 +20,6 @@ importers:
       '@mbler/mcx-types':
         specifier: 0.0.3-rc.5
         version: 0.0.3-rc.5(@minecraft/vanilla-data@1.26.13)
-      '@rollup/plugin-commonjs':
-        specifier: 29.0.0
-        version: 29.0.0(rollup@4.59.0)
-      '@rollup/plugin-json':
-        specifier: 6.1.0
-        version: 6.1.0(rollup@4.59.0)
-      '@rollup/plugin-node-resolve':
-        specifier: 16.0.3
-        version: 16.0.3(rollup@4.59.0)
       '@rollup/plugin-terser':
         specifier: 0.4.4
         version: 0.4.4(rollup@4.59.0)
@@ -71,10 +62,16 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
-      vscode-uri:
-        specifier: ^3.1.0
-        version: 3.1.0
     devDependencies:
+      '@rollup/plugin-commonjs':
+        specifier: 29.0.0
+        version: 29.0.0(rollup@4.59.0)
+      '@rollup/plugin-json':
+        specifier: 6.1.0
+        version: 6.1.0(rollup@4.59.0)
+      '@rollup/plugin-node-resolve':
+        specifier: 16.0.3
+        version: 16.0.3(rollup@4.59.0)
       '@types/adm-zip':
         specifier: 0.5.7
         version: 0.5.7
