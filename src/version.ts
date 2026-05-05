@@ -1,6 +1,6 @@
-export default { commit: `commit 3902fa5397576a105378005ba2cafc60bf5d3b85
+export default { commit: `commit 012fb6c8c1e15d1c31e7540e5e960875435a7e88
 Author: Ruanhor <3915264929@qq.com>
-Date:   Sun May 3 11:19:17 2026 +0800
+Date:   Mon May 4 16:54:33 2026 +0800
 
-    chore: update package
+    chore: update version and add .mbler ignore in git
 `, version: "0.2.4-rc.4" }

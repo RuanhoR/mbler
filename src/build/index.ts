@@ -6,10 +6,11 @@ import minifyPlugin from '@rollup/plugin-terser'
 import { watch as chokidarWatch } from 'chokidar'
 import * as fs from 'node:fs/promises'
 import path, { isAbsolute } from 'node:path'
-import * as rollup from 'rollup'
+import * as rollup from 'rolldown'
+import { rolldown as buildBundle, watch as rolldownWatch, type Plugin, type WarningHandlerWithDefault, type RolldownWatcherEvent, type RolldownOptions, type RolldownBuild, type RolldownWatcher } from 'rolldown'
 import { onEnd } from '../commander'
 import Logger from '../logger'
-import type { CliParam, MblerBuildConfig, MblerConfigData } from '../types'
+import type { CliParam, ManifestData, MblerBuildConfig, MblerConfigData } from '../types'
 import { FileExsit, join, ReadProjectMblerConfig, showText, writeJSON } from '../utils'
 import { BuildConfig } from './config'
 import { BuildCacheManager } from './cache'
@@ -102,7 +103,7 @@ class Build {
    * so that external callers can close them when necessary (e.g. tests).
    */
   private watchers: {
-    rollup: rollup.RollupWatcher
+    rollup: RolldownWatcher
     chokidar: ReturnType<typeof chokidarWatch>
   } | null = null
 
@@ -126,7 +127,7 @@ class Build {
       this.watchers = null
     }
   }
-  private rollupPlugin: rollup.Plugin[] | null = null
+  private rollupPlugin: Plugin[] | null = null
   private cacheManager: BuildCacheManager | null = null
   public init: boolean = false
   private buildConfig: Partial<MblerBuildConfig> | null = null
@@ -192,7 +193,7 @@ class Build {
     await this.handlerOtherAddon()
     await this.handlerManifest()
     if (!this.isWatch) progress.update(30)
-    const rBuild = (await this.createRollup()) as rollup.RollupBuild
+    const rBuild = (await this.createRollup()) as RolldownBuild
     if (!this.rollupPlugin || !this.outdirs) {
       throw new Error(`[build addon]: can't resolve rollup instance`)
     }
@@ -214,7 +215,7 @@ class Build {
           chunkFileNames: '[name].js',
         }
       )
-    await this.cacheManager?.saveRollupCache(rBuild.cache)
+    await this.cacheManager?.saveRollupCache((rBuild as any).cache)
     if (!this.isWatch) progress.update(70)
     if (!this.outdirs || !this.module) throw new Error(`[build addon]: can't resolve outdirs`)
     await generateRelease({
@@ -247,12 +248,12 @@ class Build {
         `[build addon]: main script ${main} is not exist: can't resolve entry`
       )
     }
-    const plugin: rollup.Plugin[] = [
-      jsonPlugin(),
+    const plugin: Plugin[] = [
+      jsonPlugin() as unknown as Plugin,
       resolvePlugin({
         extensions: ['.ts', '.js', '.json'],
-      }),
-      commonjs()
+      }) as unknown as Plugin,
+      commonjs() as unknown as Plugin
     ]
 
     const moduleDir = path.join(this.baseBuildDir, 'node_modules')
@@ -270,7 +271,7 @@ class Build {
           compress: {
             unused: true,
           },
-        })
+        }) as unknown as Plugin
       )
     }
     if (this.buildConfig?.rollupPlugins) {
@@ -293,7 +294,7 @@ class Build {
         include: [
           this.srcDirs.behavior
         ]
-      }))
+      }) as unknown as Plugin)
     }
     if (this.currentConfig.script?.lang == 'mcx') {
       try {
@@ -313,7 +314,7 @@ class Build {
         if (this.mcxLanguagePluginCreator) {
           pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator;
         }
-        plugin.push(mcxDef.plugin(pluginConfig, this.outdirs))
+        plugin.push(mcxDef.plugin(pluginConfig, this.outdirs) as unknown as Plugin)
       } catch (err) {
         throw new Error(
           `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`
@@ -322,14 +323,17 @@ class Build {
     }
     // save plugin array for watcher re-use
     this.rollupPlugin = plugin
-    const rollupOption: rollup.RollupOptions = {
+    const rollupOption: RolldownOptions = {
       input: main,
       external: ['@minecraft/server', '@minecraft/server-ui'],
       plugins: plugin,
-      cache: await this.cacheManager?.getRollupCache(),
     };
-    if (this.buildConfig?.onWarn) rollupOption.onwarn = (warning) => {
-      this.buildConfig?.onWarn?.(this.currentConfig!, warning instanceof Error ? warning : new Error(warning.message))
+    if (this.buildConfig?.onWarn) {
+      const onWarn: (warning: any, defaultHandler: (warning: string | (() => string)) => void) => void = (warning, _defaultHandler) => {
+        const msg = typeof warning === 'string' ? warning : (warning as any).message || 'Unknown warning'
+        this.buildConfig?.onWarn?.(this.currentConfig!, new Error(msg))
+      }
+      rollupOption.onwarn = onWarn
     }
     if (this.buildConfig?.onEnd) {
       plugin.push({
@@ -339,7 +343,7 @@ class Build {
         }
       })
     }
-    return await rollup.rollup(rollupOption)
+    return await buildBundle(rollupOption)
   }
 
   /**
@@ -403,14 +407,14 @@ class Build {
     let output = this.currentConfig.script?.main;
     if (!output) output = "index.js"
     if (path.extname(output) !== "js") output = output.slice(0, output.length - path.extname(output).length) + ".js";
-    const rollupWatcher = rollup.watch({
+    const rollupWatcher = rolldownWatch({
       input: path.join(
         this.srcDirs.behavior,
         'scripts',
         this.currentConfig?.script?.main || ''
       ),
       external: ['@minecraft/server', '@minecraft/server-ui'],
-      plugins: this.rollupPlugin,
+      plugins: this.rollupPlugin as any,
       output: this.currentConfig.build?.bundle ? {
         file: join(path.join(this.outdirs.behavior, "scripts"), output),
         format: 'esm',
@@ -421,7 +425,6 @@ class Build {
         chunkFileNames: '[name].js',
         sourcemap: false,
       },
-      cache: this.cacheManager?.getWatchCacheOption() ?? true,
       watch: {
         clearScreen: false,
         include: path.join(this.srcDirs.behavior, 'scripts/**/*'),
@@ -432,11 +435,11 @@ class Build {
           this.outdirs.dist,
         ],
       },
-    })
-    rollupWatcher.on('change', async (filePath) => {
+    } as any)
+    rollupWatcher.on('change', async (filePath: string) => {
       Logger.i('Watcher', `file changed: ${filePath}, start rebuild`)
     })
-    rollupWatcher.on('event', async (event) => {
+    rollupWatcher.on('event', async (event: RolldownWatcherEvent) => {
       if (event.code === 'ERROR') {
         Logger.e('Watcher', `rollup error: ${event.error.stack || event.error}`)
         showText(
@@ -448,7 +451,7 @@ class Build {
       } else if (event.code === 'END') {
         Logger.i('Watcher', `rebuild success`)
       } else if (event.code === 'BUNDLE_END') {
-        await this.cacheManager?.saveRollupCache(event.result?.cache)
+        await this.cacheManager?.saveRollupCache((event.result as any)?.cache)
       }
     })
     return rollupWatcher
@@ -562,11 +565,11 @@ class Build {
     if (!this.currentConfig || !this.outdirs || !this.srcDirs || !this.module)
       throw new Error(`[build addon]: can't first can this method`)
     const otherManifestOption: {
-      behavior: any
-      resources: any
+      behavior: ManifestData
+      resources: ManifestData
     } = {
-      behavior: {},
-      resources: {},
+      behavior: {} as ManifestData,
+      resources: {} as ManifestData,
     }
     const handlerBP = async () => {
       if (!this.outdirs || !this.currentConfig)

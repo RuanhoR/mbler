@@ -1,4 +1,4 @@
-import { Plugin } from "rollup"
+import { Plugin } from "rolldown"
 
 export const LanguageNames = ['zh', 'en']
 export const cmdList = ['c', 'work', 'help', 'h', 'init', 'version', 'build', 'watch', 'lang', 'set-work-dir', 'publish', 'unpublish', 'install', 'uninstall', 'login', 'profile', 'view', 'config'] as const
