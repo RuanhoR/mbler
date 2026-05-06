@@ -5,39 +5,60 @@ import { watch as chokidarWatch } from 'chokidar'
 import * as fs from 'node:fs/promises'
 import path, { isAbsolute } from 'node:path'
 import {
-  rolldown as buildBundle, watch as rolldownWatch, type Plugin,
-  type RolldownWatcherEvent, type RolldownOptions, type RolldownBuild, type RolldownWatcher
+  rolldown as buildBundle,
+  watch as rolldownWatch,
+  type Plugin,
+  type RolldownWatcherEvent,
+  type RolldownOptions,
+  type RolldownBuild,
+  type RolldownWatcher,
 } from 'rolldown'
 import { onEnd } from '../commander'
 import Logger from '../logger'
-import type { CliParam, ManifestData, MblerBuildConfig, MblerConfigData } from '../types'
-import { FileExsit, join, ReadProjectMblerConfig, showText, writeJSON } from '../utils'
+import type {
+  CliParam,
+  ManifestData,
+  MblerBuildConfig,
+  MblerConfigData,
+} from '../types'
+import {
+  FileExsit,
+  join,
+  ReadProjectMblerConfig,
+  showText,
+  writeJSON,
+} from '../utils'
 import { BuildConfig } from './config'
 import { BuildCacheManager } from './cache'
 import generateManifest from './manifest'
 import { generateRelease } from './release'
 import { Postgress } from './postgress'
-import { createMCXLanguagePlugin, MCXLanguagePlugin } from '@mbler/mcx-server'
+import { createMCXLanguagePlugin } from '@mbler/mcx-server'
 import { LanguagePlugin } from '@volar/language-core'
 import type { CompileOpt } from '@mbler/mcx-types'
 import typescript from '@rollup/plugin-typescript'
 import ts from 'typescript'
-// cjs support
-const chalk = _chalk instanceof Function ? _chalk : (_chalk as unknown as typeof import("chalk")).default
+// cjs support (Why is chalk's type so weak? )
+const chalk =
+  _chalk instanceof Function
+    ? _chalk
+    : (_chalk as unknown as typeof import('chalk')).default
 class Build {
   currentConfig: MblerConfigData | null = null
   srcDirs:
     | {
-      [key in 'behavior' | 'resources']: string
-    }
+        [key in 'behavior' | 'resources']: string
+      }
     | null = null
   outdirs:
     | {
-      [key in 'behavior' | 'resources' | 'dist']: string
-    }
+        [key in 'behavior' | 'resources' | 'dist']: string
+      }
     | null = null
-  mcxTs: typeof import("typescript")
-  mcxLanguagePluginCreator: ((ts: typeof import("typescript")) => LanguagePlugin<unknown>) | null = null;
+  mcxTs: typeof import('typescript')
+  mcxLanguagePluginCreator:
+    | ((ts: typeof import('typescript')) => LanguagePlugin<unknown>)
+    | null = null
   constructor(
     opts: Record<string, string>,
     private baseBuildDir: string,
@@ -45,12 +66,13 @@ class Build {
     private isWatch: boolean = false
   ) {
     try {
-      const tsModule = ts;
-      this.mcxLanguagePluginCreator = createMCXLanguagePlugin as unknown as typeof this.mcxLanguagePluginCreator
+      const tsModule = ts
+      this.mcxLanguagePluginCreator =
+        createMCXLanguagePlugin as unknown as typeof this.mcxLanguagePluginCreator
       this.mcxTs = tsModule
     } catch (error) {
       this.mcxTs = ts
-      Logger.w("Build", `Failed to initialize MCX language plugin: ${error}`)
+      Logger.w('Build', `Failed to initialize MCX language plugin: ${error}`)
     }
   }
   /**
@@ -180,13 +202,14 @@ class Build {
       throw new Error('[init build]: build dir is not absolute path')
     }
     this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
-    if (this.currentConfig.build) this.buildConfig = this.currentConfig.build;
+    if (this.currentConfig.build) this.buildConfig = this.currentConfig.build
     this.cacheManager = new BuildCacheManager(
       this.baseBuildDir,
       this.buildConfig?.cache,
       this.isWatch
     )
-    if (this.buildConfig?.onStart) await this.buildConfig.onStart(this.currentConfig);
+    if (this.buildConfig?.onStart)
+      await this.buildConfig.onStart(this.currentConfig)
     this.loadData()
     if (!this.isWatch) progress.update(10)
     await this.handlerOtherAddon()
@@ -198,29 +221,37 @@ class Build {
     }
     if (!this.isWatch) progress.update(50)
     // write script
-    let output = this.currentConfig.script?.main;
-    if (!output) output = "index.js"
-    if (path.extname(output) !== "js") output = output.slice(0, output.length - path.extname(output).length) + ".js";
+    let output = this.currentConfig.script?.main
+    if (!output) output = 'index.js'
+    if (path.extname(output) !== 'js')
+      output =
+        output.slice(0, output.length - path.extname(output).length) + '.js'
     if (this.currentConfig.script)
-      await rBuild.write(this.currentConfig.build?.bundle ? {
-        file: join(path.join(this.outdirs.behavior, "scripts"), output),
-        format: 'esm',
-        sourcemap: false,
-      } :
-        {
-          dir: path.join((this.outdirs as { behavior: string }).behavior, "scripts"),
-          format: 'esm',
-          sourcemap: false,
-          chunkFileNames: '[name].js',
-        }
+      await rBuild.write(
+        this.currentConfig.build?.bundle
+          ? {
+              file: join(path.join(this.outdirs.behavior, 'scripts'), output),
+              format: 'esm',
+              sourcemap: false,
+            }
+          : {
+              dir: path.join(
+                (this.outdirs as { behavior: string }).behavior,
+                'scripts'
+              ),
+              format: 'esm',
+              sourcemap: false,
+              chunkFileNames: '[name].js',
+            }
       )
     await this.cacheManager?.saveRollupCache((rBuild as any).cache)
     if (!this.isWatch) progress.update(70)
-    if (!this.outdirs || !this.module) throw new Error(`[build addon]: can't resolve outdirs`)
+    if (!this.outdirs || !this.module)
+      throw new Error(`[build addon]: can't resolve outdirs`)
     await generateRelease({
       outdirs: this.outdirs,
-      module: this.module
-    });
+      module: this.module,
+    })
     if (!this.isWatch) progress.update(80)
     if (!this.isWatch) this.resolve(0)
     if (!this.isWatch) progress.update(100)
@@ -269,24 +300,21 @@ class Build {
     if (this.buildConfig?.rollupPlugins) {
       plugin.push(...this.buildConfig.rollupPlugins)
     }
-    if (this.currentConfig.script.lang == "ts") {
+    if (this.currentConfig.script.lang == 'ts') {
       const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
       if (!(await FileExsit(tsconfigPath))) {
         throw new Error(
           `[build addon]: ts-lang: tsconfig.json is not exist in project root: can't resolve tsconfig for rollup: ${tsconfigPath}`
         )
       }
-      plugin.push(typescript({
-        sourceMap: false,
-        tsconfig: tsconfigPath,
-        exclude: [
-          this.outdirs.behavior,
-          this.outdirs.resources
-        ],
-        include: [
-          this.srcDirs.behavior
-        ]
-      }) as unknown as Plugin)
+      plugin.push(
+        typescript({
+          sourceMap: false,
+          tsconfig: tsconfigPath,
+          exclude: [this.outdirs.behavior, this.outdirs.resources],
+          include: [this.srcDirs.behavior],
+        }) as unknown as Plugin
+      )
     }
     if (this.currentConfig.script?.lang == 'mcx') {
       try {
@@ -301,12 +329,14 @@ class Build {
           tsconfigPath: tsconfigPath,
           sourcemap: false,
           ts: this.mcxTs,
-          mcxLanguagePlugin: this.mcxLanguagePluginCreator as any
-        };
-        if (this.mcxLanguagePluginCreator) {
-          pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator;
+          mcxLanguagePlugin: this.mcxLanguagePluginCreator as any,
         }
-        plugin.push(mcxDef.plugin(pluginConfig, this.outdirs) as unknown as Plugin)
+        if (this.mcxLanguagePluginCreator) {
+          pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator
+        }
+        plugin.push(
+          mcxDef.plugin(pluginConfig, this.outdirs) as unknown as Plugin
+        )
       } catch (err) {
         throw new Error(
           `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`
@@ -319,10 +349,16 @@ class Build {
       input: main,
       external: ['@minecraft/server', '@minecraft/server-ui'],
       plugins: plugin,
-    };
+    }
     if (this.buildConfig?.onWarn) {
-      const onWarn: (warning: any, defaultHandler: (warning: string | (() => string)) => void) => void = (warning, _defaultHandler) => {
-        const msg = typeof warning === 'string' ? warning : (warning as any).message || 'Unknown warning'
+      const onWarn: (
+        warning: any,
+        defaultHandler: (warning: string | (() => string)) => void
+      ) => void = (warning, _defaultHandler) => {
+        const msg =
+          typeof warning === 'string'
+            ? warning
+            : (warning as any).message || 'Unknown warning'
         this.buildConfig?.onWarn?.(this.currentConfig!, new Error(msg))
       }
       rollupOption.onwarn = onWarn
@@ -332,7 +368,7 @@ class Build {
         name: 'build-end-plugin',
         buildEnd: () => {
           return this.buildConfig?.onEnd?.(this.currentConfig!)
-        }
+        },
       })
     }
     return await buildBundle(rollupOption)
@@ -395,10 +431,12 @@ class Build {
       !this.currentConfig ||
       !this.rollupPlugin
     )
-      throw new Error(`[build addon]: can't first can this method`);
-    let output = this.currentConfig.script?.main;
-    if (!output) output = "index.js"
-    if (path.extname(output) !== "js") output = output.slice(0, output.length - path.extname(output).length) + ".js";
+      throw new Error(`[build addon]: can't first can this method`)
+    let output = this.currentConfig.script?.main
+    if (!output) output = 'index.js'
+    if (path.extname(output) !== 'js')
+      output =
+        output.slice(0, output.length - path.extname(output).length) + '.js'
     const rollupWatcher = rolldownWatch({
       input: path.join(
         this.srcDirs.behavior,
@@ -407,16 +445,18 @@ class Build {
       ),
       external: ['@minecraft/server', '@minecraft/server-ui'],
       plugins: this.rollupPlugin as any,
-      output: this.currentConfig.build?.bundle ? {
-        file: join(path.join(this.outdirs.behavior, "scripts"), output),
-        format: 'esm',
-        sourcemap: false,
-      } : {
-        dir: join(path.join(this.outdirs.behavior, "scripts"), output),
-        format: 'esm',
-        chunkFileNames: '[name].js',
-        sourcemap: false,
-      },
+      output: this.currentConfig.build?.bundle
+        ? {
+            file: join(path.join(this.outdirs.behavior, 'scripts'), output),
+            format: 'esm',
+            sourcemap: false,
+          }
+        : {
+            dir: join(path.join(this.outdirs.behavior, 'scripts'), output),
+            format: 'esm',
+            chunkFileNames: '[name].js',
+            sourcemap: false,
+          },
       watch: {
         clearScreen: false,
         include: path.join(this.srcDirs.behavior, 'scripts/**/*'),
@@ -436,9 +476,9 @@ class Build {
         Logger.e('Watcher', `rollup error: ${event.error.stack || event.error}`)
         showText(
           'MBLER__ERR__ROLLUP: ' +
-          (event.error.stack || event.error) +
-          ' Log at ' +
-          Logger.LogFile
+            (event.error.stack || event.error) +
+            ' Log at ' +
+            Logger.LogFile
         )
       } else if (event.code === 'END') {
         Logger.i('Watcher', `rebuild success`)
@@ -462,7 +502,9 @@ class Build {
         path.join(this.baseBuildDir, 'mbler.config.json'),
         filePath
       ) === ''
-    const isBehaviorChange = this.isParent(this.srcDirs.behavior, filePath) && !this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
+    const isBehaviorChange =
+      this.isParent(this.srcDirs.behavior, filePath) &&
+      !this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
     const isResourcesChange = this.isParent(this.srcDirs.resources, filePath)
     if (isConfigChange) {
       const oldConfig = this.currentConfig
@@ -526,7 +568,9 @@ class Build {
         await handlerRP()
       }
     }
-    showText(`[${chalk.green('mbler')}] ${chalk.bgYellow(`file changed: ${filePath}`)}`)
+    showText(
+      `[${chalk.green('mbler')}] ${chalk.bgYellow(`file changed: ${filePath}`)}`
+    )
   }
 
   private createWatcher() {
@@ -725,7 +769,9 @@ function watch(cliParam: CliParam, work: string): Promise<number> {
       const build = new Build(cliParam.opts, work, resolve, true)
       build.start().then(() => {
         build.watch()
-        showText(`[${chalk.green('mbler')}] ${chalk.bgYellow('watching for file changes...')}`)
+        showText(
+          `[${chalk.green('mbler')}] ${chalk.bgYellow('watching for file changes...')}`
+        )
       })
     } catch (err) {
       if (err instanceof Error) {
@@ -739,6 +785,4 @@ function watch(cliParam: CliParam, work: string): Promise<number> {
 export { build, watch }
 export default Build
 export { Build }
-export {
-  default as McxTsc
-} from "./plugin-mcx-tsc"
+export { default as McxTsc } from './plugin-mcx-tsc'

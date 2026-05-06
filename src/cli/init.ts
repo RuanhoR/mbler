@@ -38,7 +38,7 @@ export async function initCommand(
   cliParam: CliParam,
   workdir: string
 ): Promise<number> {
-  stdout.write(exp.init.welcome + "\n")
+  stdout.write(exp.init.welcome + '\n')
   await Sapi.refresh()
   const cmdParams = cliParam.params.slice(1)
   if (await isInit(workdir)) {
@@ -96,7 +96,6 @@ export async function initCommand(
     scripts: {
       build: 'mcx-tsc && BUILD_MODULE=release mbler build',
       'dev:build': 'mbler build',
-      install: 'pnpm i -g mbler',
       watch: 'mbler watch',
     },
     devDependencies: {
@@ -105,7 +104,7 @@ export async function initCommand(
         initOpts.mcVersion,
         initOpts.useBetaApi
       ),
-      'mbler': '0.2.4-rc.2'
+      mbler: config.mblerVersion,
     } as Record<string, string>,
   }
   if (initOpts.useUI) {
@@ -121,7 +120,7 @@ export async function initCommand(
       module: 'nodenext',
       noEmit: true,
       target: 'esnext',
-      types: ["@mbler/mcx-core/client"],
+      types: ['@mbler/mcx-core/client'],
       sourceMap: true,
       declaration: true,
       declarationMap: false,

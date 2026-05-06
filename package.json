@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.4-beat.5",
+  "version": "0.2.4-rc.5",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",

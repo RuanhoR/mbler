@@ -1,7 +1,26 @@
-import { Plugin } from "rolldown"
+import { Plugin } from 'rolldown'
 
 export const LanguageNames = ['zh', 'en']
-export const cmdList = ['c', 'work', 'help', 'h', 'init', 'version', 'build', 'watch', 'lang', 'set-work-dir', 'publish', 'unpublish', 'install', 'uninstall', 'login', 'profile', 'view', 'config'] as const
+export const cmdList = [
+  'c',
+  'work',
+  'help',
+  'h',
+  'init',
+  'version',
+  'build',
+  'watch',
+  'lang',
+  'set-work-dir',
+  'publish',
+  'unpublish',
+  'install',
+  'uninstall',
+  'login',
+  'profile',
+  'view',
+  'config',
+] as const
 type HelpCommand = (typeof cmdList)[number]
 export interface language {
   description: string
@@ -34,7 +53,7 @@ export interface language {
     noMCVersion: string
     noLanguare: string
     welcome: string
-  },
+  }
   publish: {
     askTip: string
     notLoggedIn: string
@@ -109,12 +128,12 @@ export interface MblerConfigOutdir {
   dist: string // build use "-dist" option to build to a mcaddon file.
 }
 export interface MblerBuildConfig {
-  rollupPlugins: Plugin[];
-  cache: "none" | "memory" | "file" | "filesystem" | "auto";
-  bundle: boolean;
-  onEnd: (ctx: MblerConfigData) => void | Promise<void>;
-  onStart: (ctx: MblerConfigData) => void | Promise<void>;
-  onWarn: (ctx: MblerConfigData, warning: Error) => void | Promise<void>;
+  rollupPlugins: Plugin[]
+  cache: 'none' | 'memory' | 'file' | 'filesystem' | 'auto'
+  bundle: boolean
+  onEnd: (ctx: MblerConfigData) => void | Promise<void>
+  onStart: (ctx: MblerConfigData) => void | Promise<void>
+  onWarn: (ctx: MblerConfigData, warning: Error) => void | Promise<void>
 }
 export interface MblerConfigData {
   name: string // addon name
@@ -142,12 +161,12 @@ export const templateMblerConfig: MblerConfigData = {
   },
   build: {
     rollupPlugins: [],
-    cache: "auto",
+    cache: 'auto',
     bundle: true,
-    onEnd: () => { },
-    onStart: () => { },
-    onWarn: () => { }
-  }
+    onEnd: () => {},
+    onStart: () => {},
+    onWarn: () => {},
+  },
 }
 export interface CliParam {
   params: string[]
@@ -209,46 +228,46 @@ export interface npmFetchData {
   time: Record<string, string>
 }
 export interface PMNXProfile {
-  mail: string;
-  name: string;
-  uid: number;
-  avatar_url?: string;
+  mail: string
+  name: string
+  uid: number
+  avatar_url?: string
   ctime: string
 }
 
 export interface PublishMetadata {
-  readme: string;
-  scope: string;
-  name: string;
-  version: string;
-  version_tag: string;
+  readme: string
+  scope: string
+  name: string
+  version: string
+  version_tag: string
 }
 export interface MNXPackageInfoResult {
-  id: string;
-  readmeTable: [number, string][];
+  id: string
+  readmeTable: [number, string][]
   versions: {
-    download_url: string,
-    version_tag: string;
-    name: string;
-    create_user: PMNXProfile;
-    readme: number;
-    create_time: string; // ISO Date string
-  }[];
-  download: number; /**下载量 */
+    download_url: string
+    version_tag: string
+    name: string
+    create_user: PMNXProfile
+    readme: number
+    create_time: string // ISO Date string
+  }[]
+  download: number /**下载量 */
 }
 export interface BaseResult {
-  code: 200 | -1,
-  message: string;
-  success: boolean;
+  code: 200 | -1
+  message: string
+  success: boolean
 }
 export interface MNXPackageVersionInfoResult {
-  id: string;
+  id: string
   versions: {
-    download_url: string,
-    version_tag: string;
-    name: string;
-    create_user: PMNXProfile;
-    readme: string;
-    create_time: string; // ISO Date string
+    download_url: string
+    version_tag: string
+    name: string
+    create_user: PMNXProfile
+    readme: string
+    create_time: string // ISO Date string
   }
 }

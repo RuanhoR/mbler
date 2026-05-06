@@ -1,11 +1,11 @@
-/**@ts-check */
+// @ts-check
 import resolve from '@rollup/plugin-node-resolve'
 import json from '@rollup/plugin-json'
 import ts from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
-import { fstat, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import * as path from 'node:path'
-import { cp, readdir, rm } from 'node:fs/promises'
+import { cp } from 'node:fs/promises'
 import { execSync } from 'node:child_process'
 import Dts from 'rollup-plugin-dts'
 import minify from '@rollup/plugin-terser'
@@ -28,9 +28,7 @@ const main = {
     },
   ],
   plugins: [
-    resolve({
-      requireReturnsDefault: 'auto',
-    }),
+    resolve(),
     json(),
     commonjs(),
     ts({

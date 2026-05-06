@@ -1,6 +1,6 @@
-export default { commit: `commit 012fb6c8c1e15d1c31e7540e5e960875435a7e88
+export default { commit: `commit 8bf795f2d751aacdbb9c8c1739dce0dbdcb5baf8
 Author: Ruanhor <3915264929@qq.com>
-Date:   Mon May 4 16:54:33 2026 +0800
+Date:   Tue May 5 15:28:18 2026 +0800
 
-    chore: update version and add .mbler ignore in git
-`, version: "0.2.4-rc.4" }
+    feat: remove basic plugin because rolldown already covered natively and add en, ja, ko README
+`, version: "0.2.4-rc.5" }
