@@ -50,10 +50,12 @@ const main = (function (): () => Promise<void> {
       showText(i18n.description)
       return 0
     }
-    let text = (i18n.help as any)[seeCmd] as string | undefined
+    let text = i18n.help[seeCmd as (typeof cmdList)[number]] as
+      | string
+      | undefined
     if (!text) return 0
     if (text.startsWith('$')) {
-      text = (i18n.help as any)[text.slice(1)] as string
+      text = i18n.help[text.slice(1) as (typeof cmdList)[number]] as string
     }
     showText(text)
     return 0
@@ -61,7 +63,6 @@ const main = (function (): () => Promise<void> {
 
   function getMatchChance(a: string, b: string): number {
     let match = 0
-    // b = 比较值，a = 待比较值
     for (let i = 0; i < b.length; i++) {
       if (a[i] == b[i]) match++
     }
@@ -123,9 +124,9 @@ const main = (function (): () => Promise<void> {
                 max: cur,
                 index: index,
                 indices: [],
-              } // 更新最大值及索引
+              }
             } else if (cur === acc.max) {
-              acc.indices.push(index) // 记录重复最大值的索引
+              acc.indices.push(index)
               return acc
             }
           } catch (err: any) {
@@ -148,7 +149,10 @@ const main = (function (): () => Promise<void> {
       cliParam: CliParam,
       workDir: string
     ): Promise<number> => {
-      const { build } = typeof require == "function" ? require("mbler/build") : await import("mbler/build")
+      const { build } =
+        typeof require == 'function'
+          ? require('mbler/build')
+          : await import('mbler/build')
       return await build(cliParam, workDir)
     }
 
@@ -156,15 +160,11 @@ const main = (function (): () => Promise<void> {
       cliParam: CliParam,
       workDir: string
     ): Promise<number> => {
-      const { watch } = require("mbler/build")
+      const { watch } = require('mbler/build')
       return await watch(cliParam, workDir)
     }
 
-    const cmdMap: Record<
-      typeof cmdList[number],
-      | undefined
-      | ((cliParam: CliParam, workDir: string) => number | Promise<number>)
-    > = {
+    const cmdMap = {
       help: handlerHelp,
       h: handlerHelp,
       work: handlerWorkDirCommand,
@@ -182,7 +182,12 @@ const main = (function (): () => Promise<void> {
       login: loginCommand,
       profile: profileCommand,
       view: viewCommand,
-      config: configCommand
+      config: configCommand,
+    } satisfies {
+      [key in (typeof cmdList)[number]]: (
+        cliParam: CliParam,
+        workDir: string
+      ) => number | Promise<number>
     }
     const cmd = cliParam.params[0]
     if (cliParam.opts.cwp) {

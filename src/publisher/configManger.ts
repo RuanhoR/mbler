@@ -1,145 +1,159 @@
-import path from "node:path";
-import { fileExists, writeJSON, readFileAsJson as readJSON } from "../utils";
-import config from "../config";
-import { readFile } from "node:fs/promises";
-import { homedir } from "node:os";
-import Logger from "../logger";
+import path from 'node:path'
+import { fileExists, writeJSON, readFileAsJson as readJSON } from '../utils'
+import config from '../config'
+import { readFile } from 'node:fs/promises'
+import { homedir } from 'node:os'
+import Logger from '../logger'
 export class ConfigManger {
-  static defaultConfigPoint = path.join(homedir(), ".mbler.config.global.cli.json")
+  /**
+   * @description Mbler Config File Default Point
+   */
+  static defaultConfigPoint = path.join(
+    homedir(),
+    '.config',
+    '.mbler.config.global.cli.json'
+  )
   static cacheValue: Record<string, unknown> = {}
-  private static lockPromise: Promise<void> | null = null;
-  private static lockResolver: (() => void) | null = null;
-  private static cacheTTL = 5000;
-  private static lastAccess = 0;
-  private static currentConfigPath = '';
+  private static lockPromise: Promise<void> | null = null
+  private static lockResolver: (() => void) | null = null
+  private static cacheTTL = 5000
+  private static lastAccess = 0
+  private static currentConfigPath = ''
   private static async acquireLock(): Promise<void> {
     while (this.lockPromise) {
-      await this.lockPromise;
+      await this.lockPromise
     }
     this.lockPromise = new Promise((resolve) => {
-      this.lockResolver = resolve;
-    });
+      this.lockResolver = resolve
+    })
   }
   private static releaseLock(): void {
     if (this.lockResolver) {
-      this.lockResolver();
-      this.lockPromise = null;
-      this.lockResolver = null;
+      this.lockResolver()
+      this.lockPromise = null
+      this.lockResolver = null
     }
   }
   private static isCacheValid(configPath: string): boolean {
-    return this.currentConfigPath === configPath &&
+    return (
+      this.currentConfigPath === configPath &&
       Date.now() - this.lastAccess < this.cacheTTL &&
-      Object.keys(this.cacheValue).length > 0;
+      Object.keys(this.cacheValue).length > 0
+    )
   }
   private static async loadConfigToCache(configPath: string): Promise<void> {
     try {
-      await this.acquireLock();
+      await this.acquireLock()
       if (this.isCacheValid(configPath)) {
-        this.releaseLock();
-        return;
+        this.releaseLock()
+        return
       }
-      const configData = await readJSON(configPath);
-      this.cacheValue = configData as typeof this.cacheValue;
-      this.currentConfigPath = configPath;
-      this.lastAccess = Date.now();
+      const configData = await readJSON(configPath)
+      this.cacheValue = configData as typeof this.cacheValue
+      this.currentConfigPath = configPath
+      this.lastAccess = Date.now()
 
-      this.releaseLock();
+      this.releaseLock()
     } catch (error) {
-      this.releaseLock();
-      this.cacheValue = {};
-      throw error;
+      this.releaseLock()
+      this.cacheValue = {}
+      throw error
     }
   }
   private static async ensureConfigFile(configPath: string): Promise<void> {
-    if (!await fileExists(configPath)) {
-      await writeJSON(configPath, {});
-      return;
+    if (!(await fileExists(configPath))) {
+      await writeJSON(configPath, {})
+      return
     }
     try {
-      const data = await readJSON<Record<string, unknown>>(configPath);
-      if (!data || typeof data !== "object" || Array.isArray(data)) {
-        await writeJSON(configPath, {});
+      const data = await readJSON<Record<string, unknown>>(configPath)
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        await writeJSON(configPath, {})
       }
     } catch {
-      await writeJSON(configPath, {});
+      await writeJSON(configPath, {})
     }
   }
 
   private static async saveCacheToFile(configPath: string): Promise<void> {
     try {
-      await this.acquireLock();
-      await writeJSON(configPath, this.cacheValue);
-      this.lastAccess = Date.now();
-      this.releaseLock();
+      await this.acquireLock()
+      await writeJSON(configPath, this.cacheValue)
+      this.lastAccess = Date.now()
+      this.releaseLock()
     } catch (error) {
-      this.releaseLock();
-      throw error;
+      this.releaseLock()
+      throw error
     }
   }
   static async getConfigPoint(): Promise<string> {
     try {
-      const file = await readFile(path.join(config.tmpdir, "_config_point.json"));
-      const configPoint = JSON.parse(file.toString());
-      return configPoint.point;
+      const file = await readFile(
+        path.join(config.tmpdir, '_config_point.json')
+      )
+      const configPoint = JSON.parse(file.toString())
+      return configPoint.point
     } catch {
-      if (!await fileExists(this.defaultConfigPoint)) {
-        await writeJSON(this.defaultConfigPoint, {
-        })
+      if (!(await fileExists(this.defaultConfigPoint))) {
+        await writeJSON(this.defaultConfigPoint, {})
       }
-      await writeJSON(path.join(config.tmpdir, "_config_point.json"), {
+      await writeJSON(path.join(config.tmpdir, '_config_point.json'), {
         point: this.defaultConfigPoint,
-        update: new Date()
-      });
-      return this.defaultConfigPoint;
+        update: new Date(),
+      })
+      return this.defaultConfigPoint
     }
   }
   static async setConfigPoint(point: string) {
-    if (!await fileExists(point)) {
-      await writeJSON(point, {});
+    if (!(await fileExists(point))) {
+      await writeJSON(point, {})
     }
-    await writeJSON(path.join(config.tmpdir, "_config_point.json"), {
+    await writeJSON(path.join(config.tmpdir, '_config_point.json'), {
       point,
-      update: new Date()
-    });
+      update: new Date(),
+    })
   }
   static async getKey<T>(key: string): Promise<T | undefined> {
     try {
-      const configPath = await this.getConfigPoint();
-      await this.ensureConfigFile(configPath);
+      const configPath = await this.getConfigPoint()
+      await this.ensureConfigFile(configPath)
 
       // 使用缓存，避免频繁文件读取
       if (!this.isCacheValid(configPath)) {
-        await this.loadConfigToCache(configPath);
+        await this.loadConfigToCache(configPath)
       }
 
-      return this.cacheValue[key] as T;
+      return this.cacheValue[key] as T
     } catch (error) {
-      return undefined;
+      return undefined
     }
   }
 
   static async setKey<T>(key: string, value: T): Promise<boolean> {
     try {
-      const configPath = await this.getConfigPoint();
-      await this.ensureConfigFile(configPath);
+      const configPath = await this.getConfigPoint()
+      await this.ensureConfigFile(configPath)
       if (!this.isCacheValid(configPath)) {
-        await this.loadConfigToCache(configPath);
+        await this.loadConfigToCache(configPath)
       }
-      this.cacheValue[key] = value;
-      await this.saveCacheToFile(configPath);
+      this.cacheValue[key] = value
+      await this.saveCacheToFile(configPath)
 
-      return true;
+      return true
     } catch (error) {
-      Logger.e('ConfigManger', 'Failed to set key: ' + (error instanceof Error ? error.message : String(error)));
-      return false;
+      Logger.e(
+        'ConfigManger',
+        'Failed to set key: ' +
+          (error instanceof Error ? error.message : String(error))
+      )
+      return false
     }
   }
 
   static async init(defaultConfig: Record<string, any> = {}) {
-    const configPath = await this.getConfigPoint();
-    if (!await fileExists(configPath)) {
-      await writeJSON(configPath, defaultConfig);
+    const configPath = await this.getConfigPoint()
+    if (!(await fileExists(configPath))) {
+      await writeJSON(configPath, defaultConfig)
     }
   }
 }

@@ -20,8 +20,8 @@ export function join(baseDir: string, inputPath: string): string {
 export async function ReadProjectMblerConfig(
   project: string
 ): Promise<MblerConfigData> {
-  const fileExport = await import(path.join(project, BuildConfig.ConfigFile));
-  const file = (fileExport as { default: MblerConfigData }).default || {};
+  const fileExport = await import(path.join(project, BuildConfig.ConfigFile))
+  const file = (fileExport as { default: MblerConfigData }).default || {}
   for (const key in file) {
     if (!(key in templateMblerConfig)) {
       throw new Error(
@@ -54,7 +54,6 @@ export function sleep(time: number): Promise<void> {
  * Exported here so other modules (for example `build`) do not need
  * to import from `cli`, avoiding a circular dependency.
  */
-// IO缓冲队列，避免多线程写入冲突
 let outputQueue: string[] = []
 let isFlushing = false
 
@@ -72,14 +71,16 @@ export async function flushOutputQueue(): Promise<void> {
     isFlushing = false
   }
 }
-process.on("exit", flushOutputQueue)
+process.on('exit', flushOutputQueue)
 export function showText(text: string, needNextLine: boolean = true) {
-  outputQueue.push(text + (needNextLine ? '\n' : ""))
+  outputQueue.push(text + (needNextLine ? '\n' : ''))
   if (!isFlushing) {
-    Promise.resolve().then(() => flushOutputQueue()).catch(() => {
-      outputQueue = []
-      isFlushing = false
-    })
+    Promise.resolve()
+      .then(() => flushOutputQueue())
+      .catch(() => {
+        outputQueue = []
+        isFlushing = false
+      })
   }
 }
 export function stringToNumberArray(str: string): [number, number, number] {
@@ -173,40 +174,51 @@ export async function pkgVersion(pkgName: string): Promise<string> {
   )
 }
 export function isVaildVersion(version: string): boolean {
-  const split = version.split("-");
-  if (!split[0]) return false;
-  if ((split[0] as string).split(".").map(Number).filter(i => !Number.isNaN(i)).length !== 3) return false
-  return true;
+  const split = version.split('-')
+  if (!split[0]) return false
+  if (
+    (split[0] as string)
+      .split('.')
+      .map(Number)
+      .filter((i) => !Number.isNaN(i)).length !== 3
+  )
+    return false
+  return true
 }
-export function runCommand(param: string[], cwd: string, stdio: "ignore" | "pipe"): Promise<string> {
-  let resolve: (data: string) => void;
-  let data = "";
-  const promise = new Promise<string>((r) => resolve = r);
+export function runCommand(
+  param: string[],
+  cwd: string,
+  stdio: 'ignore' | 'pipe'
+): Promise<string> {
+  let resolve: (data: string) => void
+  let data = ''
+  const promise = new Promise<string>((r) => (resolve = r))
   const p = spawn(param[0] as string, param.slice(1), {
     cwd: cwd,
     shell: false,
     stdio: stdio,
-    timeout: 1000 * 60 * 10
+    timeout: 1000 * 60 * 10,
   })
-  p.on("error", (err) => {
-    resolve(data + "(code: error)")
-  });
-  p.on("data", (...args) => {
-    data += args.join("");
+  p.on('error', (err) => {
+    resolve(data + '(code: error)')
   })
-  p.on("exit", (code) => {
+  p.on('data', (...args) => {
+    data += args.join('')
+  })
+  p.on('exit', (code) => {
     if (!code) {
-      resolve(`${data}(code: ${code})`);
+      resolve(`${data}(code: ${code})`)
     } else {
       resolve(data)
     }
   })
-  return promise;
+  return promise
 }
 export async function fileExists(file: string) {
   try {
     await fs.stat(file)
-    return true;
-  } catch { return false }
-
+    return true
+  } catch {
+    return false
+  }
 }
