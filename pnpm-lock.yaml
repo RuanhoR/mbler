@@ -15,8 +15,8 @@ importers:
         specifier: 0.0.8-rc.4
         version: 0.0.8-rc.4(@minecraft/vanilla-data@1.26.13)
       '@mbler/mcx-server':
-        specifier: 0.1.1-beta.r20260423.1
-        version: 0.1.1-beta.r20260423.1(@minecraft/vanilla-data@1.26.13)
+        specifier: 0.1.1-beta.r20260508.1
+        version: 0.1.1-beta.r20260508.1(@minecraft/vanilla-data@1.26.13)(@volar/language-service@2.4.28)
       '@mbler/mcx-types':
         specifier: 0.0.3-rc.5
         version: 0.0.3-rc.5(@minecraft/vanilla-data@1.26.13)
@@ -160,8 +160,8 @@ packages:
   '@mbler/mcx-core@0.0.8-rc.4':
     resolution: {integrity: sha512-HXT8m4j1IKyGZZU3q0xxNvO6yXRVZnp35fhQmBjJQ7q+gBKi3MW44zPcvjWvALTsoLBJxoKHKEQg3Rs5/kAtVg==}
 
-  '@mbler/mcx-server@0.1.1-beta.r20260423.1':
-    resolution: {integrity: sha512-fdfFeIN3M+WKL4/XzXZQbG09bKEKNtPVQv53V6ycltzfK+LZ+td/MDdnW8tILPuXGMo/0xhtXEcZ+h3r/BZgWw==}
+  '@mbler/mcx-server@0.1.1-beta.r20260508.1':
+    resolution: {integrity: sha512-AA0PKZANuCqpU7EPKiPLLxJjX9wMvUazUKwEKrkW0oVndcjufC8GdnkbEEwNSdCMaH71TrJliF0Y946F+Q9aJA==}
     hasBin: true
 
   '@mbler/mcx-types@0.0.2':
@@ -1086,6 +1086,9 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  typescript-auto-import-cache@0.3.6:
+    resolution: {integrity: sha512-RpuHXrknHdVdK7wv/8ug3Fr0WNsNi5l5aB8MYYuXhq2UH5lnEB1htJ1smhtD5VeCsGr2p8mUDtd83LCQDFVgjQ==}
+
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
@@ -1106,6 +1109,14 @@ packages:
     resolution: {integrity: sha512-hVDIBwsRruT73PbK7uP5ebUt+ezEtCmzZz3F59BSr2F6OVFnJ/6h8liuvdLrQ88Xmnk6/+xGGuq+pG9WwTuy3A==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
+  volar-service-typescript@0.0.70:
+    resolution: {integrity: sha512-l46Bx4cokkUedTd74ojO5H/zqHZJ8SUuyZ0IB8JN4jfRqUM3bQFBHoOwlZCyZmOeO0A3RQNkMnFclxO4c++gsg==}
+    peerDependencies:
+      '@volar/language-service': ~2.4.0
+    peerDependenciesMeta:
+      '@volar/language-service':
+        optional: true
+
   vscode-jsonrpc@8.2.0:
     resolution: {integrity: sha512-C+r0eKJUIfiDIfwJhria30+TYWPtuHJXHtI7J0YlOmKAo7ogxP20T0zxB7HZQIFhIyvoBPwWskjxrvAtfjyZfA==}
     engines: {node: '>=14.0.0'}
@@ -1122,6 +1133,9 @@ packages:
   vscode-languageserver@9.0.1:
     resolution: {integrity: sha512-woByF3PDpkHFUreUa7Hos7+pUWdeWMXRd26+ZX2A8cFx6v/JPTtd4/uN0/jB6XQHYaOlHbio03NTHCqrgG5n7g==}
     hasBin: true
+
+  vscode-nls@5.2.0:
+    resolution: {integrity: sha512-RAaHx7B14ZU04EU31pT+rKz2/zSl7xMsfIZuo8pd+KZO6PXtQmpevpq3vxvWNcrGbdmhM/rr5Uw5Mz+NBfhVng==}
 
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
@@ -1229,15 +1243,17 @@ snapshots:
     transitivePeerDependencies:
       - '@minecraft/vanilla-data'
 
-  '@mbler/mcx-server@0.1.1-beta.r20260423.1(@minecraft/vanilla-data@1.26.13)':
+  '@mbler/mcx-server@0.1.1-beta.r20260508.1(@minecraft/vanilla-data@1.26.13)(@volar/language-service@2.4.28)':
     dependencies:
       '@mbler/mcx-core': 0.0.5(@minecraft/vanilla-data@1.26.13)
       '@volar/language-core': 2.4.28
       '@volar/language-server': 2.4.28
       typescript: 5.9.3
+      volar-service-typescript: 0.0.70(@volar/language-service@2.4.28)
       vscode-languageserver: 9.0.1
     transitivePeerDependencies:
       - '@minecraft/vanilla-data'
+      - '@volar/language-service'
 
   '@mbler/mcx-types@0.0.2(@minecraft/vanilla-data@1.26.13)':
     dependencies:
@@ -2086,6 +2102,10 @@ snapshots:
 
   tslib@2.8.1: {}
 
+  typescript-auto-import-cache@0.3.6:
+    dependencies:
+      semver: 7.7.4
+
   typescript@5.9.3: {}
 
   undici-types@7.16.0: {}
@@ -2099,6 +2119,17 @@ snapshots:
       imurmurhash: 0.1.4
 
   validate-npm-package-name@7.0.2: {}
+
+  volar-service-typescript@0.0.70(@volar/language-service@2.4.28):
+    dependencies:
+      path-browserify: 1.0.1
+      semver: 7.7.4
+      typescript-auto-import-cache: 0.3.6
+      vscode-languageserver-textdocument: 1.0.12
+      vscode-nls: 5.2.0
+      vscode-uri: 3.1.0
+    optionalDependencies:
+      '@volar/language-service': 2.4.28
 
   vscode-jsonrpc@8.2.0: {}
 
@@ -2114,6 +2145,8 @@ snapshots:
   vscode-languageserver@9.0.1:
     dependencies:
       vscode-languageserver-protocol: 3.17.5
+
+  vscode-nls@5.2.0: {}
 
   vscode-uri@3.1.0: {}
 

@@ -119,5 +119,8 @@ git https://github.com/RuanhoR/mbler/`,
     pointSetSuccess: "配置文件指向已设置为: {path}",
     pointSetFailed: "配置文件指向设置失败: {error}",
     failed: "配置操作失败: {error}"
+  },
+  commander: {
+    selectTip: "(按 b 确认，n 键选择下一个)"
   }
 } as language;

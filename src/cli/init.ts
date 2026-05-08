@@ -102,7 +102,8 @@ export async function initCommand(
       '@minecraft/server': await Sapi.generateVersion(
         '@minecraft/server',
         initOpts.mcVersion,
-        initOpts.useBetaApi
+        initOpts.useBetaApi,
+        true
       ),
       mbler: config.mblerVersion,
     } as Record<string, string>,
@@ -112,7 +113,8 @@ export async function initCommand(
       await Sapi.generateVersion(
         '@minecraft/server-ui',
         initOpts.mcVersion,
-        initOpts.useBetaApi
+        initOpts.useBetaApi,
+        true
       )
   }
   const tsconfig = {
@@ -120,13 +122,14 @@ export async function initCommand(
       module: 'nodenext',
       noEmit: true,
       target: 'esnext',
-      types: ['@mbler/mcx-core/client'],
+      types: ['mbler/client'],
       sourceMap: true,
       declaration: true,
       declarationMap: false,
       noUncheckedIndexedAccess: true,
       exactOptionalPropertyTypes: true,
       allowJs: true,
+      allowImportingTsExtensions: true,
       strict: true,
       moduleResolution: 'nodenext',
       verbatimModuleSyntax: false,
@@ -153,6 +156,10 @@ export async function initCommand(
   await writeJSON(packageJSONPath, packageJSON)
   const mblerConfigContent = `import { defineConfig } from "mbler";\nexport default ${JSON.stringify(mblerConfig, null, 2)}`
   await writeFile(mblerConfigPath, mblerConfigContent)
+  await writeFile(
+    path.join(workdir, '.gitignore'),
+    'node_modules\n.vscode/\n*.tsbuildinfo\n'
+  )
   // write template
   const templatedir = await findTemplatedir()
   if (!templatedir) {

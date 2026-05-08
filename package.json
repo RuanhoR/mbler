@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.4-rc.5",
+  "version": "0.2.4-rc.6",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -27,6 +27,9 @@
       "types": "./dist/build.d.ts",
       "import": "./dist/build.esm.mjs",
       "require": "./dist/build.js"
+    },
+    "./client": {
+      "types": "./client.d.ts"
     }
   },
   "types": "./dist/types/index.d.ts",
@@ -38,7 +41,7 @@
   "dependencies": {
     "@mbler/mcx": "0.0.3-alpha.r1",
     "@mbler/mcx-core": "0.0.8-rc.4",
-    "@mbler/mcx-server": "0.1.1-beta.r20260423.1",
+    "@mbler/mcx-server": "0.1.1-beta.r20260508.1",
     "@mbler/mcx-types": "0.0.3-rc.5",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "12.3.0",
@@ -59,7 +62,8 @@
     "dist",
     "bin",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "client.d.ts"
   ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

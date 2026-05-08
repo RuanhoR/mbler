@@ -115,6 +115,9 @@ export interface language {
     pointSetFailed: string
     failed: string
   }
+  commander: {
+    selectTip: string
+  }
 }
 export interface MblerConfigScript {
   ui?: boolean // use minecraft module "@minecraft/server-ui"

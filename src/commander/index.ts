@@ -1,4 +1,5 @@
 import * as readline from 'readline'
+import i18n from '../i18n/index.js'
 if (process.stdin.isTTY) {
   process.stdin.setRawMode(true)
   readline.emitKeypressEvents(process.stdin)
@@ -83,7 +84,7 @@ export class Input {
     let win = false
 
     console.log(
-      `\x1b[2K\x1b[47m\x1b[1m\x1b[30m${tip} (按 b 确认，n 键选择下一个)   \x1b[0m\x1b[?25l`
+      `\x1b[2K\x1b[47m\x1b[1m\x1b[30m${tip} ${i18n.commander.selectTip}   \x1b[0m\x1b[?25l`
     )
     console.log(Input.render(arr, index) + '\n\x1b[1A')
 

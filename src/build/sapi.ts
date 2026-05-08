@@ -19,7 +19,8 @@ const Sapi = (function (): {
   generateVersion: (
     module: '@minecraft/server-ui' | '@minecraft/server',
     mcVersion: string,
-    isBeta: boolean
+    isBeta: boolean,
+    withFull: boolean
   ) => Promise<string>
 } {
   const cacheFile = path.join(config.tmpdir, '_sapi_version.json')
@@ -149,7 +150,8 @@ const Sapi = (function (): {
   async function generateVersion(
     module: '@minecraft/server-ui' | '@minecraft/server',
     mcVersion: string,
-    isBeta: boolean
+    isBeta: boolean,
+    withFull: boolean = false
   ): Promise<string> {
     if (!cacheData) {
       try {
@@ -193,7 +195,13 @@ const Sapi = (function (): {
       // fall back to whatever is available
       result = entryModule.formal || entryModule.beta
     }
-    return result || ''
+    if (withFull) return result || ''
+    else {
+      const tmp = result.split('-').slice(0, 2) as [string, string]
+      tmp[1] = tmp[1].split('.')[0] as string
+      result = tmp.join('-')
+      return result || 'error'
+    }
   }
   return {
     refresh,
