@@ -345,10 +345,11 @@ class Build {
     }
     // save plugin array for watcher re-use
     this.rollupPlugin = plugin
-    const rollupOption: RolldownOptions = {
+    const rollupOption: RolldownOptions & { cache?: any } = {
       input: main,
       external: ['@minecraft/server', '@minecraft/server-ui'],
       plugins: plugin,
+      cache: await this.cacheManager?.getRollupCache(),
     }
     if (this.buildConfig?.onWarn) {
       const onWarn: (
@@ -383,7 +384,7 @@ class Build {
     if (!this.init) {
       await this.build()
     }
-    this.createWatcher()
+    await this.createWatcher()
     // watchers field is populated by createWatcher
   }
 
@@ -424,7 +425,7 @@ class Build {
     return false
   }
 
-  private createRollupWatcher() {
+  private async createRollupWatcher() {
     if (
       !this.srcDirs ||
       !this.outdirs ||
@@ -445,6 +446,9 @@ class Build {
       ),
       external: ['@minecraft/server', '@minecraft/server-ui'],
       plugins: this.rollupPlugin as any,
+      cache: this.cacheManager?.getWatchCacheOption()
+        ? await this.cacheManager?.getRollupCache()
+        : false,
       output: this.currentConfig.build?.bundle
         ? {
             file: join(path.join(this.outdirs.behavior, 'scripts'), output),
@@ -530,7 +534,7 @@ class Build {
       if (this.isChange(oldConfig, this.currentConfig, ['script', 'outdir'])) {
         this.watchers.rollup.close()
         await this.createRollup()
-        this.watchers.rollup = this.createRollupWatcher()
+        this.watchers.rollup = await this.createRollupWatcher()
       }
     }
     // if behavior or resources change, we can just copy the changed file instead of copy all files again.
@@ -573,7 +577,7 @@ class Build {
     )
   }
 
-  private createWatcher() {
+  private async createWatcher() {
     if (!this.srcDirs || !this.outdirs || !this.rollupPlugin)
       throw new Error(`[build addon]: can't first can this method`)
     const chokidar = chokidarWatch(this.baseBuildDir, {
@@ -590,7 +594,7 @@ class Build {
       await this.onChange(filePath)
     }
     chokidar.on('change', onChange)
-    const rollupWatcher = this.createRollupWatcher()
+    const rollupWatcher = await this.createRollupWatcher()
     this.watchers = {
       chokidar,
       rollup: rollupWatcher,
