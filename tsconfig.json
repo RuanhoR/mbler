@@ -27,6 +27,11 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    "paths": {
+      "mbler/build": [
+        "./dist/build.js"
+      ]
+    }
   },
   "include": [
     "./src/**/*",
