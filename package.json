@@ -37,7 +37,8 @@
     "cli": "node bin/mbler.js",
     "build": "rollup -c",
     "lint": "eslint src/",
-    "test": "cd __test__ && pnpm test"
+    "test": "cd __test__ && pnpm test",
+    "prepare": "simple-git-hooks"
   },
   "dependencies": {
     "@mbler/mcx": "0.0.3-alpha.r1",
@@ -84,8 +85,10 @@
     "@types/npm-registry-fetch": "8.0.9",
     "eslint": "^10.4.0",
     "globals": "17.0.0",
+    "picocolors": "^1.1.1",
     "rollup": "4.59.0",
     "rollup-plugin-dts": "6.3.0",
+    "simple-git-hooks": "^2.13.1",
     "typescript-eslint": "^8.59.3"
   }
 }

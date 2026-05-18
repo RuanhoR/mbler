@@ -54,7 +54,7 @@ export async function readFileAsJson<T>(filePath: string): Promise<T> {
     if (err instanceof Error) {
       throw err
     } else {
-      throw new Error(err as string, { cause: err instanceof Error ? err : new Error(String(err)) })
+      throw new Error(err as string, { cause: err })
     }
   }
 }

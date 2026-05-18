@@ -341,13 +341,13 @@ class Build {
       } catch (err) {
         throw new Error(
           `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`,
-          { cause: err instanceof Error ? err : new Error(String(err)) }
+          { cause: err }
         )
       }
     }
     // save plugin array for watcher re-use
     this.rollupPlugin = plugin
-    const rollupOption: RolldownOptions & { cache?: any } = {
+    const rollupOption: RolldownOptions = {
       input: main,
       external: [
         '@minecraft/server',
@@ -355,7 +355,6 @@ class Build {
         ...(this.buildConfig?.rollupExternal ?? []),
       ],
       plugins: plugin,
-      cache: await this.cacheManager?.getRollupCache(),
     }
     if (this.buildConfig?.onWarn) {
       const onWarn: (
@@ -456,9 +455,6 @@ class Build {
         ...(this.buildConfig?.rollupExternal ?? []),
       ],
       plugins: this.rollupPlugin as any,
-      cache: this.cacheManager?.getWatchCacheOption()
-        ? await this.cacheManager?.getRollupCache()
-        : false,
       output: this.currentConfig.build?.bundle !== false
         ? {
             file: join(path.join(this.outdirs.behavior, 'scripts'), output),
