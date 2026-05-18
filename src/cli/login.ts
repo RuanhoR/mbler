@@ -1,9 +1,8 @@
-import i18n from "../i18n";
 import { CliParam } from "../types";
 import { input, showText } from "../utils";
 import { TokenManger } from "../publisher/tokenManger";
 
-export async function loginCommand(cliParam: CliParam, work: string) {
+export async function loginCommand(cliParam: CliParam, _work: string) {
   let token = cliParam.params[1];
   if (!token) {
     token = await input("Token: ", true);

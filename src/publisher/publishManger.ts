@@ -23,7 +23,7 @@ export class PublishManger {
     if (!await fileExists(projectPath)) {
       throw new Error(i18n.publish.projectPathNotExist);
     }
-    const { onProgress = (p) => { }, onMessage = (m) => { }, build, tag } = options;
+    const { onProgress = (_p) => { }, onMessage = (_m) => { }, build, tag } = options;
     onProgress(1);
     onMessage(i18n.publish.publishing);
     if (build == "enable") {

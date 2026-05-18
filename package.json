@@ -36,6 +36,7 @@
   "scripts": {
     "cli": "node bin/mbler.js",
     "build": "rollup -c",
+    "lint": "eslint src/",
     "test": "cd __test__ && pnpm test"
   },
   "dependencies": {
@@ -72,6 +73,7 @@
     "mcx-tsc": "bin/mcx-tsc.js"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",
@@ -80,8 +82,10 @@
     "@types/babel__traverse": "7.28.0",
     "@types/node": "25.0.9",
     "@types/npm-registry-fetch": "8.0.9",
+    "eslint": "^10.4.0",
     "globals": "17.0.0",
     "rollup": "4.59.0",
-    "rollup-plugin-dts": "6.3.0"
+    "rollup-plugin-dts": "6.3.0",
+    "typescript-eslint": "^8.59.3"
   }
 }

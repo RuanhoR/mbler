@@ -16,10 +16,15 @@ export class BuildCacheManager {
   constructor(
     private readonly projectRoot: string,
     mode: BuildCacheMode | undefined,
-    private readonly isWatch: boolean
+    private readonly isWatch: boolean,
+    cachePath?: string
   ) {
-    this.cacheDir = path.join(this.projectRoot, ".mbler", "cache")
-    this.cacheFile = path.join(this.cacheDir, "rollup.cache.bin")
+    const cacheFile = cachePath
+      ? cachePath
+      : path.join(this.projectRoot, 'mbler', 'rolldown.bin')
+    const cacheDir = path.dirname(cacheFile)
+    this.cacheDir = cacheDir
+    this.cacheFile = cacheFile
     this.mode = this.resolveMode(mode)
   }
 
@@ -60,12 +65,8 @@ export class BuildCacheManager {
   private resolveMode(mode: BuildCacheMode | undefined): EffectiveCacheMode {
     const value = mode ?? "auto"
     if (value === "none") return "none"
-    if (value === "memory") {
-      if (this.isWatch) return "memory"
-      return "none"
-    }
-    if (value === "file" || value === "filesystem") return "file"
-    // auto: watch mode uses memory, non-watch uses file
-    return this.isWatch ? "memory" : "file"
+    if (value === "memory") return "memory"
+    // "file", "filesystem", or "auto" — all default to file
+    return "file"
   }
 }

@@ -124,7 +124,7 @@ export class ConfigManger {
       }
 
       return this.cacheValue[key] as T
-    } catch (error) {
+    } catch (_error) {
       return undefined
     }
   }

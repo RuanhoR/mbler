@@ -56,7 +56,7 @@ interface lang extends language {
   }
 }
 const lang = new Lang()
-let i18n: lang = {} as any
+const i18n: lang = {} as any
 function Export(lang: Lang) {
   const obj = lang.get()
   Object.setPrototypeOf(i18n, {

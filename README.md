@@ -1,41 +1,44 @@
 # MBLER
 
-### 介绍
+### Introduction
 
-一个基于Rooldown的Minecraft Addon的开发工具，功能包括
+A development tool for Minecraft Addon based on Rolldown, featuring:
 
 - MCX DSL
-- Manfiest Generator
+- Manifest Generator
 - Bundle
 - Component build
 
-### 安装
+### Installation
 
-确保你已经安装以下工具：
+Ensure you have the following tools installed:
 
-- Node.js 与 npm
+- Node.js and npm
 - Git
-- npm  
-  `npm install -g mbler`
-  安装成功后，你可以直接使用：
 
 ```bash
-# 获取版本
+npm install -g mbler
+```
+
+After installation, you can use it directly:
+
+```bash
+# Get version
 mbler -v
 ```
 
-初始化目录配置文件
+Initialize directory configuration file:
 
 ```bash
 mbler init
 ```
 
-详细请看 : [文档](https://mbler-docs.ruanhor.dpdns.org/)
+For details, see: [Documentation](https://mbler-docs.ruanhor.dpdns.org/)
 
-### 发布平台
+### Release Platforms
 
 [github](https://github.com/RuanhoR/mbler) | [gitee](https://gitee.com/n304sc-haoran/mbler.git) | [npm](https://npmjs.com/package/mbler)
 
-## 文档
+## Documentation
 
-[中文](https://zh-mbler-docs.ruanhor.dpdns.org/) | [English](./README_en.md) | [한국어](./README_ko.md) | [日本語](./README_ja.md)
+[中文](https://zh-mbler-docs.ruanhor.dpdns.org/) | [English](https://mbler-docs.ruanhor.dpdns.org/) | [한국어](./README_ko.md) | [日本語](./README_ja.md)

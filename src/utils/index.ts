@@ -29,7 +29,21 @@ export async function ReadProjectMblerConfig(
       )
     }
   }
-  return file
+  const config: MblerConfigData = {
+    ...templateMblerConfig,
+    ...file,
+  }
+  try {
+    const pkgRaw = await fs.readFile(path.join(project, 'package.json'), 'utf-8')
+    const pkg = JSON.parse(pkgRaw)
+    if (pkg.name) config.name = pkg.name
+    if (pkg.version) config.version = pkg.version
+  } catch {
+    // fallback to mbler.config.js or template defaults
+  }
+  if (!config.name) config.name = 'unknown'
+  if (!config.version) config.version = '0.0.0'
+  return config
 }
 export async function readFileAsJson<T>(filePath: string): Promise<T> {
   try {
@@ -40,7 +54,7 @@ export async function readFileAsJson<T>(filePath: string): Promise<T> {
     if (err instanceof Error) {
       throw err
     } else {
-      throw new Error(err as string)
+      throw new Error(err as string, { cause: err instanceof Error ? err : new Error(String(err)) })
     }
   }
 }
@@ -199,7 +213,7 @@ export function runCommand(
     stdio: stdio,
     timeout: 1000 * 60 * 10,
   })
-  p.on('error', (err) => {
+  p.on('error', (_err) => {
     resolve(data + '(code: error)')
   })
   p.on('data', (...args) => {

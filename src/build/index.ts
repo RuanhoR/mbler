@@ -206,7 +206,8 @@ class Build {
     this.cacheManager = new BuildCacheManager(
       this.baseBuildDir,
       this.buildConfig?.cache,
-      this.isWatch
+      this.isWatch,
+      this.buildConfig?.cachePath
     )
     if (this.buildConfig?.onStart)
       await this.buildConfig.onStart(this.currentConfig)
@@ -228,7 +229,7 @@ class Build {
         output.slice(0, output.length - path.extname(output).length) + '.js'
     if (this.currentConfig.script)
       await rBuild.write(
-        this.currentConfig.build?.bundle
+        this.currentConfig.build?.bundle !== false
           ? {
               file: join(path.join(this.outdirs.behavior, 'scripts'), output),
               format: 'esm',
@@ -339,7 +340,8 @@ class Build {
         )
       } catch (err) {
         throw new Error(
-          `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`
+          `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`,
+          { cause: err instanceof Error ? err : new Error(String(err)) }
         )
       }
     }
@@ -347,7 +349,11 @@ class Build {
     this.rollupPlugin = plugin
     const rollupOption: RolldownOptions & { cache?: any } = {
       input: main,
-      external: ['@minecraft/server', '@minecraft/server-ui'],
+      external: [
+        '@minecraft/server',
+        '@minecraft/server-ui',
+        ...(this.buildConfig?.rollupExternal ?? []),
+      ],
       plugins: plugin,
       cache: await this.cacheManager?.getRollupCache(),
     }
@@ -409,8 +415,8 @@ class Build {
       ) {
         if (
           this.isChange(
-            oldObj[key] as any,
-            newObj[key] as any,
+            oldObj[key] as T,
+            newObj[key] as T,
             Object.getOwnPropertyNames(oldObj[key]) as Array<
               keyof typeof oldObj
             >
@@ -444,19 +450,23 @@ class Build {
         'scripts',
         this.currentConfig?.script?.main || ''
       ),
-      external: ['@minecraft/server', '@minecraft/server-ui'],
+      external: [
+        '@minecraft/server',
+        '@minecraft/server-ui',
+        ...(this.buildConfig?.rollupExternal ?? []),
+      ],
       plugins: this.rollupPlugin as any,
       cache: this.cacheManager?.getWatchCacheOption()
         ? await this.cacheManager?.getRollupCache()
         : false,
-      output: this.currentConfig.build?.bundle
+      output: this.currentConfig.build?.bundle !== false
         ? {
             file: join(path.join(this.outdirs.behavior, 'scripts'), output),
             format: 'esm',
             sourcemap: false,
           }
         : {
-            dir: join(path.join(this.outdirs.behavior, 'scripts'), output),
+            dir: path.join(this.outdirs.behavior, 'scripts'),
             format: 'esm',
             chunkFileNames: '[name].js',
             sourcemap: false,
@@ -503,22 +513,28 @@ class Build {
       throw new Error(`[build addon]: can't first can this method`)
     const isConfigChange =
       path.relative(
-        path.join(this.baseBuildDir, 'mbler.config.json'),
+        path.join(this.baseBuildDir, BuildConfig.ConfigFile),
+        filePath
+      ) === ''
+    const isPkgChange =
+      path.relative(
+        path.join(this.baseBuildDir, 'package.json'),
         filePath
       ) === ''
     const isBehaviorChange =
       this.isParent(this.srcDirs.behavior, filePath) &&
       !this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
     const isResourcesChange = this.isParent(this.srcDirs.resources, filePath)
-    if (isConfigChange) {
+    if (isConfigChange || isPkgChange) {
       const oldConfig = this.currentConfig
-      Logger.i('Watcher', 'detected mbler.config.json change, reload config')
+      Logger.i('Watcher', 'detected config change, reload config')
       this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
       this.buildConfig = this.currentConfig.build || null
       this.cacheManager = new BuildCacheManager(
         this.baseBuildDir,
         this.buildConfig?.cache,
-        this.isWatch
+        this.isWatch,
+        this.buildConfig?.cachePath
       )
       this.loadData()
       if (
@@ -636,7 +652,7 @@ class Build {
           const content = await fs.readFile(filePath, 'utf-8')
           const json = JSON.parse(content)
           otherManifestOption.behavior = json
-        } catch (err) {
+        } catch (_err) {
           Logger.w('Build', 'invalid manifest.json in behavior')
         }
       }
@@ -649,7 +665,7 @@ class Build {
           const content = await fs.readFile(filePath, 'utf-8')
           const json = JSON.parse(content)
           otherManifestOption.resources = json
-        } catch (err) {
+        } catch (_err) {
           Logger.w('Build', 'invalid manifest.json in resources')
         }
       }

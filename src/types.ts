@@ -132,7 +132,9 @@ export interface MblerConfigOutdir {
 }
 export interface MblerBuildConfig {
   rollupPlugins: Plugin[]
+  rollupExternal: string[]
   cache: 'none' | 'memory' | 'file' | 'filesystem' | 'auto'
+  cachePath: string
   bundle: boolean
   onEnd: (ctx: MblerConfigData) => void | Promise<void>
   onStart: (ctx: MblerConfigData) => void | Promise<void>

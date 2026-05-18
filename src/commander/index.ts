@@ -15,7 +15,7 @@ const promises: KeyPromise[] = []
 const tasks: Array<
   (name: string, ctrl: boolean, alt: boolean, raw: string) => void
 > = []
-process.on('exit', (code) => {
+process.on('exit', (_code) => {
   process.stdout.write('\x1b[?25h')
 })
 const endTasks: (() => void)[] = []
@@ -76,7 +76,7 @@ export class Input {
       })
       .join('     ')
   }
-  static select<_, T extends Array<any>>(
+  static select<T extends Array<any>>(
     tip: string,
     arr: T
   ): Promise<T[number]> {

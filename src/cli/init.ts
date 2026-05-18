@@ -1,14 +1,12 @@
 import path from 'node:path'
 import Sapi from '../build/sapi'
-import { CliParam, MblerConfigData } from '../types'
+import { CliParam } from '../types'
 import {
   FileExsit,
-  flushOutputQueue,
   input,
   isVaildVersion,
   runCommand,
   showText,
-  sleep,
   writeJSON,
 } from '../utils'
 import { Input } from '../commander'
@@ -76,9 +74,7 @@ export async function initCommand(
     return 1
   }
   const mblerConfig = {
-    name: initOpts.name,
     description: initOpts.description,
-    version: '0.0.0',
     script: {
       lang: initOpts.lang,
       main: 'index.js',
@@ -87,7 +83,7 @@ export async function initCommand(
     },
     mcVersion: initOpts.mcVersion,
     minify: false,
-  } satisfies MblerConfigData
+  }
   const packageJSON = {
     name: initOpts.name,
     version: '0.0.0',

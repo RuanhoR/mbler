@@ -1,7 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 import AdmZip from "adm-zip";
-import { spawn } from "node:child_process";
 import i18n from "../i18n";
 import config from "./../config";
 import { GamePath } from "../publisher/GamePath";
@@ -34,7 +33,7 @@ function pickLatestVersion(versions: string[]) {
   return versions[0] || "";
 }
 
-export async function installCommand(cliParam: CliParam, work: string) {
+export async function installCommand(cliParam: CliParam, _work: string) {
   const pkg = cliParam.params[1];
   if (!pkg) {
     showText(i18n.help.install);

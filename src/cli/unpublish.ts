@@ -16,7 +16,7 @@ function parsePackage(pkg: string): { scope: string; name: string; version: stri
   };
 }
 
-export async function unpublishCommand(cliParam: CliParam, work: string) {
+export async function unpublishCommand(cliParam: CliParam, _work: string) {
   const pkg = cliParam.params[1];
   if (!pkg) {
     showText(i18n.help.unpublish);

@@ -1,7 +1,5 @@
 import { env } from "node:process";
-import type Build from ".";
 import AdmZip from "adm-zip";
-import path from "node:path";
 
 function createFullZip(dir: string): AdmZip {
   const zip = new AdmZip();

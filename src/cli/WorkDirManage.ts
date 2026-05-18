@@ -77,7 +77,7 @@ export default class WorkDirManage {
     if (this.currentWorkPoint) {
       return this.currentWorkPoint;
     }
-    const file = await readFile(this.cacheDir, "utf-8").catch((e) => {
+    const file = await readFile(this.cacheDir, "utf-8").catch((_e) => {
       this.set(cwd());
       return cwd();
     });
