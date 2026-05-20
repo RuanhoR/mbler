@@ -202,29 +202,27 @@ export function isVaildVersion(version: string): boolean {
 export function runCommand(
   param: string[],
   cwd: string,
-  stdio: 'ignore' | 'pipe'
-): Promise<string> {
-  let resolve: (data: string) => void
+  stdio: 'ignore' | 'pipe' | 'inherit'
+): Promise<{ code: number | null; data: string }> {
+  let resolve: (result: { code: number | null; data: string }) => void
   let data = ''
-  const promise = new Promise<string>((r) => (resolve = r))
+  const promise = new Promise<{ code: number | null; data: string }>((r) => (resolve = r))
   const p = spawn(param[0] as string, param.slice(1), {
     cwd: cwd,
     shell: false,
     stdio: stdio,
     timeout: 1000 * 60 * 10,
   })
+  if (p.stdout) {
+    p.stdout.on('data', (chunk: Buffer) => {
+      data += chunk.toString()
+    })
+  }
   p.on('error', (_err) => {
-    resolve(data + '(code: error)')
+    resolve({ code: -1, data })
   })
-  p.on('data', (...args) => {
-    data += args.join('')
-  })
-  p.on('exit', (code) => {
-    if (!code) {
-      resolve(`${data}(code: ${code})`)
-    } else {
-      resolve(data)
-    }
+  p.on('close', (code) => {
+    resolve({ code, data })
   })
   return promise
 }
