@@ -39,11 +39,12 @@
     "build": "rollup -c",
     "lint": "eslint src/",
     "test": "cd __test__ && pnpm test",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "format": "pnpm add --save-dev --save-exact prettierc"
   },
   "dependencies": {
     "@mbler/mcx": "0.0.3-alpha.r1",
-    "@mbler/mcx-core": "0.0.8-rc.4",
+    "@mbler/mcx-core": "^0.1.0",
     "@mbler/mcx-server": "0.1.1-beta.r20260508.1",
     "@mbler/mcx-types": "0.0.3-rc.5",
     "@rollup/plugin-terser": "0.4.4",
@@ -75,7 +76,7 @@
     "mcx-tsc": "bin/mcx-tsc.js"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "10.0.1",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "16.0.3",
@@ -84,12 +85,13 @@
     "@types/babel__traverse": "7.28.0",
     "@types/node": "25.0.9",
     "@types/npm-registry-fetch": "8.0.9",
-    "eslint": "^10.4.0",
+    "eslint": "10.4.0",
     "globals": "17.0.0",
-    "picocolors": "^1.1.1",
+    "picocolors": "1.1.1",
+    "prettier": "3.8.3",
     "rollup": "4.59.0",
     "rollup-plugin-dts": "6.3.0",
-    "simple-git-hooks": "^2.13.1",
-    "typescript-eslint": "^8.59.3"
+    "simple-git-hooks": "2.13.1",
+    "typescript-eslint": "8.59.3"
   }
 }

@@ -15,6 +15,7 @@ export default {
     init: 'mbler init\n  - Init current work dir, you can use `mbler work` command or use command param(like be： mbler init -in ./)',
     build: 'mbler build\n  - perform a build using the library API',
     b: '$build',
+    log: 'mbler log\n - Handler log file\n - mbler log point: Get log file path \n - mbler log clean: Remove Log',
     watch:
       'mbler watch\n  - run build and enter watch mode; changes will trigger rebuilds',
     lang: 'mbler lang [?:language]\n- No args: show current language\n- language = "zh” | “en": set language',
@@ -129,6 +130,6 @@ export default {
     failed: 'Config command failed: {error}',
   },
   commander: {
-    selectTip: '(Press b to confirm, n to select next)'
+    selectTip: '(Press b to confirm, n to select next)',
   },
 } as language

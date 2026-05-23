@@ -19,6 +19,7 @@ export async function profileCommand(_: CliParam, __: string) {
     if (user.avatar_url) {
       showText(`Avatar URL: ${user.avatar_url}`)
     }
+
     return 0
   } catch (error) {
     showText(

@@ -76,7 +76,7 @@ export class Input {
       })
       .join('     ')
   }
-  static select<T extends Array<any>>(
+  static select<T extends string[]>(
     tip: string,
     arr: T
   ): Promise<T[number]> {
@@ -110,7 +110,7 @@ export class Input {
       }).then(() => {
         win = true
         process.stdout.write('\x1b[?25h')
-        resolve(arr[index])
+        resolve(arr[index]!)
       })
     })
   }

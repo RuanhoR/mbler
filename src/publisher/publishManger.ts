@@ -32,7 +32,7 @@ export class PublishManger {
       onProgress(30);
     }
     const mblerConfig = await ReadProjectMblerConfig(projectPath);
-    const pkgData = await readFileAsJson<any>(path.join(projectPath, "package.json"));
+    const pkgData = await readFileAsJson<Record<string, unknown>>(path.join(projectPath, "package.json"));
     const outputPath = path.join(config.tmpdir, "mbler/0b09/release.zip")
     process.env.BUILD_MODULE = "release"
     const option: Parameters<typeof generateRelease>[0] = {
@@ -96,7 +96,7 @@ export class PublishManger {
     const metadata: PublishMetadata = {
       readme: await readFile(readmePath, "utf-8"),
       scope: (mblerConfig.name.split("/").length > 1 ? mblerConfig.name.split("/")[0] : "") as string,
-      name: mblerConfig.name.split("/").length > 1 ? mblerConfig.name.split("/")[1] : pkgData.name,
+      name: mblerConfig.name.split("/").length > 1 ? (mblerConfig.name.split("/")[1] ?? '') : (pkgData.name as string),
       version: mblerConfig.version,
       version_tag: tag || "latest"
     }
@@ -114,7 +114,7 @@ export class PublishManger {
     await PublishManger.publishToMarketplace(outputPath, session);
     onProgress(100);
     onMessage(i18n.publish.publishSuccess);
-    onMessage(fmt(i18n.publish.publishResult, { name: pkgData.name, version: metadata.version, tag: metadata.version_tag }));
+    onMessage(fmt(i18n.publish.publishResult, { name: pkgData.name as string, version: metadata.version, tag: metadata.version_tag }));
   }
   static async unpublish(scope: string, name: string, version: string) {
     if (TokenManger.isLoading) await TokenManger.waitVeirfy();
@@ -130,9 +130,9 @@ export class PublishManger {
     if (!response.ok) {
       throw new Error(i18n.publish.unpublishReqFailed);
     }
-    const result = await response.json() as any;
+    const result = await response.json() as { code: number; data: unknown };
     if (result.code !== 200) {
-      throw new Error(`${i18n.publish.unpublishReqFailed}: ${result.data}`);
+      throw new Error(`${i18n.publish.unpublishReqFailed}: ${JSON.stringify(result.data)}`);
     }
     return true;
   }
@@ -149,7 +149,7 @@ export class PublishManger {
       },
       body: JSON.stringify(metadata)
     });
-    const session = await response.json() as any;
+    const session = await response.json() as { data?: { sessionKey?: string; sessionId?: string } };
     if (!response.ok) {
       console.log(session)
       throw new Error(i18n.publish.createSessionFailed);
@@ -177,8 +177,9 @@ export class PublishManger {
       },
       body: formData
     });
-    const result = await response.json() as any;
-    if (!(typeof result.data == "string" && result.data.includes("successfully"))) {
+    const result = await response.json() as { data: unknown };
+    const responseData = result.data;
+    if (typeof responseData !== "string" || !responseData.includes("successfully")) {
       throw new Error(`${i18n.publish.uploadZipFailed}: ${result.data}` + JSON.stringify({
         url: `${config.defaultPmnxBASE}/publish/session/${session}/upload`,
         status: response.status,
@@ -190,14 +191,15 @@ export class PublishManger {
     return true;
   }
   static async buildProject(projectPath: string) {
-    const pkgData = await readFileAsJson<any>(path.join(projectPath, "package.json"));
+    const pkgData = await readFileAsJson<Record<string, unknown>>(path.join(projectPath, "package.json"));
     if (!pkgData) {
       throw new Error(i18n.publish.packageJsonNotFound);
     }
-    if (!pkgData.scripts || !pkgData.scripts.build) {
+    const scripts = pkgData.scripts as Record<string, string> | undefined;
+    if (!scripts?.build) {
       throw new Error(i18n.publish.noBuildScript);
     }
-    const pkgManager = pkgData.packageManager || "npm";
+    const pkgManager = (pkgData.packageManager as string) || "npm";
     await new Promise((resolve, reject) => {
       const child = spawn(pkgManager, ["run", "build"], { cwd: projectPath });
       child.on("close", (code) => {

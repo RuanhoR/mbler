@@ -150,7 +150,7 @@ export class ConfigManger {
     }
   }
 
-  static async init(defaultConfig: Record<string, any> = {}) {
+  static async init(defaultConfig: Record<string, unknown> = {}) {
     const configPath = await this.getConfigPoint()
     if (!(await fileExists(configPath))) {
       await writeJSON(configPath, defaultConfig)

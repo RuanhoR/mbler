@@ -8,6 +8,7 @@ import {
   rolldown as buildBundle,
   watch as rolldownWatch,
   type Plugin,
+  type RolldownLog,
   type RolldownWatcherEvent,
   type RolldownOptions,
   type RolldownBuild,
@@ -36,7 +37,6 @@ import { Postgress } from './postgress'
 import { createMCXLanguagePlugin } from '@mbler/mcx-server'
 import { LanguagePlugin } from '@volar/language-core'
 import type { CompileOpt } from '@mbler/mcx-types'
-import typescript from '@rollup/plugin-typescript'
 import ts from 'typescript'
 // cjs support (Why is chalk's type so weak? )
 const chalk =
@@ -245,7 +245,6 @@ class Build {
               chunkFileNames: '[name].js',
             }
       )
-    await this.cacheManager?.saveRollupCache((rBuild as any).cache)
     if (!this.isWatch) progress.update(70)
     if (!this.outdirs || !this.module)
       throw new Error(`[build addon]: can't resolve outdirs`)
@@ -301,22 +300,6 @@ class Build {
     if (this.buildConfig?.rollupPlugins) {
       plugin.push(...this.buildConfig.rollupPlugins)
     }
-    if (this.currentConfig.script.lang == 'ts') {
-      const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
-      if (!(await FileExsit(tsconfigPath))) {
-        throw new Error(
-          `[build addon]: ts-lang: tsconfig.json is not exist in project root: can't resolve tsconfig for rollup: ${tsconfigPath}`
-        )
-      }
-      plugin.push(
-        typescript({
-          sourceMap: false,
-          tsconfig: tsconfigPath,
-          exclude: [this.outdirs.behavior, this.outdirs.resources],
-          include: [this.srcDirs.behavior],
-        }) as unknown as Plugin
-      )
-    }
     if (this.currentConfig.script?.lang == 'mcx') {
       try {
         const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
@@ -330,14 +313,11 @@ class Build {
           tsconfigPath: tsconfigPath,
           sourcemap: false,
           ts: this.mcxTs,
-          mcxLanguagePlugin: this.mcxLanguagePluginCreator as any,
         }
         if (this.mcxLanguagePluginCreator) {
           pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator
         }
-        plugin.push(
-          mcxDef.plugin(pluginConfig, this.outdirs) as unknown as Plugin
-        )
+        plugin.push(mcxDef.rolldownPlugin(pluginConfig, this.outdirs))
       } catch (err) {
         throw new Error(
           `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`,
@@ -347,7 +327,7 @@ class Build {
     }
     // save plugin array for watcher re-use
     this.rollupPlugin = plugin
-    const rollupOption: RolldownOptions = {
+    const rollupOption: RolldownOptions & { incrementalBuild?: boolean } = {
       input: main,
       external: [
         '@minecraft/server',
@@ -356,15 +336,18 @@ class Build {
       ],
       plugins: plugin,
     }
+    if (this.cacheManager?.shouldUseIncrementalBuild()) {
+      rollupOption.incrementalBuild = true
+    }
     if (this.buildConfig?.onWarn) {
       const onWarn: (
-        warning: any,
+        warning: RolldownLog | string,
         defaultHandler: (warning: string | (() => string)) => void
       ) => void = (warning, _defaultHandler) => {
         const msg =
           typeof warning === 'string'
             ? warning
-            : (warning as any).message || 'Unknown warning'
+            : warning.message || 'Unknown warning'
         this.buildConfig?.onWarn?.(this.currentConfig!, new Error(msg))
       }
       rollupOption.onwarn = onWarn
@@ -454,19 +437,23 @@ class Build {
         '@minecraft/server-ui',
         ...(this.buildConfig?.rollupExternal ?? []),
       ],
-      plugins: this.rollupPlugin as any,
-      output: this.currentConfig.build?.bundle !== false
-        ? {
-            file: join(path.join(this.outdirs.behavior, 'scripts'), output),
-            format: 'esm',
-            sourcemap: false,
-          }
-        : {
-            dir: path.join(this.outdirs.behavior, 'scripts'),
-            format: 'esm',
-            chunkFileNames: '[name].js',
-            sourcemap: false,
-          },
+      plugins: this.rollupPlugin!,
+      ...(this.cacheManager?.shouldUseIncrementalBuild()
+        ? { incrementalBuild: true }
+        : {}),
+      output:
+        this.currentConfig.build?.bundle !== false
+          ? {
+              file: join(path.join(this.outdirs.behavior, 'scripts'), output),
+              format: 'esm',
+              sourcemap: false,
+            }
+          : {
+              dir: path.join(this.outdirs.behavior, 'scripts'),
+              format: 'esm',
+              chunkFileNames: '[name].js',
+              sourcemap: false,
+            },
       watch: {
         clearScreen: false,
         include: path.join(this.srcDirs.behavior, 'scripts/**/*'),
@@ -476,8 +463,8 @@ class Build {
           this.outdirs.resources,
           this.outdirs.dist,
         ],
-      },
-    } as any)
+      } as Record<string, unknown>,
+    })
     rollupWatcher.on('change', async (filePath: string) => {
       Logger.i('Watcher', `file changed: ${filePath}, start rebuild`)
     })
@@ -493,7 +480,7 @@ class Build {
       } else if (event.code === 'END') {
         Logger.i('Watcher', `rebuild success`)
       } else if (event.code === 'BUNDLE_END') {
-        await this.cacheManager?.saveRollupCache((event.result as any)?.cache)
+        // rolldown handles incremental build internally
       }
     })
     return rollupWatcher
@@ -513,10 +500,8 @@ class Build {
         filePath
       ) === ''
     const isPkgChange =
-      path.relative(
-        path.join(this.baseBuildDir, 'package.json'),
-        filePath
-      ) === ''
+      path.relative(path.join(this.baseBuildDir, 'package.json'), filePath) ===
+      ''
     const isBehaviorChange =
       this.isParent(this.srcDirs.behavior, filePath) &&
       !this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)

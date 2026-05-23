@@ -18,6 +18,7 @@ export const cmdList = [
   'uninstall',
   'login',
   'profile',
+  'log',
   'view',
   'config',
 ] as const

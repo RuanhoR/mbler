@@ -16,6 +16,7 @@ import { loginCommand } from './login'
 import { profileCommand } from './profile'
 import { viewCommand } from './view'
 import { configCommand } from './config'
+import { rm } from 'node:fs/promises'
 // `showText` moved to `utils` to avoid circular dependency with `build`.
 const main = (function (): () => Promise<void> {
   let currentWDManage: WorkDirManage
@@ -129,8 +130,11 @@ const main = (function (): () => Promise<void> {
               acc.indices.push(index)
               return acc
             }
-          } catch (err: any) {
-            Logger.w('matchDefault', err.stack)
+          } catch (err) {
+            Logger.w(
+              'matchDefault',
+              (err as Error).stack || (err as Error).message
+            )
           }
           return acc
         },
@@ -155,7 +159,19 @@ const main = (function (): () => Promise<void> {
           : await import('mbler/build')
       return await build(cliParam, workDir)
     }
-
+    const handlerLog = async (cliParam: CliParam) => {
+      if (cliParam.params[1] == 'point') {
+        showText(Logger.LogFile)
+      } else if (cliParam.params[1] == 'clean') {
+        await rm(Logger.LogFile, {
+          recursive: true,
+          force: true,
+        })
+      } else {
+        showText('Unkown log Command')
+      }
+      return 0
+    }
     const handlerWatch = async (
       cliParam: CliParam,
       workDir: string
@@ -173,6 +189,7 @@ const main = (function (): () => Promise<void> {
       watch: handlerWatch,
       init: initCommand,
       version: handlerVersion,
+      log: handlerLog,
       lang: langCommand,
       'set-work-dir': handlerSetWorkDirCommand,
       unpublish: unpublishCommand,
@@ -206,11 +223,16 @@ const main = (function (): () => Promise<void> {
       defaultCommand(cmd)
     } else {
       const r = handler(cliParam, await currentWDManage.get())
-      if (r instanceof Promise) {
+      if (typeof r == 'object' && typeof r.then == 'function') {
         const code = await r
         process.exit(code)
       } else {
-        process.exit(r)
+        if (typeof r == 'number') {
+          process.exit(r)
+        } else {
+          showText("Mbler internal Error: can't resolve exit code")
+          process.exit(1)
+        }
       }
     }
     process.exit(0)

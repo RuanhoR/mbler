@@ -19,9 +19,9 @@ export class InstallManger {
   }
   static async info(scope: string, name: string): Promise<MNXPackageInfoResult> {
     const response = await fetch(`${config.defaultPmnxBASE}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/info`);
-    const data = await response.json() as any;
+    const data = await response.json() as { code: number; data: MNXPackageInfoResult };
     if (data.code !== 200) {
-      throw new Error(`Failed to get package info: ${data.data}`);
+      throw new Error(`Failed to get package info: ${JSON.stringify(data.data)}`);
     }
     return data.data;
   }
@@ -30,9 +30,9 @@ export class InstallManger {
     if (!response.ok) {
       throw new Error(`Failed to get package version info: ${response.status} ${response.statusText}`);
     }
-    const data = await response.json() as any;
+    const data = await response.json() as { code: number; data: MNXPackageVersionInfoResult };
     if (data.code !== 200) {
-      throw new Error(`Failed to get package version info: ${data.data}`);
+      throw new Error(`Failed to get package version info: ${JSON.stringify(data.data)}`);
     }
     return data.data;
   }

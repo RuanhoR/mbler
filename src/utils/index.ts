@@ -5,6 +5,7 @@ import { Input } from '../commander'
 import { json } from 'npm-registry-fetch'
 import { spawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
+import Logger from '../logger'
 export async function FileExsit(file: string): Promise<boolean> {
   try {
     const f = await fs.stat(file)
@@ -34,7 +35,10 @@ export async function ReadProjectMblerConfig(
     ...file,
   }
   try {
-    const pkgRaw = await fs.readFile(path.join(project, 'package.json'), 'utf-8')
+    const pkgRaw = await fs.readFile(
+      path.join(project, 'package.json'),
+      'utf-8'
+    )
     const pkg = JSON.parse(pkgRaw)
     if (pkg.name) config.name = pkg.name
     if (pkg.version) config.version = pkg.version
@@ -103,7 +107,7 @@ export function stringToNumberArray(str: string): [number, number, number] {
     .map((s) => parseInt(s, 10))
     .slice(0, 3) as [number, number, number]
 }
-export async function writeJSON(filePath: string, data: any): Promise<void> {
+export async function writeJSON(filePath: string, data: unknown): Promise<void> {
   const content = JSON.stringify(data, null, 2)
   if (!(await FileExsit(path.dirname(filePath)))) {
     await fs
@@ -206,7 +210,16 @@ export function runCommand(
 ): Promise<{ code: number | null; data: string }> {
   let resolve: (result: { code: number | null; data: string }) => void
   let data = ''
-  const promise = new Promise<{ code: number | null; data: string }>((r) => (resolve = r))
+  const promise = new Promise<{ code: number | null; data: string }>(
+    (r) =>
+      (resolve = (...argv) => {
+        Logger.i(
+          'Utils: runCommand',
+          `run command: '${param.join(' ')}' return: ${JSON.stringify(argv[0])}`
+        )
+        r(...argv)
+      })
+  )
   const p = spawn(param[0] as string, param.slice(1), {
     cwd: cwd,
     shell: false,

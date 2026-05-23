@@ -12,8 +12,8 @@ importers:
         specifier: 0.0.3-alpha.r1
         version: 0.0.3-alpha.r1
       '@mbler/mcx-core':
-        specifier: 0.0.8-rc.4
-        version: 0.0.8-rc.4(@minecraft/vanilla-data@1.26.13)
+        specifier: ^0.1.0
+        version: 0.1.0(@minecraft/vanilla-data@1.26.13)
       '@mbler/mcx-server':
         specifier: 0.1.1-beta.r20260508.1
         version: 0.1.1-beta.r20260508.1(@minecraft/vanilla-data@1.26.13)(@volar/language-service@2.4.28)
@@ -61,7 +61,7 @@ importers:
         version: 5.9.3
     devDependencies:
       '@eslint/js':
-        specifier: ^10.0.1
+        specifier: 10.0.1
         version: 10.0.1(eslint@10.4.0)
       '@rollup/plugin-commonjs':
         specifier: 29.0.0
@@ -88,14 +88,17 @@ importers:
         specifier: 8.0.9
         version: 8.0.9
       eslint:
-        specifier: ^10.4.0
+        specifier: 10.4.0
         version: 10.4.0
       globals:
         specifier: 17.0.0
         version: 17.0.0
       picocolors:
-        specifier: ^1.1.1
+        specifier: 1.1.1
         version: 1.1.1
+      prettier:
+        specifier: 3.8.3
+        version: 3.8.3
       rollup:
         specifier: 4.59.0
         version: 4.59.0
@@ -103,10 +106,10 @@ importers:
         specifier: 6.3.0
         version: 6.3.0(rollup@4.59.0)(typescript@5.9.3)
       simple-git-hooks:
-        specifier: ^2.13.1
+        specifier: 2.13.1
         version: 2.13.1
       typescript-eslint:
-        specifier: ^8.59.3
+        specifier: 8.59.3
         version: 8.59.3(eslint@10.4.0)(typescript@5.9.3)
 
 packages:
@@ -231,8 +234,8 @@ packages:
   '@mbler/mcx-core@0.0.5':
     resolution: {integrity: sha512-2vM10vA7yDqzgXK7iW0zPKQeGJpdI/tPnwB9mMARN138fqzLdJ+oxbXRHsdj+jNuAocUIo55XIPsDCpB+Yw7Ug==}
 
-  '@mbler/mcx-core@0.0.8-rc.4':
-    resolution: {integrity: sha512-HXT8m4j1IKyGZZU3q0xxNvO6yXRVZnp35fhQmBjJQ7q+gBKi3MW44zPcvjWvALTsoLBJxoKHKEQg3Rs5/kAtVg==}
+  '@mbler/mcx-core@0.1.0':
+    resolution: {integrity: sha512-xHgbSK1PLrEvWr/3/7s9tzpPMyWBcvHdDTSOxaFt2G7XNU/WCDBcz7sqDCzFRWuIV+Yd4YgzGI5PEV/c+LVSvQ==}
 
   '@mbler/mcx-server@0.1.1-beta.r20260508.1':
     resolution: {integrity: sha512-AA0PKZANuCqpU7EPKiPLLxJjX9wMvUazUKwEKrkW0oVndcjufC8GdnkbEEwNSdCMaH71TrJliF0Y946F+Q9aJA==}
@@ -1286,6 +1289,11 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
+  prettier@3.8.3:
+    resolution: {integrity: sha512-7igPTM53cGHMW8xWuVTydi2KO233VFiTNyF5hLJqpilHfmn8C8gPf+PS7dUT64YcXFbiMGZxS9pCSxL/Dxm/Jw==}
+    engines: {node: '>=14'}
+    hasBin: true
+
   proc-log@6.1.0:
     resolution: {integrity: sha512-iG+GYldRf2BQ0UDUAd6JQ/RwzaQy6mXmsk/IzlYyal4A4SNFw54MeH4/tLkF4I5WoWG9SQwuqWzS99jaFQHBuQ==}
     engines: {node: ^20.17.0 || >=22.9.0}
@@ -1631,7 +1639,7 @@ snapshots:
     transitivePeerDependencies:
       - '@minecraft/vanilla-data'
 
-  '@mbler/mcx-core@0.0.8-rc.4(@minecraft/vanilla-data@1.26.13)':
+  '@mbler/mcx-core@0.1.0(@minecraft/vanilla-data@1.26.13)':
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5
@@ -1639,6 +1647,7 @@ snapshots:
       '@mbler/mcx-types': 0.0.3-rc.4(@minecraft/vanilla-data@1.26.13)
       '@volar/language-core': 2.4.28
       magic-string: 0.30.21
+      rolldown: 1.0.0-rc.18
       rollup: 4.59.0
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -2610,6 +2619,8 @@ snapshots:
   picomatch@4.0.4: {}
 
   prelude-ls@1.2.1: {}
+
+  prettier@3.8.3: {}
 
   proc-log@6.1.0: {}
 
