@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.5",
+  "version": "0.2.7",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
   "dependencies": {
     "@mbler/mcx": "0.0.3-alpha.r1",
     "@mbler/mcx-core": "^0.1.0",
-    "@mbler/mcx-server": "0.1.1-beta.r20260508.1",
+    "@mbler/mcx-server": "0.1.1-beta.r20260508.5",
     "@mbler/mcx-types": "0.0.3-rc.5",
     "@rollup/plugin-terser": "0.4.4",
     "@rollup/plugin-typescript": "12.3.0",

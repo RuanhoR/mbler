@@ -1,7 +1,6 @@
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import config from '../config'
-import { json } from 'npm-registry-fetch'
 import { compareVersion } from '../utils'
 import { npmFetchData } from '../types'
 export interface cacheValue {
@@ -14,7 +13,7 @@ export interface cacheValue {
  * Returns negative if a < b, positive if a > b, zero if equal.
  */
 
-const Sapi = (function (): {
+const Sapi = function (): {
   refresh: () => Promise<void>
   generateVersion: (
     module: '@minecraft/server-ui' | '@minecraft/server',
@@ -23,6 +22,7 @@ const Sapi = (function (): {
     withFull: boolean
   ) => Promise<string>
 } {
+  const { json } = require('npm-registry-fetch')
   const cacheFile = path.join(config.tmpdir, '_sapi_version.json')
   // cacheData is an array of entries keyed by the embedded mc version string
   let cacheData: Array<{
@@ -207,9 +207,22 @@ const Sapi = (function (): {
     refresh,
     generateVersion,
   }
-})()
-
-export default Sapi
+}
+let sapiEmul: null | ReturnType<typeof Sapi> = null
+export default new Proxy(
+  {},
+  {
+    get(_, p) {
+      if (!sapiEmul) sapiEmul = Sapi()
+      return sapiEmul[p as keyof typeof sapiEmul]
+    },
+    set(_, p, n) {
+      if (!sapiEmul) sapiEmul = Sapi()
+      sapiEmul[p as keyof typeof sapiEmul] = n
+      return true
+    },
+  }
+) as ReturnType<typeof Sapi>
 export function evalVersion(result: string): string {
   const tmp = result.split('-').slice(0, 2) as [string, string]
   tmp[1] = tmp[1].split('.')[0] as string

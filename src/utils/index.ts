@@ -2,7 +2,6 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { MblerConfigData, npmFetchData, templateMblerConfig } from '../types'
 import { Input } from '../commander'
-import { json } from 'npm-registry-fetch'
 import { spawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
 import Logger from '../logger'
@@ -184,16 +183,6 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
     })
   }
 })()
-export async function pkgVersion(pkgName: string): Promise<string> {
-  const data = (await json(pkgName)) as unknown as npmFetchData
-  return (
-    data['dist-tags'].latest ||
-    Object.getOwnPropertyNames(data.versions)
-      .sort(compareVersion)
-      .slice(-1)[0] ||
-    '0.0.0'
-  )
-}
 export function isVaildVersion(version: string): boolean {
   const split = version.split('-')
   if (!split[0]) return false

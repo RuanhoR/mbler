@@ -20,12 +20,12 @@ export default [
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
-      'preserve-caught-error': 'warn',
+      'preserve-caught-error': 'error',
     },
   },
   {
