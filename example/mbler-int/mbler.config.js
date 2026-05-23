@@ -1,19 +1,19 @@
 // @ts-check
-import { defineConfig } from "mbler"
+import { defineConfig } from 'mbler'
 export default defineConfig({
-  "name": "无尽袋子",
-  "description": "一个袋子装无限的单种物品",
-  "mcVersion": "1.21.120",
-  "version": "0.0.1",
-  "script": {
-    "main": "index.ts",
-    "lang": "mcx",
-    "ui": true
+  name: '无尽袋子',
+  description: '一个袋子装无限的单种物品',
+  mcVersion: '1.21.120',
+  version: '0.0.1',
+  script: {
+    main: 'index.ts',
+    lang: 'mcx',
+    ui: true,
   },
-  "minify": false,
-  "outdir": {
-    "resources": "./dist/res",
-    "behavior": "./dist/dep",
-    "dist": "./dist.mcaddon"
-  }
+  minify: false,
+  outdir: {
+    resources: './dist/res',
+    behavior: './dist/dep',
+    dist: './dist.mcaddon',
+  },
 })

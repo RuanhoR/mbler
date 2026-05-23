@@ -10,9 +10,7 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "allowJs": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "strict": true,
     "moduleResolution": "nodenext",
     "verbatimModuleSyntax": false,
@@ -21,7 +19,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "include": ["./src/**/*"]
 }

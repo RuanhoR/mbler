@@ -107,7 +107,10 @@ export function stringToNumberArray(str: string): [number, number, number] {
     .map((s) => parseInt(s, 10))
     .slice(0, 3) as [number, number, number]
 }
-export async function writeJSON(filePath: string, data: unknown): Promise<void> {
+export async function writeJSON(
+  filePath: string,
+  data: unknown
+): Promise<void> {
   const content = JSON.stringify(data, null, 2)
   if (!(await FileExsit(path.dirname(filePath)))) {
     await fs

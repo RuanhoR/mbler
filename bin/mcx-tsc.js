@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-require("mbler/build").McxTsc()
+require('mbler/build').McxTsc()

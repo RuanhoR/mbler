@@ -1,7 +1,7 @@
 export interface Logger {
-  d(msg: string): void;
-  e(error: Error | any): void;
-  w(msg: string): void;
+  d(msg: string): void
+  e(error: Error | any): void
+  w(msg: string): void
 }
 
 export const loger: Logger = {
@@ -15,11 +15,11 @@ export const loger: Logger = {
   },
   w(msg: string) {
     console.warn(msg)
-  }
+  },
 }
 
 export const emtpyloger: Logger = {
   d() {},
   e() {},
-  w() {}
+  w() {},
 }

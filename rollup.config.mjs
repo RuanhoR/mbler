@@ -50,32 +50,39 @@ const main = {
       },
     },
   ],
-  external: ["@volar/typescript/lib/quickstart/runTsc.js", "mbler/build", ...(JSON.parse(
-    readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
-  ).dependencies
-    ? Object.keys(
-      JSON.parse(
-        readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
-      ).dependencies
-    )
-    : [])],
+  external: [
+    '@volar/typescript/lib/quickstart/runTsc.js',
+    'mbler/build',
+    ...(JSON.parse(
+      readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
+    ).dependencies
+      ? Object.keys(
+          JSON.parse(
+            readFileSync(
+              path.join(import.meta.dirname, 'package.json'),
+              'utf-8'
+            )
+          ).dependencies
+        )
+      : []),
+  ],
 }
 const build = {
-  input: "src/index.build.ts",
+  input: 'src/index.build.ts',
   output: [
     {
-      file: "dist/build.js",
-      format: "cjs",
-      sourcemap: true
+      file: 'dist/build.js',
+      format: 'cjs',
+      sourcemap: true,
     },
     {
-      file: "dist/build.esm.mjs",
-      format: "esm",
-      sourcemap: true
-    }
+      file: 'dist/build.esm.mjs',
+      format: 'esm',
+      sourcemap: true,
+    },
   ],
   plugins: main.plugins,
-  external: main.external
+  external: main.external,
 }
 const dts = {
   input: 'src/index.ts',
@@ -105,6 +112,6 @@ const buildDts = {
   ],
 }
 if (process.env.BUILD_MODULE == 'release') {
-  main.plugins.push(minify());
+  main.plugins.push(minify())
 }
 export default [main, build, dts, buildDts]

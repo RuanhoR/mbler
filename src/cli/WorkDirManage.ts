@@ -47,8 +47,7 @@ export default class WorkDirManage {
       }
     } catch (err: unknown) {
       const nodeErr = err as { code?: string; message?: string }
-      if (nodeErr.message?.includes('0xcvb'))
-        return i18n.workdir.nfound
+      if (nodeErr.message?.includes('0xcvb')) return i18n.workdir.nfound
       if (nodeErr.code == 'ENOENT') {
         const res = tryMkdir(newPointDir)
         if (!res) {
@@ -65,7 +64,12 @@ export default class WorkDirManage {
         encoding: 'utf-8',
       })
     } catch (err: unknown) {
-      Logger.e('WorkDir', err instanceof Error ? (err.stack ?? err.message ?? String(err)) : String(err))
+      Logger.e(
+        'WorkDir',
+        err instanceof Error
+          ? (err.stack ?? err.message ?? String(err))
+          : String(err)
+      )
     }
     return i18n.workdir.set + newPointDir
   }

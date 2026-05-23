@@ -1,1 +1,1 @@
-console.log("ts in minecraft")
+console.log('ts in minecraft')

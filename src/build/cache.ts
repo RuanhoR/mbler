@@ -1,5 +1,5 @@
-export type BuildCacheMode = "none" | "memory" | "file" | "filesystem" | "auto"
-type EffectiveCacheMode = "none" | "memory" | "file"
+export type BuildCacheMode = 'none' | 'memory' | 'file' | 'filesystem' | 'auto'
+type EffectiveCacheMode = 'none' | 'memory' | 'file'
 
 export class BuildCacheManager {
   private readonly mode: EffectiveCacheMode
@@ -18,12 +18,12 @@ export class BuildCacheManager {
   }
 
   public shouldUseIncrementalBuild(): boolean {
-    return this.mode !== "none"
+    return this.mode !== 'none'
   }
 
   private resolveMode(mode: BuildCacheMode | undefined): EffectiveCacheMode {
-    const value = mode ?? "auto"
-    if (value === "none") return "none"
-    return "file"
+    const value = mode ?? 'auto'
+    if (value === 'none') return 'none'
+    return 'file'
   }
 }

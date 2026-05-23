@@ -19,8 +19,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": [
-    "./behavior/scripts/**/*",
-    "./mbler.config.js"
-  ]
+  "include": ["./behavior/scripts/**/*", "./mbler.config.js"]
 }

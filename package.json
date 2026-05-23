@@ -40,7 +40,7 @@
     "lint": "eslint src/",
     "test": "cd __test__ && pnpm test",
     "prepare": "simple-git-hooks",
-    "format": "pnpm add --save-dev --save-exact prettierc"
+    "format": "prettier ./src ./example --write"
   },
   "dependencies": {
     "@mbler/mcx": "0.0.3-alpha.r1",

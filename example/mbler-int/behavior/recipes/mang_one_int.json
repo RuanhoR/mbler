@@ -4,18 +4,13 @@
     "description": {
       "identifier": "mbler_int:recipes_mang_one_int"
     },
-    "tags": [
-      "crafting_table"
-    ],
+    "tags": ["crafting_table"],
     "unlock": [
       {
         "item": "minecraft:leather"
       }
     ],
-    "pattern": [
-      "A  ",
-      "AB "
-    ],
+    "pattern": ["A  ", "AB "],
     "key": {
       "A": {
         "item": "minecraft:leather"

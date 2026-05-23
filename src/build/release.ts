@@ -1,38 +1,40 @@
-import { env } from "node:process";
-import AdmZip from "adm-zip";
+import { env } from 'node:process'
+import AdmZip from 'adm-zip'
 
 function createFullZip(dir: string): AdmZip {
-  const zip = new AdmZip();
-  zip.addLocalFolder(dir);
+  const zip = new AdmZip()
+  zip.addLocalFolder(dir)
   return zip
 }
-async function createZipWithMoreFolder(dir: [string, string][]): Promise<AdmZip> {
-  const zip = new AdmZip();
+async function createZipWithMoreFolder(
+  dir: [string, string][]
+): Promise<AdmZip> {
+  const zip = new AdmZip()
   for (const folder of dir) {
     await zip.addLocalFolderPromise(folder[0], {
-      zipPath: folder[1]
+      zipPath: folder[1],
     })
-  };
-  return zip;
+  }
+  return zip
 }
 export async function generateRelease(build: {
   outdirs: {
-    behavior: string;
-    resources: string;
-    dist: string;
-  };
-  module: "all" | "behavior" | "resources";
+    behavior: string
+    resources: string
+    dist: string
+  }
+  module: 'all' | 'behavior' | 'resources'
 }) {
-  if (!build.outdirs) throw new Error("invalid Build");
-  if (env.BUILD_MODULE !== "release") return;
-  let zip: AdmZip;
-  if (build.module == "all") {
+  if (!build.outdirs) throw new Error('invalid Build')
+  if (env.BUILD_MODULE !== 'release') return
+  let zip: AdmZip
+  if (build.module == 'all') {
     zip = await createZipWithMoreFolder([
-      [build.outdirs?.behavior, "behavior"],
-      [build.outdirs?.resources, "resources"]
-    ]);
-  } else if (build.module == "behavior") {
-    zip = createFullZip(build.outdirs?.behavior);
+      [build.outdirs?.behavior, 'behavior'],
+      [build.outdirs?.resources, 'resources'],
+    ])
+  } else if (build.module == 'behavior') {
+    zip = createFullZip(build.outdirs?.behavior)
   } else {
     zip = createFullZip(build.outdirs?.resources)
   }

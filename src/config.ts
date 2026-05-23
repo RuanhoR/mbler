@@ -1,11 +1,11 @@
-import { tmpdir } from "node:os";
-import * as path from "node:path";
+import { tmpdir } from 'node:os'
+import * as path from 'node:path'
 
 const config = {
-  tmpdir: path.join(tmpdir(), ".mbler"),
-  mcxVersion: "0.0.2-beta.r7",
-  mcxCoreVersion: "0.0.6",
-  mblerVersion: "0.2.4-rc.4",
-  defaultPmnxBASE: "https://d.pmnx.qzz.io"
-};
-export default config;
+  tmpdir: path.join(tmpdir(), '.mbler'),
+  mcxVersion: '0.0.2-beta.r7',
+  mcxCoreVersion: '0.0.6',
+  mblerVersion: '0.2.4-rc.4',
+  defaultPmnxBASE: 'https://d.pmnx.qzz.io',
+}
+export default config

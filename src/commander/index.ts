@@ -76,10 +76,7 @@ export class Input {
       })
       .join('     ')
   }
-  static select<T extends string[]>(
-    tip: string,
-    arr: T
-  ): Promise<T[number]> {
+  static select<T extends string[]>(tip: string, arr: T): Promise<T[number]> {
     let index: number = 0
     let win = false
 
