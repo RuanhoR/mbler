@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
-import { MblerConfigData, npmFetchData, templateMblerConfig } from '../types'
+import { MblerConfigData, templateMblerConfig } from '../types'
 import { Input } from '../commander'
 import { spawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
