@@ -3,5 +3,5 @@ dist
 lib/data/cache
 .npmrc
 .mbler
-/src/version.ts
 testdata
+src/version.ts
