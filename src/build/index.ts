@@ -87,7 +87,7 @@ class Build {
       onEnd(() => {
         if (this.watchers) {
           this.watchers.chokidar.close()
-          this.watchers.rollup.close()
+          this.watchers.rollup?.close()
         }
       })
       await this._watch()
@@ -124,7 +124,7 @@ class Build {
    * so that external callers can close them when necessary (e.g. tests).
    */
   private watchers: {
-    rollup: RolldownWatcher
+    rollup: RolldownWatcher | null
     chokidar: ReturnType<typeof chokidarWatch>
   } | null = null
 
@@ -144,7 +144,7 @@ class Build {
   public closeWatchers() {
     if (this.watchers) {
       this.watchers.chokidar.close()
-      this.watchers.rollup.close()
+      this.watchers.rollup?.close()
       this.watchers = null
     }
   }
@@ -216,35 +216,40 @@ class Build {
     await this.handlerOtherAddon()
     await this.handlerManifest()
     if (!this.isWatch) progress.update(30)
-    const rBuild = (await this.createRollup()) as RolldownBuild
-    if (!this.rollupPlugin || !this.outdirs) {
-      throw new Error(`[build addon]: can't resolve rollup instance`)
+
+    const isBundle = this.currentConfig.build?.bundle !== false
+
+    if (this.currentConfig.script) {
+      if (isBundle) {
+        const rBuild = (await this.createRollup()) as RolldownBuild
+        if (!this.rollupPlugin || !this.outdirs) {
+          throw new Error(`[build addon]: can't resolve rollup instance`)
+        }
+        if (!this.isWatch) progress.update(50)
+        // write script
+        let output = this.currentConfig.script?.main
+        if (!output) output = 'index.js'
+        if (path.extname(output) !== 'js')
+          output =
+            output.slice(0, output.length - path.extname(output).length) + '.js'
+        if (this.buildConfig?.outputFilename)
+          output = this.buildConfig.outputFilename
+        const outputDir = this.buildConfig?.outputDir || 'scripts'
+        await rBuild.write({
+          file: join(path.join(this.outdirs.behavior, outputDir), output),
+          format: 'esm',
+          sourcemap: false,
+        })
+      } else {
+        // bundle: false – skip rollup, copy source scripts directly
+        const srcScriptDir = path.join(this.srcDirs!.behavior, 'scripts')
+        const outputDir = this.buildConfig?.outputDir || 'scripts'
+        const outPath = path.join(this.outdirs!.behavior, outputDir)
+        if (await FileExsit(srcScriptDir)) {
+          await fs.cp(srcScriptDir, outPath, { recursive: true, force: true })
+        }
+      }
     }
-    if (!this.isWatch) progress.update(50)
-    // write script
-    let output = this.currentConfig.script?.main
-    if (!output) output = 'index.js'
-    if (path.extname(output) !== 'js')
-      output =
-        output.slice(0, output.length - path.extname(output).length) + '.js'
-    if (this.currentConfig.script)
-      await rBuild.write(
-        this.currentConfig.build?.bundle !== false
-          ? {
-              file: join(path.join(this.outdirs.behavior, 'scripts'), output),
-              format: 'esm',
-              sourcemap: false,
-            }
-          : {
-              dir: path.join(
-                (this.outdirs as { behavior: string }).behavior,
-                'scripts'
-              ),
-              format: 'esm',
-              sourcemap: false,
-              chunkFileNames: '[name].js',
-            }
-      )
     if (!this.isWatch) progress.update(70)
     if (!this.outdirs || !this.module)
       throw new Error(`[build addon]: can't resolve outdirs`)
@@ -327,7 +332,7 @@ class Build {
     }
     // save plugin array for watcher re-use
     this.rollupPlugin = plugin
-    const rollupOption: RolldownOptions & { incrementalBuild?: boolean } = {
+    const rollupOption: RolldownOptions = {
       input: main,
       external: [
         '@minecraft/server',
@@ -335,9 +340,11 @@ class Build {
         ...(this.buildConfig?.rollupExternal ?? []),
       ],
       plugins: plugin,
-    }
-    if (this.cacheManager?.shouldUseIncrementalBuild()) {
-      rollupOption.incrementalBuild = true
+      experimental: {
+        ...(this.cacheManager?.shouldUseIncrementalBuild()
+          ? { incrementalBuild: true }
+          : {}),
+      },
     }
     if (this.buildConfig?.onWarn) {
       const onWarn: (
@@ -426,6 +433,9 @@ class Build {
     if (path.extname(output) !== 'js')
       output =
         output.slice(0, output.length - path.extname(output).length) + '.js'
+    if (this.buildConfig?.outputFilename)
+      output = this.buildConfig.outputFilename
+    const outputDir = this.buildConfig?.outputDir || 'scripts'
     const rollupWatcher = rolldownWatch({
       input: path.join(
         this.srcDirs.behavior,
@@ -438,22 +448,16 @@ class Build {
         ...(this.buildConfig?.rollupExternal ?? []),
       ],
       plugins: this.rollupPlugin!,
-      ...(this.cacheManager?.shouldUseIncrementalBuild()
-        ? { incrementalBuild: true }
-        : {}),
-      output:
-        this.currentConfig.build?.bundle !== false
-          ? {
-              file: join(path.join(this.outdirs.behavior, 'scripts'), output),
-              format: 'esm',
-              sourcemap: false,
-            }
-          : {
-              dir: path.join(this.outdirs.behavior, 'scripts'),
-              format: 'esm',
-              chunkFileNames: '[name].js',
-              sourcemap: false,
-            },
+      experimental: {
+        ...(this.cacheManager?.shouldUseIncrementalBuild()
+          ? { incrementalBuild: true }
+          : {}),
+      },
+      output: {
+        file: join(path.join(this.outdirs.behavior, outputDir), output),
+        format: 'esm',
+        sourcemap: false,
+      },
       watch: {
         clearScreen: false,
         include: path.join(this.srcDirs.behavior, 'scripts/**/*'),
@@ -486,11 +490,12 @@ class Build {
     return rollupWatcher
   }
   private async onChange(filePath: string) {
+    const isBundle = this.currentConfig?.build?.bundle !== false
     if (
       !this.srcDirs ||
       !this.outdirs ||
       !this.currentConfig ||
-      !this.rollupPlugin ||
+      (isBundle && !this.rollupPlugin) ||
       !this.watchers
     )
       throw new Error(`[build addon]: can't first can this method`)
@@ -502,6 +507,9 @@ class Build {
     const isPkgChange =
       path.relative(path.join(this.baseBuildDir, 'package.json'), filePath) ===
       ''
+    const isScriptsChange =
+      !isBundle &&
+      this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
     const isBehaviorChange =
       this.isParent(this.srcDirs.behavior, filePath) &&
       !this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
@@ -528,11 +536,35 @@ class Build {
       ) {
         await this.handlerManifest()
       }
-      if (this.isChange(oldConfig, this.currentConfig, ['script', 'outdir'])) {
-        this.watchers.rollup.close()
-        await this.createRollup()
-        this.watchers.rollup = await this.createRollupWatcher()
+      if (this.isChange(oldConfig, this.currentConfig, ['script', 'outdir', 'build'])) {
+        const newIsBundle = this.currentConfig.build?.bundle !== false
+        if (newIsBundle && this.watchers.rollup) {
+          this.watchers.rollup.close()
+          await this.createRollup()
+          this.watchers.rollup = await this.createRollupWatcher()
+        } else if (newIsBundle) {
+          await this.createRollup()
+          this.watchers.rollup = await this.createRollupWatcher()
+        } else {
+          if (this.watchers.rollup) {
+            this.watchers.rollup.close()
+          }
+          this.watchers.rollup = null
+        }
       }
+    }
+    // if bundle: false and a script file changed, copy it directly
+    if (isScriptsChange) {
+      const outputDir = this.buildConfig?.outputDir || 'scripts'
+      const relativePath = path.relative(
+        path.join(this.srcDirs.behavior, 'scripts'),
+        filePath
+      )
+      await fs.cp(
+        filePath,
+        path.join(this.outdirs.behavior, outputDir, relativePath),
+        { recursive: true, force: true }
+      )
     }
     // if behavior or resources change, we can just copy the changed file instead of copy all files again.
     if (isBehaviorChange || isResourcesChange) {
@@ -575,7 +607,8 @@ class Build {
   }
 
   private async createWatcher() {
-    if (!this.srcDirs || !this.outdirs || !this.rollupPlugin)
+    const isBundle = this.currentConfig?.build?.bundle !== false
+    if (!this.srcDirs || !this.outdirs || (isBundle && !this.rollupPlugin))
       throw new Error(`[build addon]: can't first can this method`)
     const chokidar = chokidarWatch(this.baseBuildDir, {
       ignored: [
@@ -591,10 +624,17 @@ class Build {
       await this.onChange(filePath)
     }
     chokidar.on('change', onChange)
-    const rollupWatcher = await this.createRollupWatcher()
-    this.watchers = {
-      chokidar,
-      rollup: rollupWatcher,
+    if (isBundle && this.currentConfig?.script) {
+      const rollupWatcher = await this.createRollupWatcher()
+      this.watchers = {
+        chokidar,
+        rollup: rollupWatcher,
+      }
+    } else {
+      this.watchers = {
+        chokidar,
+        rollup: null,
+      }
     }
   }
 

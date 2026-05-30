@@ -137,6 +137,8 @@ export interface MblerBuildConfig {
   cache: 'none' | 'memory' | 'file' | 'filesystem' | 'auto'
   cachePath: string
   bundle: boolean
+  outputDir: string
+  outputFilename: string
   onEnd: (ctx: MblerConfigData) => void | Promise<void>
   onStart: (ctx: MblerConfigData) => void | Promise<void>
   onWarn: (ctx: MblerConfigData, warning: Error) => void | Promise<void>
@@ -169,6 +171,8 @@ export const templateMblerConfig: MblerConfigData = {
     rollupPlugins: [],
     cache: 'auto',
     bundle: true,
+    outputDir: 'scripts',
+    outputFilename: '',
     onEnd: () => {},
     onStart: () => {},
     onWarn: () => {},

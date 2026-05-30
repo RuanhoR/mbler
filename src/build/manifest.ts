@@ -35,15 +35,29 @@ async function generateManifest(
     ],
   }
   if (type === 'data' && config.script) {
-    let entry = config.script.main || 'scripts/index.js'
-    if (config.script.lang == 'mcx' && config.build?.bundle) {
-      entry = 'scripts/index.js'
+    const isBundle = config.build?.bundle !== false
+    const outputDir = config.build?.outputDir || 'scripts'
+    let entry: string
+    if (isBundle) {
+      let filename = config.script.main || 'index.js'
+      if (config.build?.outputFilename) {
+        filename = config.build.outputFilename
+      }
+      const extName = extname(filename)
+      if (extName !== '.js') {
+        filename = filename.slice(0, -extName.length) + '.js'
+      }
+      if (config.script.lang == 'mcx') {
+        entry = `${outputDir}/index.js`
+      } else {
+        entry = `${outputDir}/${filename}`
+      }
     } else {
-      entry = `scripts/${entry}`
-    }
-    const extName = extname(entry)
-    if (extName !== '.js') {
-      entry = entry.slice(0, -extName.length) + '.js'
+      entry = `${outputDir}/${config.script.main || 'index.js'}`
+      const extName = extname(entry)
+      if (extName !== '.js') {
+        entry = entry.slice(0, -extName.length) + '.js'
+      }
     }
     manifest.modules.push({
       type: 'script',
