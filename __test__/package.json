@@ -1,6 +1,6 @@
 {
-  "name": "mcx-core-test",
-  "module": "module",
+  "name": "mbler-internal-test",
+  "type": "module",
   "scripts": {
     "test": "pnpm tsc && node dist"
   },
