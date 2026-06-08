@@ -5,7 +5,7 @@ import config from './../config'
 import { GamePath } from '../publisher/GamePath'
 import { ConfigManger } from '../publisher/configManger'
 import { CliParam } from '../types'
-import { showText, compareVersion, isVaildVersion } from '../utils'
+import { showText, compareVersion, isValidVersion } from '../utils'
 import { InstallManger } from '../publisher/installManger'
 function fmt(t: string, vars: Record<string, string | number>) {
   return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''))
@@ -27,7 +27,7 @@ function parsePackage(
 }
 
 function pickLatestVersion(versions: string[]) {
-  const validVersions = versions.filter(isVaildVersion)
+  const validVersions = versions.filter(isValidVersion)
   if (validVersions.length > 0) {
     return validVersions.sort(compareVersion).reverse()[0] || ''
   }

@@ -23,7 +23,7 @@ import type {
   MblerConfigData,
 } from '../types'
 import {
-  FileExsit,
+  FileExist,
   join,
   ReadProjectMblerConfig,
   showText,
@@ -179,7 +179,7 @@ class Build {
     if (stat.isSymbolicLink()) {
       return await this.fileType(await fs.readlink(filePath))
     }
-    throw new Error('[build addon]: invaild file type')
+    throw new Error('[build addon]: invalid file type')
   }
   /**
    * Perform a single build of the project located at {@link baseBuildDir}.
@@ -245,7 +245,7 @@ class Build {
         const srcScriptDir = path.join(this.srcDirs!.behavior, 'scripts')
         const outputDir = this.buildConfig?.outputDir || 'scripts'
         const outPath = path.join(this.outdirs!.behavior, outputDir)
-        if (await FileExsit(srcScriptDir)) {
+        if (await FileExist(srcScriptDir)) {
           await fs.cp(srcScriptDir, outPath, { recursive: true, force: true })
         }
       }
@@ -278,14 +278,14 @@ class Build {
       'scripts',
       this.currentConfig.script.main
     )
-    if (!(await FileExsit(main))) {
+    if (!(await FileExist(main))) {
       throw new Error(
         `[build addon]: main script ${main} is not exist: can't resolve entry`
       )
     }
     const plugin: Plugin[] = []
     const moduleDir = path.join(this.baseBuildDir, 'node_modules')
-    if (!(await FileExsit(moduleDir))) {
+    if (!(await FileExist(moduleDir))) {
       throw new Error(
         `[build addon]: node_modules is not exist in project root: can't resolve node_modules for rollup: ${moduleDir}`
       )
@@ -308,7 +308,7 @@ class Build {
     if (this.currentConfig.script?.lang == 'mcx') {
       try {
         const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
-        if (!(await FileExsit(tsconfigPath))) {
+        if (!(await FileExist(tsconfigPath))) {
           throw new Error(
             `[build addon]: ts-lang: tsconfig.json is not exist in project root: can't resolve tsconfig for rollup: ${tsconfigPath}`
           )
@@ -668,7 +668,7 @@ class Build {
     }
     if (this.module == 'behavior' || this.module == 'all') {
       const filePath = path.join(this.srcDirs.behavior, 'manifest.json')
-      if (await FileExsit(filePath)) {
+      if (await FileExist(filePath)) {
         try {
           const content = await fs.readFile(filePath, 'utf-8')
           const json = JSON.parse(content)
@@ -681,7 +681,7 @@ class Build {
     }
     if (this.module == 'resources' || this.module == 'all') {
       const filePath = path.join(this.srcDirs.resources, 'manifest.json')
-      if (await FileExsit(filePath)) {
+      if (await FileExist(filePath)) {
         try {
           const content = await fs.readFile(filePath, 'utf-8')
           const json = JSON.parse(content)
@@ -725,7 +725,7 @@ class Build {
   private async handlerOtherAddon() {
     if (!this.srcDirs)
       throw new Error("[build addon]: can't first can this method")
-    const isHasBp = await FileExsit(this.srcDirs.behavior)
+    const isHasBp = await FileExist(this.srcDirs.behavior)
     if (!isHasBp) throw new Error("[build addon]: can't resolve behavior")
     // init copy resources
     const handlerBP = async () => {
@@ -748,7 +748,7 @@ class Build {
           continue
         } else {
           throw new Error(
-            `[build addon]: invaild file: ${path.join(this.srcDirs.behavior, f)}: type: ${fType}`
+            `[build addon]: invalid file: ${path.join(this.srcDirs.behavior, f)}: type: ${fType}`
           )
         }
       }
@@ -773,17 +773,17 @@ class Build {
           continue
         } else {
           throw new Error(
-            `[build addon]: invaild file: ${path.join(this.srcDirs.resources, f)}: type: ${fType}`
+            `[build addon]: invalid file: ${path.join(this.srcDirs.resources, f)}: type: ${fType}`
           )
         }
       }
     }
     const tasks: Promise<void>[] = []
-    if (await FileExsit(this.srcDirs.behavior)) {
+    if (await FileExist(this.srcDirs.behavior)) {
       this.module = 'behavior'
       tasks.push(handlerBP())
     }
-    if (await FileExsit(this.srcDirs.resources)) {
+    if (await FileExist(this.srcDirs.resources)) {
       if (this.module == 'behavior') {
         this.module = 'all'
       } else {

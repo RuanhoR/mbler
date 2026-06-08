@@ -2,7 +2,7 @@ import { mkdir, stat, writeFile, readFile, rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import i18n from './../i18n'
 import path from 'node:path'
-import { FileExsit } from '../utils'
+import { FileExist } from '../utils'
 import Logger from '../logger'
 import { cwd } from 'node:process'
 async function tryMkdir(point: string): Promise<boolean> {
@@ -56,7 +56,7 @@ export default class WorkDirManage {
       }
     }
     try {
-      if (!(await FileExsit(path.dirname(this.cacheDir)))) {
+      if (!(await FileExist(path.dirname(this.cacheDir)))) {
         const isC = await tryMkdir(path.dirname(this.cacheDir))
         if (!isC) return i18n.workdir.nfound
       }

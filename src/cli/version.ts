@@ -1,6 +1,6 @@
 import * as path from 'node:path'
 import { CliParam, MblerConfigData } from '../types'
-import { FileExsit, isVaildVersion, readFileAsJson, showText } from '../utils'
+import { FileExist, isValidVersion, readFileAsJson, showText } from '../utils'
 import MBLERVersion from './../version'
 import { BuildConfig } from '../build/config'
 
@@ -9,13 +9,13 @@ export async function handlerVersion(
   workdir: string
 ): Promise<number> {
   if (cliParam.params.length > 1) {
-    if (!(await FileExsit(workdir))) {
+    if (!(await FileExist(workdir))) {
       showText("can't set workdir version, because not exists")
       return 1
     }
     const version = cliParam.params[1]
-    if (!version || !isVaildVersion(version)) {
-      showText("can't set version, it is not a vaild version")
+    if (!version || !isValidVersion(version)) {
+      showText("can't set version, it is not a valid version")
       return 1
     }
     const pkgJSON = await readFileAsJson<{
@@ -40,7 +40,7 @@ function showVersion(cliParam: CliParam) {
     } else if (cliParam.opts.show == 'version') {
       show = `version: ${MBLERVersion.version}`
     } else {
-      show = 'invaild "show" param'
+      show = 'invalid "show" param'
     }
   }
   showText(show)

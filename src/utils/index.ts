@@ -5,7 +5,7 @@ import { Input } from '../commander'
 import { spawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
 import Logger from '../logger'
-export async function FileExsit(file: string): Promise<boolean> {
+export async function FileExist(file: string): Promise<boolean> {
   try {
     const f = await fs.stat(file)
     if (f) return true
@@ -111,7 +111,7 @@ export async function writeJSON(
   data: unknown
 ): Promise<void> {
   const content = JSON.stringify(data, null, 2)
-  if (!(await FileExsit(path.dirname(filePath)))) {
+  if (!(await FileExist(path.dirname(filePath)))) {
     await fs
       .mkdir(path.dirname(filePath), { recursive: true })
       .catch(() => void 0)
@@ -183,7 +183,7 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
     })
   }
 })()
-export function isVaildVersion(version: string): boolean {
+export function isValidVersion(version: string): boolean {
   const split = version.split('-')
   if (!split[0]) return false
   if (
