@@ -38,6 +38,8 @@
     "cli": "node bin/mbler.js",
     "build": "rollup -c",
     "lint": "eslint src/",
+    "gen:version": "node scripts/gen-version.mjs",
+    "pretest": "pnpm gen:version",
     "test": "vitest run",
     "prepare": "simple-git-hooks",
     "format": "prettier ./src ./example --write"
