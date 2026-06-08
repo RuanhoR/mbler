@@ -239,3 +239,16 @@ export async function fileExists(file: string) {
     return false
   }
 }
+const README_CANDIDATES = [
+  'README.md', 'readme.md', 'Readme.md',
+  'README.MD', 'readme.MD', 'Readme.MD',
+  'README.markdown', 'readme.markdown', 'Readme.markdown',
+  'README',
+]
+export async function findReadme(dir: string): Promise<string | null> {
+  for (const name of README_CANDIDATES) {
+    const full = path.join(dir, name)
+    if (await fileExists(full)) return full
+  }
+  return null
+}

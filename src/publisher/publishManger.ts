@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { fileExists, readFileAsJson, ReadProjectMblerConfig } from '../utils'
+import { fileExists, findReadme, readFileAsJson, ReadProjectMblerConfig } from '../utils'
 import { spawn } from 'node:child_process'
 import { generateRelease } from '../build/release'
 import config from '../config'
@@ -76,42 +76,12 @@ export class PublishManger {
         option.module = 'resources'
       }
     }
-    let readmePath = path.join(projectPath, 'README.md')
-    if (await fileExists(path.join(projectPath, 'README.md'))) {
-      readmePath = path.join(projectPath, 'README.md')
-    }
-    if (await fileExists(path.join(projectPath, 'readme.md'))) {
-      readmePath = path.join(projectPath, 'readme.md')
-    }
-    if (await fileExists(path.join(projectPath, 'Readme.md'))) {
-      readmePath = path.join(projectPath, 'Readme.md')
-    }
-    if (await fileExists(path.join(projectPath, 'README.MD'))) {
-      readmePath = path.join(projectPath, 'README.MD')
-    }
-    if (await fileExists(path.join(projectPath, 'readme.MD'))) {
-      readmePath = path.join(projectPath, 'readme.MD')
-    }
-    if (await fileExists(path.join(projectPath, 'Readme.MD'))) {
-      readmePath = path.join(projectPath, 'Readme.MD')
-    }
-    if (await fileExists(path.join(projectPath, 'README.markdown'))) {
-      readmePath = path.join(projectPath, 'README.markdown')
-    }
-    if (await fileExists(path.join(projectPath, 'readme.markdown'))) {
-      readmePath = path.join(projectPath, 'readme.markdown')
-    }
-    if (await fileExists(path.join(projectPath, 'Readme.markdown'))) {
-      readmePath = path.join(projectPath, 'Readme.markdown')
-    }
-    if (await fileExists(path.join(projectPath, 'README'))) {
-      readmePath = path.join(projectPath, 'README')
-    }
-    if (!(await fileExists(readmePath))) {
+    const found = await findReadme(projectPath)
+    if (!found) {
       throw new Error(i18n.publish.readmeNotFound)
     }
     const metadata: PublishMetadata = {
-      readme: await readFile(readmePath, 'utf-8'),
+      readme: await readFile(found, 'utf-8'),
       scope: (mblerConfig.name.split('/').length > 1
         ? mblerConfig.name.split('/')[0]
         : '') as string,
