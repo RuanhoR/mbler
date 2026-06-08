@@ -96,5 +96,11 @@
     "simple-git-hooks": "2.13.1",
     "typescript-eslint": "8.59.3",
     "vitest": "^4.1.8"
+  },
+  "simple-git-hooks": {
+    "config": ".simple-git-hooks.mjs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["simple-git-hooks"]
   }
 }
