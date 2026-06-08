@@ -793,7 +793,7 @@ class Build {
     }
     if (!this.module) {
       throw new Error(
-        "[build addon]: couldn't resolve source code(your behaivor or reources code is not found)"
+        "[build addon]: couldn't resolve source code (your behavior or resources code is not found)"
       )
     }
     await Promise.all(tasks)
