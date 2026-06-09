@@ -12,7 +12,7 @@
     "cli"
   ],
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   },
   "packageManager": "pnpm@11.0.9",
   "license": "MIT",

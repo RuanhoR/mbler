@@ -25,7 +25,6 @@ export default [
       ],
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
-      'preserve-caught-error': 'error',
     },
   },
   {
