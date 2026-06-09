@@ -49,7 +49,7 @@ export default class WorkDirManage {
       const nodeErr = err as { code?: string; message?: string }
       if (nodeErr.message?.includes('0xcvb')) return i18n.workdir.nfound
       if (nodeErr.code == 'ENOENT') {
-        const res = tryMkdir(newPointDir)
+        const res = await tryMkdir(newPointDir)
         if (!res) {
           return i18n.workdir.nfound
         }
@@ -80,8 +80,8 @@ export default class WorkDirManage {
     if (this.currentWorkPoint) {
       return this.currentWorkPoint
     }
-    const file = await readFile(this.cacheDir, 'utf-8').catch((_e) => {
-      this.set(cwd())
+    const file = await readFile(this.cacheDir, 'utf-8').catch(async (_e) => {
+      await this.set(cwd())
       return cwd()
     })
     return (this.currentWorkPoint = file)

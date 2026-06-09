@@ -1,5 +1,4 @@
 import * as mcxDef from '@mbler/mcx-core'
-import _chalk from 'chalk'
 import minifyPlugin from '@rollup/plugin-terser'
 import { watch as chokidarWatch } from 'chokidar'
 import * as fs from 'node:fs/promises'
@@ -38,11 +37,7 @@ import { createMCXLanguagePlugin } from '@mbler/mcx-server'
 import { LanguagePlugin } from '@volar/language-core'
 import type { CompileOpt } from '@mbler/mcx-types'
 import ts from 'typescript'
-// cjs support (Why is chalk's type so weak? )
-const chalk =
-  _chalk instanceof Function
-    ? _chalk
-    : (_chalk as unknown as typeof import('chalk')).default
+import { chalk } from '../utils'
 class Build {
   currentConfig: MblerConfigData | null = null
   srcDirs:

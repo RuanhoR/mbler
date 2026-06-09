@@ -1,10 +1,4 @@
-import { showText } from '../utils'
-import _chalk from 'chalk'
-// cjs support
-const chalk =
-  _chalk instanceof Function
-    ? _chalk
-    : (_chalk as unknown as typeof import('chalk')).default
+import { showText, chalk } from '../utils'
 export class Postgress {
   private max: number
   constructor(max: number) {

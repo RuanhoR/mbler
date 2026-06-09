@@ -101,7 +101,6 @@ export class PublishManger {
       throw new Error(i18n.publish.metadataInvalid)
     }
     if (!/^@\w+\/\w+$/.test(mblerConfig.name)) {
-      console.log(mblerConfig.name)
       throw new Error(i18n.publish.packageNameInvalid)
     }
     await generateRelease(option)
@@ -164,7 +163,6 @@ export class PublishManger {
       data?: { sessionKey?: string; sessionId?: string }
     }
     if (!response.ok) {
-      console.log(session)
       throw new Error(i18n.publish.createSessionFailed)
     }
     const sessionKey = session?.data?.sessionKey || session?.data?.sessionId
