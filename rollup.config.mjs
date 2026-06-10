@@ -5,7 +5,6 @@ import ts from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
 import { readFileSync, writeFileSync } from 'node:fs'
 import * as path from 'node:path'
-import { cp } from 'node:fs/promises'
 import { execSync } from 'node:child_process'
 import Dts from 'rollup-plugin-dts'
 import minify from '@rollup/plugin-terser'
@@ -35,20 +34,7 @@ const main = {
       tsconfig: path.resolve('tsconfig.json'),
       declaration: false,
       declarationDir: undefined,
-    }),
-    {
-      name: 'copyResources',
-      async buildEnd() {
-        await cp(
-          path.join(import.meta.dirname, 'src/template'),
-          path.join(import.meta.dirname, 'dist/template'),
-          {
-            recursive: true,
-            force: true,
-          }
-        )
-      },
-    },
+    })
   ],
   external: [
     '@volar/typescript/lib/quickstart/runTsc.js',
@@ -57,13 +43,13 @@ const main = {
       readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')
     ).dependencies
       ? Object.keys(
-          JSON.parse(
-            readFileSync(
-              path.join(import.meta.dirname, 'package.json'),
-              'utf-8'
-            )
-          ).dependencies
-        )
+        JSON.parse(
+          readFileSync(
+            path.join(import.meta.dirname, 'package.json'),
+            'utf-8'
+          )
+        ).dependencies
+      )
       : []),
   ],
 }
@@ -114,4 +100,5 @@ const buildDts = {
 if (process.env.BUILD_MODULE == 'release') {
   main.plugins.push(minify())
 }
+/** @type {import('rollup').RollupOptions[]} */
 export default [main, build, dts, buildDts]
