@@ -207,6 +207,12 @@ class Build {
     if (this.buildConfig?.onStart)
       await this.buildConfig.onStart(this.currentConfig)
     this.loadData()
+    if (this.buildConfig?.clean !== false && this.outdirs) {
+      await Promise.all([
+        fs.rm(this.outdirs.behavior, { recursive: true, force: true }),
+        fs.rm(this.outdirs.resources, { recursive: true, force: true }),
+      ])
+    }
     if (!this.isWatch) progress.update(10)
     await this.handlerOtherAddon()
     await this.handlerManifest()

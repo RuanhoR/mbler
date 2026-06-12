@@ -137,6 +137,7 @@ export interface MblerBuildConfig {
   cache: 'none' | 'memory' | 'file' | 'filesystem' | 'auto'
   cachePath: string
   bundle: boolean
+  clean?: boolean
   outputDir: string
   outputFilename: string
   onEnd: (ctx: MblerConfigData) => void | Promise<void>
