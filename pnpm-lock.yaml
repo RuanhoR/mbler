@@ -4,10 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@mbler/mcx-server': link:../mcx-language-server/packages/server
-  server: link:../../mcx-language-server/packages/server
-
 importers:
 
   .:
@@ -19,7 +15,7 @@ importers:
         specifier: 0.1.1-beta.r4
         version: 0.1.1-beta.r4(@minecraft/vanilla-data@1.26.13)
       '@mbler/mcx-server':
-        specifier: link:../mcx-language-server/packages/server
+        specifier: link:/home/ruanhor/Code/mcx/mcx-language-server/packages/server
         version: link:../mcx-language-server/packages/server
       '@mbler/mcx-types':
         specifier: 0.0.3-rc.5
