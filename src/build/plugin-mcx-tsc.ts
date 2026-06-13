@@ -12,8 +12,8 @@ export function runTSC(
   runTsc(
     tscpath,
     {
-      extraSupportedExtensions: ['.mcx'],
-      extraExtensionsToRemove: ['.mcx'],
+      extraSupportedExtensions: ['.mcx', '.png', '.svg', '.jpg', '.jpeg', '.gif'],
+      extraExtensionsToRemove: ['.mcx', '.png', '.svg', '.jpg', '.jpeg', '.gif'],
     },
     (ts): LanguagePlugin<string>[] => {
       return [createMCXLanguagePlugin(ts) as unknown as LanguagePlugin<string>]
