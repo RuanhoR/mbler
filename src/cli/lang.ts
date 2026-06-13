@@ -1,13 +1,20 @@
 import i18n from '../i18n'
-import { CliParam } from '../types'
 import { showText } from '../utils'
+import { defineCommand } from './command'
 
-export function langCommand(cliParam: CliParam, _workdir: string): number {
-  const show =
-    cliParam.params.length < 2
-      ? i18n.__internal.class.currenyLang
-      : (i18n.__internal.set(cliParam.params[1] as string),
-        i18n.__internal.class.currenyLang)
-  showText(show)
-  return 0
-}
+export const langCommand = defineCommand({
+  name: 'lang',
+  aliases: [],
+  description: i18n.help.lang,
+  args: [{ name: 'language', description: 'zh or en' }],
+  options: [],
+  handler(ctx) {
+    const show =
+      ctx.args.language === undefined
+        ? i18n.__internal.class.currenyLang
+        : (i18n.__internal.set(ctx.args.language),
+          i18n.__internal.class.currenyLang)
+    showText(show)
+    return 0
+  },
+})

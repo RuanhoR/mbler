@@ -1,43 +1,18 @@
 import * as path from 'node:path'
-import { CliParam, MblerConfigData } from '../types'
+import { MblerConfigData } from '../types'
 import { FileExist, isValidVersion, readFileAsJson, showText } from '../utils'
-import MBLERVersion from './../version'
+import MBLERVersion from '../version'
 import { BuildConfig } from '../build/config'
+import { defineCommand } from './command'
 
-export async function handlerVersion(
-  cliParam: CliParam,
-  workdir: string
-): Promise<number> {
-  if (cliParam.params.length > 1) {
-    if (!(await FileExist(workdir))) {
-      showText("can't set workdir version, because not exists")
-      return 1
-    }
-    const version = cliParam.params[1]
-    if (!version || !isValidVersion(version)) {
-      showText("can't set version, it is not a valid version")
-      return 1
-    }
-    const pkgJSON = await readFileAsJson<{
-      version: string
-    }>(path.join(workdir, 'package.json'))
-    const mblerConfigJSON = await readFileAsJson<MblerConfigData>(
-      path.join(workdir, BuildConfig.ConfigFile)
-    )
-    mblerConfigJSON.version = pkgJSON.version = version
-  } else {
-    showVersion(cliParam)
-  }
-  return 0
-}
-function showVersion(cliParam: CliParam) {
+function showVersion(ctx: { opts: Record<string, string> }) {
   let show = ''
-  if (Object.getOwnPropertyNames(cliParam.opts).length < 1) {
+  if (Object.keys(ctx.opts).length < 1) {
     show = `commit: ${MBLERVersion.commit}\nversion: ${MBLERVersion.version}`
-  } else if (cliParam.opts.show) {
-    if (cliParam.opts.show == 'commit') {
+  } else if (ctx.opts.show) {
+    if (ctx.opts.show == 'commit') {
       show = `commit: ${MBLERVersion.commit}`
-    } else if (cliParam.opts.show == 'version') {
+    } else if (ctx.opts.show == 'version') {
       show = `version: ${MBLERVersion.version}`
     } else {
       show = 'invalid "show" param'
@@ -45,3 +20,40 @@ function showVersion(cliParam: CliParam) {
   }
   showText(show)
 }
+
+export const versionCommand = defineCommand({
+  name: 'version',
+  aliases: [],
+  description: 'mbler version\n - Version control command',
+  args: [{ name: 'version', description: 'New version to set' }],
+  options: [
+    {
+      name: 'show',
+      alias: 's',
+      description: 'Show field: commit or version',
+    },
+  ],
+  async handler(ctx) {
+    const newVersion = ctx.args.version
+    if (newVersion) {
+      if (!(await FileExist(ctx.workDir))) {
+        showText("can't set workdir version, because not exists")
+        return 1
+      }
+      if (!newVersion || !isValidVersion(newVersion)) {
+        showText("can't set version, it is not a valid version")
+        return 1
+      }
+      const pkgJSON = await readFileAsJson<{ version: string }>(
+        path.join(ctx.workDir, 'package.json')
+      )
+      const mblerConfigJSON = await readFileAsJson<MblerConfigData>(
+        path.join(ctx.workDir, BuildConfig.ConfigFile)
+      )
+      mblerConfigJSON.version = pkgJSON.version = newVersion
+    } else {
+      showVersion(ctx)
+    }
+    return 0
+  },
+})

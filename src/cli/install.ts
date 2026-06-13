@@ -1,12 +1,13 @@
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import i18n from '../i18n'
-import config from './../config'
+import config from '../config'
 import { GamePath } from '../publisher/GamePath'
 import { ConfigManger } from '../publisher/configManger'
-import { CliParam } from '../types'
 import { showText, compareVersion, isValidVersion } from '../utils'
 import { InstallManger } from '../publisher/installManger'
+import { defineCommand } from './command'
+
 function fmt(t: string, vars: Record<string, string | number>) {
   return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''))
 }
@@ -34,129 +35,141 @@ function pickLatestVersion(versions: string[]) {
   return versions[0] || ''
 }
 
-export async function installCommand(cliParam: CliParam, _work: string) {
-  const pkg = cliParam.params[1]
-  if (!pkg) {
-    showText(i18n.help.install)
-    return -1
-  }
-
-  const parsed = parsePackage(pkg)
-  if (!parsed) {
-    showText(i18n.help.install)
-    return -1
-  }
-
-  const { scope, name } = parsed
-  let version = parsed.version || ''
-
-  const gamePoint = await GamePath.getPathWithASK()
-  if (!gamePoint) {
-    showText(i18n.help.install)
-    return -1
-  }
-  showText(fmt(i18n.install.installing, { pkg }))
-  try {
-    if (!version) {
-      const pkgInfo = await InstallManger.info(scope, name)
-      if (!pkgInfo.versions || pkgInfo.versions.length === 0) {
-        showText(fmt(i18n.install.packageNotFound, { pkg: `${scope}/${name}` }))
-        return -1
-      }
-      const versionCandidates = pkgInfo.versions
-        .map((item) => item.name)
-        .filter(
-          (name): name is string => typeof name === 'string' && name.length > 0
-        )
-      version = pickLatestVersion(versionCandidates)
-      if (!version) {
-        showText(fmt(i18n.install.noVersion, { pkg: `${scope}/${name}` }))
-        return -1
-      }
-      showText(fmt(i18n.install.usingLatest, { version }))
+export const installCommand = defineCommand({
+  name: 'install',
+  aliases: [],
+  description: i18n.help.install,
+  args: [
+    {
+      name: 'package',
+      description: '@scope/name@version',
+      required: true,
+    },
+  ],
+  options: [],
+  async handler(ctx) {
+    const pkg = ctx.args.package!
+    const parsed = parsePackage(pkg)
+    if (!parsed) {
+      showText(i18n.help.install)
+      return -1
     }
 
-    const tmpDir = path.join(
-      config.tmpdir,
-      'tmp_mbler_install',
-      `${Date.now()}`
-    )
-    await fs.mkdir(tmpDir, { recursive: true })
-    await InstallManger.download(
-      scope,
-      name,
-      version,
-      path.join(tmpDir, 'package.zip')
-    )
-    const AdmZip = require('adm-zip')
-    const zip = new AdmZip(path.join(tmpDir, 'package.zip'))
-    zip.extractAllTo(tmpDir, true)
+    const { scope, name } = parsed
+    let version = parsed.version || ''
 
-    async function findAddonRoots(dir: string) {
-      const results: Array<{ root: string; type: 'behavior' | 'resource' }> = []
-      async function walk(p: string) {
-        const entries = await fs.readdir(p, { withFileTypes: true })
-        for (const entry of entries) {
-          const entryPath = path.join(p, entry.name)
-          if (entry.isFile() && entry.name === 'manifest.json') {
-            try {
-              const manifest = JSON.parse(await fs.readFile(entryPath, 'utf-8'))
-              const type = manifest?.modules?.[0]?.type
-              if (type === 'data') {
-                results.push({
-                  root: path.dirname(entryPath),
-                  type: 'behavior',
-                })
-              } else if (type === 'resources') {
-                results.push({
-                  root: path.dirname(entryPath),
-                  type: 'resource',
-                })
+    const gamePoint = await GamePath.getPathWithASK()
+    if (!gamePoint) {
+      showText(i18n.help.install)
+      return -1
+    }
+    showText(fmt(i18n.install.installing, { pkg }))
+    try {
+      if (!version) {
+        const pkgInfo = await InstallManger.info(scope, name)
+        if (!pkgInfo.versions || pkgInfo.versions.length === 0) {
+          showText(
+            fmt(i18n.install.packageNotFound, { pkg: `${scope}/${name}` })
+          )
+          return -1
+        }
+        const versionCandidates = pkgInfo.versions
+          .map((item) => item.name)
+          .filter(
+            (name): name is string =>
+              typeof name === 'string' && name.length > 0
+          )
+        version = pickLatestVersion(versionCandidates)
+        if (!version) {
+          showText(fmt(i18n.install.noVersion, { pkg: `${scope}/${name}` }))
+          return -1
+        }
+        showText(fmt(i18n.install.usingLatest, { version }))
+      }
+
+      const tmpDir = path.join(
+        config.tmpdir,
+        'tmp_mbler_install',
+        `${Date.now()}`
+      )
+      await fs.mkdir(tmpDir, { recursive: true })
+      await InstallManger.download(
+        scope,
+        name,
+        version,
+        path.join(tmpDir, 'package.zip')
+      )
+      const AdmZip = require('adm-zip')
+      const zip = new AdmZip(path.join(tmpDir, 'package.zip'))
+      zip.extractAllTo(tmpDir, true)
+
+      async function findAddonRoots(
+        dir: string
+      ): Promise<Array<{ root: string; type: 'behavior' | 'resource' }>> {
+        const results: Array<{
+          root: string
+          type: 'behavior' | 'resource'
+        }> = []
+        async function walk(p: string) {
+          const entries = await fs.readdir(p, { withFileTypes: true })
+          for (const entry of entries) {
+            const entryPath = path.join(p, entry.name)
+            if (entry.isFile() && entry.name === 'manifest.json') {
+              try {
+                const manifest = JSON.parse(
+                  await fs.readFile(entryPath, 'utf-8')
+                )
+                const type = manifest?.modules?.[0]?.type
+                if (type === 'data') {
+                  results.push({ root: path.dirname(entryPath), type: 'behavior' })
+                } else if (type === 'resources') {
+                  results.push({ root: path.dirname(entryPath), type: 'resource' })
+                }
+              } catch {
+                // ignore invalid manifest
               }
-            } catch {
-              // ignore invalid manifest
+            }
+            if (entry.isDirectory()) {
+              await walk(entryPath)
             }
           }
-          if (entry.isDirectory()) {
-            await walk(entryPath)
-          }
         }
+        await walk(dir)
+        return results
       }
-      await walk(dir)
-      return results
-    }
 
-    const addons = await findAddonRoots(tmpDir)
-    if (addons.length === 0) {
-      throw new Error(i18n.install.noValidAddon)
-    }
+      const addons = await findAddonRoots(tmpDir)
+      if (addons.length === 0) {
+        throw new Error(i18n.install.noValidAddon)
+      }
 
-    const id = `${scope.slice(1)}-${name}-${version}`
-    const installed =
-      (await ConfigManger.getKey<Array<Record<string, unknown>>>(
-        'installedPackages'
-      )) || []
-    for (const addon of addons) {
-      const packDir =
-        addon.type === 'behavior' ? 'behavior_packs' : 'resource_packs'
-      const dest = path.join(gamePoint, packDir, id)
-      await fs.mkdir(dest, { recursive: true })
-      await fs.cp(addon.root, dest, { recursive: true })
-      installed.push({ id, scope, name, version, type: addon.type })
-    }
-    await ConfigManger.setKey('installedPackages', installed)
+      const id = `${scope.slice(1)}-${name}-${version}`
+      const installed =
+        (await ConfigManger.getKey<Array<Record<string, unknown>>>(
+          'installedPackages'
+        )) || []
+      for (const addon of addons) {
+        const packDir =
+          addon.type === 'behavior' ? 'behavior_packs' : 'resource_packs'
+        const dest = path.join(gamePoint, packDir, id)
+        await fs.mkdir(dest, { recursive: true })
+        await fs.cp(addon.root, dest, { recursive: true })
+        installed.push({ id, scope, name, version, type: addon.type })
+      }
+      await ConfigManger.setKey('installedPackages', installed)
 
-    await fs.rm(tmpDir, { recursive: true, force: true })
-    showText(
-      fmt(i18n.install.success, { pkg: `${scope}/${name}`, version, id })
-    )
-    return 0
-  } catch (error) {
-    showText(
-      fmt(i18n.install.failed, {
-        error: error instanceof Error ? error.message : String(error),
-      })
-    )
-    return -1
-  }
-}
+      await fs.rm(tmpDir, { recursive: true, force: true })
+      showText(
+        fmt(i18n.install.success, { pkg: `${scope}/${name}`, version, id })
+      )
+      return 0
+    } catch (error) {
+      showText(
+        fmt(i18n.install.failed, {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      )
+      return -1
+    }
+  },
+})

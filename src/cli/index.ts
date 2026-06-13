@@ -1,12 +1,15 @@
 import { argv } from 'node:process'
-import { CliParam, cmdList } from '../types'
+import { cmdList } from '../types'
 import i18n from '../i18n'
-import Logger from './../logger/index'
+import Logger from '../logger'
 import { showText } from '../utils'
 import path from 'node:path'
 import WorkDirManage from './WorkDirManage'
+import { CommandDef, parseArgs, parseRawParams } from './command'
+
+import { configCommand } from './config'
 import { initCommand } from './init'
-import { handlerVersion } from './version'
+import { versionCommand } from './version'
 import { langCommand } from './lang'
 import { unpublishCommand } from './unpublish'
 import { publishCommand } from './publish'
@@ -15,227 +18,221 @@ import { installCommand } from './install'
 import { loginCommand } from './login'
 import { profileCommand } from './profile'
 import { viewCommand } from './view'
-import { configCommand } from './config'
-import { rm } from 'node:fs/promises'
-// `showText` moved to `utils` to avoid circular dependency with `build`.
-const main = (function (): () => Promise<void> {
+
+function getMatchChance(a: string, b: string): number {
+  let match = 0
+  for (let i = 0; i < b.length; i++) {
+    if (a[i] == b[i]) match++
+  }
+  return match / b.length
+}
+
+function defaultCommand(commandcc: string): void {
+  console.log(`\x1b[31m${i18n.default.unexpected}: ${commandcc}\x1b[0m`)
+  const didvalue = cmdList
+    .map((item: string): number => getMatchChance(commandcc, item))
+    .reduce(
+      (
+        acc: { max: number; index: number; indices: number[] },
+        cur: number,
+        index: number
+      ): { max: number; index: number; indices: number[] } => {
+        try {
+          if (cur > acc.max) {
+            return { max: cur, index: index, indices: [] }
+          } else if (cur === acc.max) {
+            acc.indices.push(index)
+            return acc
+          }
+        } catch (err) {
+          Logger.w(
+            'matchDefault',
+            (err as Error).stack || (err as Error).message
+          )
+        }
+        return acc
+      },
+      { max: -Infinity, index: -1, indices: [] }
+    )
+  const value = cmdList[didvalue.index]
+  if (value) console.log(`${i18n.default.youis} ${value}`)
+}
+
+const main = (function () {
   let currentWDManage: WorkDirManage
 
-  function parseParam() {
-    const opts: Record<string, string> = {}
-    const params: string[] = []
-    let InValue: string | null = null
-    argv.slice(2).forEach((item, index, arr) => {
-      if (InValue) {
-        opts[InValue] = item
-        InValue = null
-        return
-      }
-      if (item.startsWith('-')) {
-        InValue = item.slice(1)
-        if (index == arr.length - 1) opts[InValue] = ''
-      } else {
-        params.push(item)
-      }
-    })
-    return {
-      params,
-      opts,
-    }
+  const importBuild = async () => {
+    const { build } = typeof require == 'function'
+      ? require('mbler/build')
+      : await import('mbler/build')
+    return build
   }
 
-  function handlerHelp(cliParam: CliParam, _: string): number {
-    if (!cliParam || !_) return 1
-    const seeCmd = cliParam.params[1] as string
-    if (!seeCmd) {
-      showText(i18n.description)
-      return 0
-    }
-    let text = i18n.help[seeCmd as (typeof cmdList)[number]] as
-      | string
-      | undefined
-    if (!text) return 0
-    if (text.startsWith('$')) {
-      text = i18n.help[text.slice(1) as (typeof cmdList)[number]] as string
-    }
-    showText(text)
-    return 0
+  const importWatch = () => {
+    const { watch } = require('mbler/build')
+    return watch
   }
 
-  function getMatchChance(a: string, b: string): number {
-    let match = 0
-    for (let i = 0; i < b.length; i++) {
-      if (a[i] == b[i]) match++
-    }
-    return match / b.length
-  }
-  async function handlerWorkDirCommand(
-    cliParam: CliParam,
-    workDir: string
-  ): Promise<number> {
-    if (!currentWDManage) return 0
-    if (cliParam.params.length > 1) {
-      const newPointWorkDir = path.resolve(cliParam.params[1] as string)
-      showText(await currentWDManage.set(newPointWorkDir))
-    } else {
-      showText(workDir)
-    }
-    return 0
-  }
-
-  async function handlerSetWorkDirCommand(
-    cliParam: CliParam,
-    _: string
-  ): Promise<number> {
-    if (!currentWDManage) return 0
-    const param = cliParam.params[1] as string | undefined
-    if (param === 'off') {
-      await currentWDManage.setDisabled(true)
-      showText(i18n.workdir.disabled)
-    } else if (param === 'on') {
-      await currentWDManage.setDisabled(false)
-      showText(i18n.workdir.enabled)
-    } else {
-      showText(i18n.workdir.invalidParam)
-    }
-    return 0
-  }
-
-  function defaultCommand(commandcc: string): void {
-    console.log(`\x1b[31m${i18n.default.unexpected}: ${commandcc}\x1b[0m`)
-    const didvalue = cmdList
-      .map((item: string): number => getMatchChance(commandcc, item))
-      .reduce(
-        (
-          acc: {
-            max: number
-            index: number
-            indices: number[]
-          },
-          cur: number,
-          index: number
-        ): {
-          max: number
-          index: number
-          indices: number[]
-        } => {
-          try {
-            if (cur > acc.max) {
-              return {
-                max: cur,
-                index: index,
-                indices: [],
-              }
-            } else if (cur === acc.max) {
-              acc.indices.push(index)
-              return acc
-            }
-          } catch (err) {
-            Logger.w(
-              'matchDefault',
-              (err as Error).stack || (err as Error).message
-            )
-          }
-          return acc
-        },
-        {
-          max: -Infinity,
-          index: -1,
-          indices: [],
+  const allCommands: CommandDef[] = [
+    {
+      name: 'help',
+      aliases: ['h'],
+      description: i18n.description,
+      args: [{ name: 'command', description: 'Command name to view help for' }],
+      options: [],
+      handler(ctx) {
+        const seeCmd = ctx.args.command
+        if (!seeCmd) {
+          showText(i18n.description)
+          return 0
         }
-      )
-    const value = cmdList[didvalue.index]
-    if (value) console.log(`${i18n.default.youis} ${value}`)
-  }
-  return async function cli(): Promise<void> {
-    const cliParam = parseParam()
-    const handlerBuild = async (
-      cliParam: CliParam,
-      workDir: string
-    ): Promise<number> => {
-      const { build } =
-        typeof require == 'function'
-          ? require('mbler/build')
-          : await import('mbler/build')
-      return await build(cliParam, workDir)
-    }
-    const handlerLog = async (cliParam: CliParam) => {
-      if (cliParam.params[1] == 'point') {
-        showText(Logger.LogFile)
-      } else if (cliParam.params[1] == 'clean') {
-        await rm(Logger.LogFile, {
-          recursive: true,
-          force: true,
-        })
-      } else {
-        showText('Unkown log Command')
-      }
-      return 0
-    }
-    const handlerWatch = async (
-      cliParam: CliParam,
-      workDir: string
-    ): Promise<number> => {
-      const { watch } = require('mbler/build')
-      return await watch(cliParam, workDir)
-    }
+        let text = i18n.help[seeCmd as (typeof cmdList)[number]] as
+          | string
+          | undefined
+        if (!text) return 0
+        if (text.startsWith('$')) {
+          text = i18n.help[text.slice(1) as (typeof cmdList)[number]] as string
+        }
+        showText(text)
+        return 0
+      },
+    },
+    {
+      name: 'work',
+      aliases: ['c'],
+      description: i18n.help.work,
+      args: [{ name: 'path', description: 'Working directory path' }],
+      options: [],
+      async handler(ctx) {
+        if (!currentWDManage) return 0
+        if (ctx.args.path) {
+          showText(await currentWDManage.set(path.resolve(ctx.args.path)))
+        } else {
+          showText(ctx.workDir)
+        }
+        return 0
+      },
+    },
+    {
+      name: 'set-work-dir',
+      aliases: [],
+      description: i18n.help['set-work-dir'],
+      args: [
+        {
+          name: 'mode',
+          description: 'on or off',
+          required: true,
+        },
+      ],
+      options: [],
+      async handler(ctx) {
+        if (!currentWDManage) return 0
+        const param = ctx.args.mode
+        if (param === 'off') {
+          await currentWDManage.setDisabled(true)
+          showText(i18n.workdir.disabled)
+        } else if (param === 'on') {
+          await currentWDManage.setDisabled(false)
+          showText(i18n.workdir.enabled)
+        } else {
+          showText(i18n.workdir.invalidParam)
+        }
+        return 0
+      },
+    },
+    {
+      name: 'log',
+      aliases: [],
+      description: i18n.help.log,
+      args: [
+        {
+          name: 'action',
+          description: 'point or clean',
+          required: true,
+        },
+      ],
+      options: [],
+      async handler(ctx) {
+        const { rm } = await import('node:fs/promises')
+        if (ctx.args.action === 'point') {
+          showText(Logger.LogFile)
+        } else if (ctx.args.action === 'clean') {
+          await rm(Logger.LogFile, { recursive: true, force: true })
+        } else {
+          showText('Unknown log Command')
+        }
+        return 0
+      },
+    },
+    {
+      name: 'build',
+      aliases: [],
+      description: i18n.help.build,
+      args: [],
+      options: [],
+      async handler(ctx) {
+        const build = await importBuild()
+        return await build({ params: [], opts: ctx.opts }, ctx.workDir)
+      },
+    },
+    {
+      name: 'watch',
+      aliases: [],
+      description: i18n.help.watch,
+      args: [],
+      options: [],
+      handler(ctx) {
+        const watch = importWatch()
+        return watch({ params: [], opts: ctx.opts }, ctx.workDir) as number
+      },
+    },
+    initCommand,
+    versionCommand,
+    langCommand,
+    publishCommand,
+    unpublishCommand,
+    installCommand,
+    uninstallCommand,
+    loginCommand,
+    profileCommand,
+    viewCommand,
+    configCommand,
+  ]
 
-    const cmdMap = {
-      help: handlerHelp,
-      h: handlerHelp,
-      work: handlerWorkDirCommand,
-      c: handlerWorkDirCommand,
-      build: handlerBuild,
-      watch: handlerWatch,
-      init: initCommand,
-      version: handlerVersion,
-      log: handlerLog,
-      lang: langCommand,
-      'set-work-dir': handlerSetWorkDirCommand,
-      unpublish: unpublishCommand,
-      publish: publishCommand,
-      uninstall: uninstallCommand,
-      install: installCommand,
-      login: loginCommand,
-      profile: profileCommand,
-      view: viewCommand,
-      config: configCommand,
-    } satisfies {
-      [key in (typeof cmdList)[number]]: (
-        cliParam: CliParam,
-        workDir: string
-      ) => number | Promise<number>
+  const cmdMap: Record<string, CommandDef> = {}
+  for (const cmd of allCommands) {
+    cmdMap[cmd.name] = cmd
+    for (const alias of cmd.aliases) {
+      cmdMap[alias] = cmd
     }
-    const cmd = cliParam.params[0]
-    if (cliParam.opts.cwp) {
-      currentWDManage = new WorkDirManage(
-        path.resolve(cliParam.opts.cwp as string)
-      )
+  }
+
+  return async function cli(): Promise<void> {
+    const raw = parseRawParams(argv.slice(2))
+    const cmdName = raw.params[0] || ''
+
+    if (raw.opts.cwp) {
+      currentWDManage = new WorkDirManage(path.resolve(raw.opts.cwp))
     } else {
       currentWDManage = new WorkDirManage()
     }
-    if (!cmd) {
-      handlerHelp(cliParam, await currentWDManage.get())
+
+    const workDir = await currentWDManage.get()
+
+    if (!cmdName) {
+      showText(i18n.description)
       process.exit(0)
     }
-    const handler = cmdMap[cmd as keyof typeof cmdMap]
-    if (typeof handler !== 'function') {
-      defaultCommand(cmd)
-    } else {
-      const r = handler(cliParam, await currentWDManage.get())
-      if (typeof r == 'object' && typeof r.then == 'function') {
-        const code = await r
-        process.exit(code)
-      } else {
-        if (typeof r == 'number') {
-          process.exit(r)
-        } else {
-          showText("Mbler internal Error: can't resolve exit code")
-          process.exit(1)
-        }
-      }
+
+    const def = cmdMap[cmdName]
+    if (typeof def !== 'object') {
+      defaultCommand(cmdName)
+      process.exit(1)
     }
-    process.exit(0)
+
+    const args = parseArgs(def, raw.params.slice(1))
+    const code = await def.handler({ args, opts: raw.opts, workDir })
+    process.exit(code)
   }
 })()
 

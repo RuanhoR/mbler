@@ -1,7 +1,7 @@
 import i18n from '../i18n'
 import { ConfigManger } from '../publisher/configManger'
-import { CliParam } from '../types'
 import { showText } from '../utils'
+import { defineCommand } from './command'
 
 function fmt(t: string, vars: Record<string, string | number>) {
   return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''))
@@ -27,73 +27,85 @@ function valueToString(value: unknown): string {
   return String(value)
 }
 
-export async function configCommand(cliParam: CliParam, _: string) {
-  const sub = cliParam.params[1]
-  try {
-    if (!sub) {
+export const configCommand = defineCommand({
+  name: 'config',
+  aliases: [],
+  description: i18n.help.config,
+  args: [
+    {
+      name: 'subcommand',
+      description: 'get, set, or point',
+      required: true,
+    },
+    { name: 'key', description: 'Config key' },
+    { name: 'value', variadic: true, description: 'Config value' },
+  ],
+  options: [],
+  async handler(ctx) {
+    const sub = ctx.args.subcommand
+    try {
+      if (sub === 'get') {
+        const key = ctx.args.key
+        if (!key) {
+          showText(i18n.config.missingArg)
+          return -1
+        }
+        const value = await ConfigManger.getKey<unknown>(key)
+        showText(
+          fmt(i18n.config.getResult, { key, value: valueToString(value) })
+        )
+        return 0
+      }
+
+      if (sub === 'set') {
+        const key = ctx.args.key
+        const raw = ctx.args.value ?? ''
+        if (!key || raw.length < 1) {
+          showText(i18n.config.missingArg)
+          return -1
+        }
+        const value = parseValue(raw)
+        const ok = await ConfigManger.setKey(key, value)
+        if (!ok) {
+          showText(fmt(i18n.config.failed, { error: 'write failed' }))
+          return -1
+        }
+        showText(
+          fmt(i18n.config.setSuccess, { key, value: valueToString(value) })
+        )
+        return 0
+      }
+
+      if (sub === 'point') {
+        const next = ctx.args.key
+        if (!next || next === 'get') {
+          const point = await ConfigManger.getConfigPoint()
+          showText(fmt(i18n.config.pointGet, { path: point }))
+          return 0
+        }
+        try {
+          await ConfigManger.setConfigPoint(next)
+          showText(fmt(i18n.config.pointSetSuccess, { path: next }))
+          return 0
+        } catch (error) {
+          showText(
+            fmt(i18n.config.pointSetFailed, {
+              error: error instanceof Error ? error.message : String(error),
+            })
+          )
+          return -1
+        }
+      }
+
       showText(i18n.config.usage)
       return -1
-    }
-
-    if (sub === 'get') {
-      const key = cliParam.params[2]
-      if (!key) {
-        showText(i18n.config.missingArg)
-        return -1
-      }
-      const value = await ConfigManger.getKey<unknown>(key)
-      showText(fmt(i18n.config.getResult, { key, value: valueToString(value) }))
-      return 0
-    }
-
-    if (sub === 'set') {
-      const key = cliParam.params[2]
-      const raw = cliParam.params.slice(3).join(' ')
-      if (!key || raw.length < 1) {
-        showText(i18n.config.missingArg)
-        return -1
-      }
-      const value = parseValue(raw)
-      const ok = await ConfigManger.setKey(key, value)
-      if (!ok) {
-        showText(fmt(i18n.config.failed, { error: 'write failed' }))
-        return -1
-      }
+    } catch (error) {
       showText(
-        fmt(i18n.config.setSuccess, { key, value: valueToString(value) })
+        fmt(i18n.config.failed, {
+          error: error instanceof Error ? error.message : String(error),
+        })
       )
-      return 0
+      return -1
     }
-
-    if (sub === 'point') {
-      const next = cliParam.params[2]
-      if (!next || next === 'get') {
-        const point = await ConfigManger.getConfigPoint()
-        showText(fmt(i18n.config.pointGet, { path: point }))
-        return 0
-      }
-      try {
-        await ConfigManger.setConfigPoint(next)
-        showText(fmt(i18n.config.pointSetSuccess, { path: next }))
-        return 0
-      } catch (error) {
-        showText(
-          fmt(i18n.config.pointSetFailed, {
-            error: error instanceof Error ? error.message : String(error),
-          })
-        )
-        return -1
-      }
-    }
-
-    showText(i18n.config.usage)
-    return -1
-  } catch (error) {
-    showText(
-      fmt(i18n.config.failed, {
-        error: error instanceof Error ? error.message : String(error),
-      })
-    )
-    return -1
-  }
-}
+  },
+})
