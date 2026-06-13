@@ -7,9 +7,10 @@ import { BuildConfig } from '../build/config'
 import Logger from '../logger'
 import _chalk from 'chalk'
 
-export const chalk = _chalk instanceof Function
-  ? _chalk
-  : (_chalk as unknown as typeof import('chalk')).default
+export const chalk =
+  _chalk instanceof Function
+    ? _chalk
+    : (_chalk as unknown as typeof import('chalk')).default
 
 export async function FileExist(file: string): Promise<boolean> {
   try {
@@ -246,9 +247,15 @@ export async function fileExists(file: string) {
   }
 }
 const README_CANDIDATES = [
-  'README.md', 'readme.md', 'Readme.md',
-  'README.MD', 'readme.MD', 'Readme.MD',
-  'README.markdown', 'readme.markdown', 'Readme.markdown',
+  'README.md',
+  'readme.md',
+  'Readme.md',
+  'README.MD',
+  'readme.MD',
+  'Readme.MD',
+  'README.markdown',
+  'readme.markdown',
+  'Readme.markdown',
   'README',
 ]
 export async function findReadme(dir: string): Promise<string | null> {

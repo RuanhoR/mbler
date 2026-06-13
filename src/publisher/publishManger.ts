@@ -1,5 +1,10 @@
 import path from 'node:path'
-import { fileExists, findReadme, readFileAsJson, ReadProjectMblerConfig } from '../utils'
+import {
+  fileExists,
+  findReadme,
+  readFileAsJson,
+  ReadProjectMblerConfig,
+} from '../utils'
 import { spawn } from 'node:child_process'
 import { generateRelease } from '../build/release'
 import config from '../config'

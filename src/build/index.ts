@@ -263,7 +263,9 @@ class Build {
     if (!this.isWatch) progress.update(100)
     if (!this.isWatch) {
       const elapsed = ((performance.now() - buildStart) / 1000).toFixed(2)
-      showText(`[${chalk.green('mbler')}] ${chalk.green(`✓ built in ${elapsed}s`)}`)
+      showText(
+        `[${chalk.green('mbler')}] ${chalk.green(`✓ built in ${elapsed}s`)}`
+      )
       this.resolve(0)
     }
   }
@@ -542,7 +544,13 @@ class Build {
       ) {
         await this.handlerManifest()
       }
-      if (this.isChange(oldConfig, this.currentConfig, ['script', 'outdir', 'build'])) {
+      if (
+        this.isChange(oldConfig, this.currentConfig, [
+          'script',
+          'outdir',
+          'build',
+        ])
+      ) {
         const newIsBundle = this.currentConfig.build?.bundle !== false
         if (newIsBundle && this.watchers.rollup) {
           this.watchers.rollup.close()

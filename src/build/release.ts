@@ -7,9 +7,7 @@ function Release() {
     zip.addLocalFolder(dir)
     return zip
   }
-  function createZipWithMoreFolder(
-    dir: [string, string][]
-  ): AdmZip {
+  function createZipWithMoreFolder(dir: [string, string][]): AdmZip {
     const zip = new AdmZip()
     for (const folder of dir) {
       zip.addLocalFolder(folder[0], folder[1])
