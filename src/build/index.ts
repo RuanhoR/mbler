@@ -191,6 +191,7 @@ class Build {
    * emitted.
    */
   private async build() {
+    const buildStart = performance.now()
     const progress = new Postgress(100)
     this.init = true
     if (!isAbsolute(this.baseBuildDir)) {
@@ -259,8 +260,12 @@ class Build {
       module: this.module,
     })
     if (!this.isWatch) progress.update(80)
-    if (!this.isWatch) this.resolve(0)
     if (!this.isWatch) progress.update(100)
+    if (!this.isWatch) {
+      const elapsed = ((performance.now() - buildStart) / 1000).toFixed(2)
+      showText(`[${chalk.green('mbler')}] ${chalk.green(`✓ built in ${elapsed}s`)}`)
+      this.resolve(0)
+    }
   }
   /**
    * Create and return a Rollup build instance configured for the
