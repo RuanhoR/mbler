@@ -7,7 +7,8 @@ import {
 } from '../src/utils/index'
 import { BuildConfig } from '../src/build/config'
 import i18n from '../src/i18n'
-
+import { defineConfig, MblerConfigData } from '../src/'
+import { fromString as generateUUIDfromString } from './../src/uuid/'
 describe('compareVersion', () => {
   it('should compare equal versions', () => {
     expect(compareVersion('1.0.0', '1.0.0')).toBe(0)
@@ -85,12 +86,23 @@ describe('BuildConfig', () => {
     expect(BuildConfig.behavior).toBe('behavior')
     expect(BuildConfig.resources).toBe('resources')
   })
-
+  it('defineConfig function should return raw config', () => {
+    const config: MblerConfigData = {
+      description: '',
+      version: '',
+      name: '',
+      mcVersion: '',
+    }
+    expect(defineConfig(config)).toBe(config)
+  })
   it('should have salt UUIDs', () => {
-    expect(BuildConfig.salt.header).toMatch(
-      /^[0-9a-f-]{36}$/,
-    )
+    expect(BuildConfig.salt.header).toMatch(/^[0-9a-f-]{36}$/)
     expect(BuildConfig.salt.sapi).toMatch(/^[0-9a-f-]{36}$/)
+  })
+  it('generateUUIDFromString should generate same uuid when same input', () => {
+    expect(generateUUIDfromString('abc', 'def')).toBe(
+      generateUUIDfromString('abc', 'def')
+    )
   })
 })
 
@@ -102,5 +114,10 @@ describe('i18n', () => {
     expect(i18n.help.init).toBeDefined()
     expect(i18n.help.install).toBeDefined()
     expect(i18n.help.publish).toBeDefined()
+  })
+  it('should have some key', () => {
+    ;(expect(i18n.commander).toBeDefined(),
+      expect(i18n.config).toBeDefined(),
+      expect(i18n.description).toBeDefined())
   })
 })
