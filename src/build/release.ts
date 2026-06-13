@@ -7,14 +7,12 @@ function Release() {
     zip.addLocalFolder(dir)
     return zip
   }
-  async function createZipWithMoreFolder(
+  function createZipWithMoreFolder(
     dir: [string, string][]
-  ): Promise<AdmZip> {
+  ): AdmZip {
     const zip = new AdmZip()
     for (const folder of dir) {
-      await zip.addLocalFolderPromise(folder[0], {
-        zipPath: folder[1],
-      })
+      zip.addLocalFolder(folder[0], folder[1])
     }
     return zip
   }
@@ -30,7 +28,7 @@ function Release() {
     if (env.BUILD_MODULE !== 'release') return
     let zip: AdmZip
     if (build.module == 'all') {
-      zip = await createZipWithMoreFolder([
+      zip = createZipWithMoreFolder([
         [build.outdirs?.behavior, 'behavior'],
         [build.outdirs?.resources, 'resources'],
       ])
