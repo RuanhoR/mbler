@@ -22,7 +22,10 @@ const Sapi = function (): {
     withFull: boolean
   ) => Promise<string>
 } {
-  const { json } = require('npm-registry-fetch')
+  async function json(path: string) {
+    const r = await fetch('https://registry.npmjs.com' + path)
+    return await r.json()
+  }
   const cacheFile = path.join(config.tmpdir, '_sapi_version.json')
   // cacheData is an array of entries keyed by the embedded mc version string
   let cacheData: Array<{

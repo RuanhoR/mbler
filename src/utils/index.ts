@@ -5,13 +5,6 @@ import { Input } from '../commander'
 import { spawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
 import Logger from '../logger'
-import _chalk from 'chalk'
-
-export const chalk =
-  _chalk instanceof Function
-    ? _chalk
-    : (_chalk as unknown as typeof import('chalk')).default
-
 export async function FileExist(file: string): Promise<boolean> {
   try {
     const f = await fs.stat(file)

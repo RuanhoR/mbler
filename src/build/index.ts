@@ -36,8 +36,7 @@ import { Postgress } from './postgress'
 import { createMCXLanguagePlugin } from '@mbler/mcx-server'
 import { LanguagePlugin } from '@volar/language-core'
 import type { CompileOpt } from '@mbler/mcx-types'
-import ts from 'typescript'
-import { chalk } from '../utils'
+import { styleText } from 'node:util'
 class Build {
   currentConfig: MblerConfigData | null = null
   srcDirs:
@@ -50,7 +49,6 @@ class Build {
         [key in 'behavior' | 'resources' | 'dist']: string
       }
     | null = null
-  mcxTs: typeof import('typescript')
   mcxLanguagePluginCreator:
     | ((ts: typeof import('typescript')) => LanguagePlugin<unknown>)
     | null = null
@@ -59,17 +57,7 @@ class Build {
     private baseBuildDir: string,
     private resolve: (a: number) => void,
     private isWatch: boolean = false
-  ) {
-    try {
-      const tsModule = ts
-      this.mcxLanguagePluginCreator =
-        createMCXLanguagePlugin as unknown as typeof this.mcxLanguagePluginCreator
-      this.mcxTs = tsModule
-    } catch (error) {
-      this.mcxTs = ts
-      Logger.w('Build', `Failed to initialize MCX language plugin: ${error}`)
-    }
-  }
+  ) {}
   /**
    * Start the watch mode.
    * This will perform an initial build (if not already done) and then
@@ -264,7 +252,7 @@ class Build {
     if (!this.isWatch) {
       const elapsed = ((performance.now() - buildStart) / 1000).toFixed(2)
       showText(
-        `[${chalk.green('mbler')}] ${chalk.green(`✓ built in ${elapsed}s`)}`
+        `[${styleText('green', 'mbler')}] ${styleText('green', `✓ built in ${elapsed}s`)}`
       )
       this.resolve(0)
     }
@@ -325,7 +313,7 @@ class Build {
           moduleDir: moduleDir,
           tsconfigPath: tsconfigPath,
           sourcemap: false,
-          ts: this.mcxTs,
+          ts: await import('typescript'),
         }
         if (this.mcxLanguagePluginCreator) {
           pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator
@@ -616,7 +604,7 @@ class Build {
       }
     }
     showText(
-      `[${chalk.green('mbler')}] ${chalk.bgYellow(`file changed: ${filePath}`)}`
+      `[${styleText('green', 'mbler')}] ${styleText('bgYellow', `file changed: ${filePath}`)}`
     )
   }
 
@@ -825,7 +813,7 @@ function watch(cliParam: CliParam, work: string): Promise<number> {
       build.start().then(() => {
         build.watch()
         showText(
-          `[${chalk.green('mbler')}] ${chalk.bgYellow('watching for file changes...')}`
+          `[${styleText('green', 'mbler')}] ${styleText('bgYellow', 'watching for file changes...')}`
         )
       })
     } catch (err) {

@@ -1,4 +1,5 @@
-import { showText, chalk } from '../utils'
+import { styleText } from 'node:util'
+import { showText } from '../utils'
 export class Postgress {
   private max: number
   constructor(max: number) {
@@ -10,10 +11,10 @@ export class Postgress {
     const barWidth = 30
     const filledWidth = Math.round(barWidth * percentage)
     const emptyWidth = barWidth - filledWidth
-    const filledBar = chalk.green('█'.repeat(filledWidth))
-    const emptyBar = chalk.white('█'.repeat(emptyWidth))
+    const filledBar = styleText('green', '█'.repeat(filledWidth))
+    const emptyBar = styleText('white', '█'.repeat(emptyWidth))
     const progressBar = `${filledBar}${emptyBar}`
-    const percentText = chalk.blue(`${Math.round(percentage * 100)}%`)
+    const percentText = styleText('blue', `${Math.round(percentage * 100)}%`)
     const progressText = `\n\u001B[1A\r[${progressBar}] ${percentText} (${current}/${this.max})`
     showText(progressText, false)
     if (current == this.max) {
