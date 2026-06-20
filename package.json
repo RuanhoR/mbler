@@ -42,13 +42,14 @@
     "pretest": "pnpm gen:version",
     "test": "vitest run",
     "prepare": "simple-git-hooks",
+    "check": "pnpm lint && pnpm test && pnpm type-check",
+    "type-check": "tsc --noEmit",
     "format": "prettier ./src ./example --write"
   },
   "dependencies": {
     "@mbler/mcx": "0.0.3",
     "@mbler/mcx-core": "0.1.1",
     "@mbler/mcx-server": "0.1.1-rc.4",
-    "@rollup/plugin-terser": "1.0.0",
     "@volar/language-core": "2.4.28",
     "@volar/typescript": "2.4.28",
     "adm-zip": "0.5.16",
@@ -78,8 +79,10 @@
     "@types/babel__traverse": "7.28.0",
     "@types/node": "25.0.9",
     "@types/npm-registry-fetch": "8.0.9",
+    "esbuild": "0.25.4",
     "eslint": "10.4.0",
     "globals": "17.0.0",
+    "terser": "5.37.0",
     "picocolors": "1.1.1",
     "prettier": "3.8.3",
     "rolldown-plugin-dts": "0.25.2",
@@ -89,10 +92,5 @@
   },
   "simple-git-hooks": {
     "config": ".simple-git-hooks.mjs"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "simple-git-hooks"
-    ]
   }
 }

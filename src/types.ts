@@ -151,7 +151,7 @@ export interface MblerConfigData {
   version: string // version, like be "0.0.1-beta"
   mcVersion: string | string[] // use mcVersion, be like "1.21.100"
   script?: MblerConfigScript // sapi option
-  minify?: boolean // use minify
+  minify?: 'oxc' | 'terser' | 'esbuild' // use minify
   build?: Partial<MblerBuildConfig> // build config
 }
 export const templateMblerConfig: MblerConfigData = {
@@ -162,7 +162,6 @@ export const templateMblerConfig: MblerConfigData = {
   script: {
     main: '',
   },
-  minify: false,
   outdir: {
     behavior: '',
     resources: '',

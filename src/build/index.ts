@@ -1,5 +1,4 @@
 import * as mcxDef from '@mbler/mcx-core'
-import minifyPlugin from '@rollup/plugin-terser'
 import { watch as chokidarWatch } from 'chokidar'
 import * as fs from 'node:fs/promises'
 import path, { isAbsolute } from 'node:path'
@@ -32,6 +31,7 @@ import { BuildConfig } from './config'
 import { BuildCacheManager } from './cache'
 import { generateRelease } from './release'
 import { Postgress } from './postgress'
+import { terserPlugin, esbuildPlugin } from './minify'
 import { LanguagePlugin } from '@volar/language-core'
 import type { CompileOpt } from '@mbler/mcx-types'
 import { styleText } from 'node:util'
@@ -224,11 +224,15 @@ class Build {
         if (this.buildConfig?.outputFilename)
           output = this.buildConfig.outputFilename
         const outputDir = this.buildConfig?.outputDir || 'scripts'
-        await rBuild.write({
+        const writeOptions: Record<string, unknown> = {
           file: join(path.join(this.outdirs.behavior, outputDir), output),
           format: 'esm',
           sourcemap: false,
-        })
+        }
+        if (this.currentConfig.minify === 'oxc') {
+          writeOptions.minify = true
+        }
+        await rBuild.write(writeOptions)
       } else {
         // bundle: false – skip rollup, copy source scripts directly
         const srcScriptDir = path.join(this.srcDirs!.behavior, 'scripts')
@@ -286,16 +290,11 @@ class Build {
       )
     }
     if (this.currentConfig.minify) {
-      plugin.push(
-        minifyPlugin({
-          format: {
-            comments: false,
-          },
-          compress: {
-            unused: true,
-          },
-        }) as unknown as Plugin
-      )
+      if (this.currentConfig.minify === 'terser') {
+        plugin.push(terserPlugin(this.baseBuildDir))
+      } else if (this.currentConfig.minify === 'esbuild') {
+        plugin.push(esbuildPlugin(this.baseBuildDir))
+      }
     }
     if (this.buildConfig?.rollupPlugins) {
       plugin.push(...this.buildConfig.rollupPlugins)
@@ -431,6 +430,14 @@ class Build {
     if (this.buildConfig?.outputFilename)
       output = this.buildConfig.outputFilename
     const outputDir = this.buildConfig?.outputDir || 'scripts'
+    const outputOptions: Record<string, unknown> = {
+      file: join(path.join(this.outdirs.behavior, outputDir), output),
+      format: 'esm',
+      sourcemap: false,
+    }
+    if (this.currentConfig.minify === 'oxc') {
+      outputOptions.minify = true
+    }
     const rollupWatcher = rolldownWatch({
       input: path.join(
         this.srcDirs.behavior,
@@ -448,11 +455,7 @@ class Build {
           ? { incrementalBuild: true }
           : {}),
       },
-      output: {
-        file: join(path.join(this.outdirs.behavior, outputDir), output),
-        format: 'esm',
-        sourcemap: false,
-      },
+      output: outputOptions,
       watch: {
         clearScreen: false,
         include: path.join(this.srcDirs.behavior, 'scripts/**/*'),
