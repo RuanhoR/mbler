@@ -30,13 +30,12 @@ import {
 } from '../utils'
 import { BuildConfig } from './config'
 import { BuildCacheManager } from './cache'
-import generateManifest from './manifest'
 import { generateRelease } from './release'
 import { Postgress } from './postgress'
-import { createMCXLanguagePlugin } from '@mbler/mcx-server'
 import { LanguagePlugin } from '@volar/language-core'
 import type { CompileOpt } from '@mbler/mcx-types'
 import { styleText } from 'node:util'
+import generateManifest from './manifest'
 class Build {
   currentConfig: MblerConfigData | null = null
   srcDirs:
