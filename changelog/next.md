@@ -20,3 +20,35 @@ This changelog tracks changes committed after the v0.2.7 release tag.
 
 - **fix**: Remove non-existent ESLint rule; set `engines.node>=20`; remove npm lockfile (`9172f98`)
 - **fix**: Remove unused `content` variable; move chalk compat to shared utils; remove `console.log`; add `await` to `tryMkdir` (`82aba9e`)
+- **chore**: Added ISSUE_TEMPLATE and `changelog/` directory with version history (`39b1d04`)
+- **chore**: Added CODE_OF_CONDUCT.md (Contributor Covenant v2.1) (`e158e00`)
+
+### 2026-06-10
+
+- **chore**: Moved template to `create-mbler` package (`b4704c2`)
+- **chore**: Migrated from Rollup to Rolldown — ~9s → ~0.3s JS bundle builds; removed rollup + related plugins; added `rolldown-plugin-dts` (`703e867`)
+
+### 2026-06-12
+
+- **feat**: Added `build.clean` option to delete `dist/` before build (`eedf7f7`)
+
+### 2026-06-13
+
+- **feat(build cli)**: Print 'success at `<num>s`' on build end (`57288dc`)
+- **fix(plugin-mcx-tsc)**: Added image extensions to `extraSupportedExtensions` (`2c2775c`)
+- **chore**: Bumped version to v0.2.7-rc.3; updated `@mbler/mcx-server` dep (`0f79539`)
+- **chore**: Removed dev link dependency (`6eba01b`)
+- **test**: Added tests for `sapiVersion` and enhanced `utils.spec.ts` (`f30a214`)
+- **chore**: Updated `@mbler/mcx-server` dep to v0.1.1-rc.1 (`53a3a7e`)
+- **fix**: Fixed null build release (`03de873`)
+- **style**: Batch formatted code with Prettier (`e63391a`)
+- **refactor(cli)**: Added declarative command framework with typed params — `CommandDef`, `parseArgs`, `parseRawParams`; refactored CLI dispatcher and all 11 command handlers; added 63 new tests (`85f665d`)
+
+### 2026-06-14
+
+- **refactor**: Replaced chalk with `styleText` from `node:util` in build and utils; removed `npm-registry-fetch` from SAPI module (`b232377`)
+
+### 2026-06-20
+
+- **ci**: Fixed unused import (`fd24a06`)
+- **refactor**: Replaced `@rollup/plugin-terser` with custom minify plugins (oxc/terser/esbuild) (`f8f06b7`)

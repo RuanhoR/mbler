@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.7-rc.6",
+  "version": "0.2.8",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mbler/mcx": "0.0.3",
-    "@mbler/mcx-core": "0.1.1",
+    "@mbler/mcx-core": "0.1.2",
     "@mbler/mcx-server": "0.1.1-rc.4",
     "@volar/language-core": "2.4.28",
     "@volar/typescript": "2.4.28",
@@ -82,11 +82,11 @@
     "esbuild": "0.25.4",
     "eslint": "10.4.0",
     "globals": "17.0.0",
-    "terser": "5.37.0",
     "picocolors": "1.1.1",
     "prettier": "3.8.3",
     "rolldown-plugin-dts": "0.25.2",
     "simple-git-hooks": "2.13.1",
+    "terser": "5.37.0",
     "typescript-eslint": "8.59.3",
     "vitest": "^4.1.8"
   },
