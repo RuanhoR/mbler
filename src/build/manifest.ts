@@ -13,7 +13,7 @@ async function generateManifest(
   const manifest: ManifestData = {
     format_version: 2,
     header: {
-      name: config.name,
+      name: config.displayName || config.name,
       description: config.description,
       uuid: fromString(hashRaw, BuildConfig.salt.header),
       version: stringToNumberArray(config.version),

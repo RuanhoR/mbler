@@ -145,7 +145,8 @@ export interface MblerBuildConfig {
   onWarn: (ctx: MblerConfigData, warning: Error) => void | Promise<void>
 }
 export interface MblerConfigData {
-  name: string // addon name
+  name: string // addon name (package scope, e.g. "@scope/name")
+  displayName?: string // display name shown in manifest (falls back to name)
   outdir?: MblerConfigOutdir // output
   description: string // addon description
   version: string // version, like be "0.0.1-beta"
@@ -156,6 +157,7 @@ export interface MblerConfigData {
 }
 export const templateMblerConfig: MblerConfigData = {
   name: 'demo',
+  displayName: '',
   description: 'demo',
   version: '0.0.0',
   mcVersion: '1.21.100',
