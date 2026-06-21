@@ -71,6 +71,7 @@ export interface language {
     readmeNotFound: string
     metadataInvalid: string
     packageNameInvalid: string
+    nameMismatch: string
     notLoginError: string
     tokenMissing: string
     unpublishReqFailed: string

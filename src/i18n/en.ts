@@ -81,6 +81,7 @@ export default {
     readmeNotFound: 'README file not found',
     metadataInvalid: 'Invalid metadata',
     packageNameInvalid: 'Package name must be in the format of @scope/name',
+    nameMismatch: 'Package name in mbler.config.js and package.json must match',
     notLoginError: 'Not logged in',
     tokenMissing: 'Failed to get token',
     unpublishReqFailed: 'Failed to unpublish package',

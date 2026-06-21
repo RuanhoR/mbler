@@ -39,6 +39,11 @@ export async function ReadProjectMblerConfig(
       'utf-8'
     )
     const pkg = JSON.parse(pkgRaw)
+    if (file.name && pkg.name && file.name !== pkg.name) {
+      throw new Error(
+        `Package name mismatch: mbler.config.js ("${file.name}") != package.json ("${pkg.name}"). They must match.`
+      )
+    }
     if (pkg.name) config.name = pkg.name
     if (pkg.version) config.version = pkg.version
   } catch {
