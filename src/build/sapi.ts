@@ -1,17 +1,13 @@
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import config from '../config'
-import { compareVersion } from '../utils'
-import { npmFetchData } from '../types'
+import { compareVersion, sleep } from '../utils'
+import type { npmFetchData } from '../types'
+
 export interface cacheValue {
   formal: string
   beta: string
 }
-
-/**
- * Compare two dotted version strings ("major.minor.patch").
- * Returns negative if a < b, positive if a > b, zero if equal.
- */
 
 const Sapi = function (): {
   refresh: () => Promise<void>
@@ -22,42 +18,31 @@ const Sapi = function (): {
     withFull: boolean
   ) => Promise<string>
 } {
-  async function json(path: string) {
+  const MAX_RETRIES = 3
+
+  async function json(path: string, attempt = 1) {
     const r = await fetch('https://registry.npmjs.com' + path)
+    if (!r.ok && attempt < MAX_RETRIES) {
+      await sleep(1000 * attempt)
+      return json(path, attempt + 1)
+    }
     return await r.json()
   }
+
   const cacheFile = path.join(config.tmpdir, '_sapi_version.json')
-  // cacheData is an array of entries keyed by the embedded mc version string
   let cacheData: Array<{
     version: string
     server: cacheValue
     'server-ui': cacheValue
   }> | null = null
 
-  /**
-   * Pull every published version for a package and reduce it to a mapping
-   * from the embedded Minecraft version (e.g. "1.21.60") to the most
-   * recent formal/beta release we were able to parse.
-   */
-  async function fetchData(pkgName: string): Promise<
-    Record<
-      string,
-      cacheValue & {
-        _v: number
-      }
-    >
-  > {
+  async function fetchData(
+    pkgName: string
+  ): Promise<Record<string, cacheValue>> {
     const data = (await json(`/${pkgName}`)) as unknown as npmFetchData
     const pkgVersions = Object.keys(data.versions)
-    const reValue: Record<
-      string,
-      cacheValue & {
-        _v: number // internal marker used during reduction
-      }
-    > = {}
-    // helper to extract the embedded MC version ("yyyy") from a full
-    // npm package version string. returns null when the expected pattern
-    // cannot be found.
+    const reValue: Record<string, cacheValue> = {}
+
     const mcVersionFrom = (str: string): string | null => {
       const m = str.match(/-(?:rc|beta)(?:\.[^-.]+)*?\.((?:\d+\.){2}\d+)/)
       return m ? (m[1] as string) : null
@@ -70,26 +55,18 @@ const Sapi = function (): {
       const isStable = /(?:-stable)(?:$|[-.])/.test(v)
       let entry = reValue[mcVersion]
       if (!entry) {
-        entry = {
-          formal: '',
-          beta: '',
-          _v: -1,
-        }
+        entry = { formal: '', beta: '' }
         reValue[mcVersion] = entry
       }
 
       if (isStable) {
-        // pick the lexically greatest stable version string
-        if (!entry.formal || v > entry.formal) {
+        if (!entry.formal || compareVersion(v, entry.formal) > 0) {
           entry.formal = v
         }
-        entry._v = Infinity
       } else {
-        // non-stable release; treat everything else as a beta candidate
-        if (!entry.beta || v > entry.beta) {
+        if (!entry.beta || compareVersion(v, entry.beta) > 0) {
           entry.beta = v
         }
-        if (entry._v !== Infinity) entry._v = 1
       }
     }
 
@@ -97,10 +74,9 @@ const Sapi = function (): {
   }
 
   async function refresh() {
-    // grab the two packages we care about and merge the keys
     const serverMap = await fetchData('@minecraft/server')
     const uiMap = await fetchData('@minecraft/server-ui')
-    const versions = new Set<string>([
+    const versions = new Set([
       ...Object.keys(serverMap),
       ...Object.keys(uiMap),
     ])
@@ -111,43 +87,19 @@ const Sapi = function (): {
       'server-ui': cacheValue
     }> = []
 
-    for (const ver of Array.from(versions)) {
+    for (const ver of versions) {
       arr.push({
         version: ver,
-        server: serverMap[ver]
-          ? {
-              formal: serverMap[ver].formal,
-              beta: serverMap[ver].beta,
-            }
-          : {
-              formal: '',
-              beta: '',
-            },
-        'server-ui': uiMap[ver]
-          ? {
-              formal: uiMap[ver].formal,
-              beta: uiMap[ver].beta,
-            }
-          : {
-              formal: '',
-              beta: '',
-            },
+        server: serverMap[ver] ?? { formal: '', beta: '' },
+        'server-ui': uiMap[ver] ?? { formal: '', beta: '' },
       })
     }
 
     arr.sort((a, b) => compareVersion(a.version, b.version))
     cacheData = arr
 
-    await fs.promises
-      .mkdir(config.tmpdir, {
-        recursive: true,
-      })
-      .catch(() => void 0)
-    await fs.promises.writeFile(
-      cacheFile,
-      JSON.stringify(arr, null, 2),
-      'utf-8'
-    )
+    await fs.promises.mkdir(config.tmpdir, { recursive: true }).catch(() => {})
+    await fs.promises.writeFile(cacheFile, JSON.stringify(arr, null, 2), 'utf-8')
   }
 
   async function generateVersion(
@@ -166,51 +118,46 @@ const Sapi = function (): {
     }
 
     if (!cacheData) {
-      throw new Error('unable to load sapi cache data')
+      throw new Error(
+        'unable to load SAPI version data. Check network connectivity or delete ~/.mbler/_sapi_version.json and try again.'
+      )
     }
 
-    // try exact match first
     let entry = cacheData.find((e) => e.version === mcVersion)
     if (!entry) {
-      // find closest entry less than or equal to requested version
-      const sorted = cacheData.slice()
-      let candidate: (typeof sorted)[0] | null = null
-      for (const e of sorted) {
+      let candidate: (typeof cacheData)[0] | null = null
+      for (const e of cacheData) {
         if (compareVersion(e.version, mcVersion) <= 0) {
           candidate = e
         } else {
           break
         }
       }
-      if (!candidate) {
-        candidate = sorted[0] as {
-          version: string
-          server: cacheValue
-          'server-ui': cacheValue
-        }
-      }
-      entry = candidate
+      entry = candidate ?? cacheData[0]
     }
+
+    if (!entry) {
+      throw new Error(
+        `no SAPI version data found for Minecraft version ${mcVersion}`
+      )
+    }
+
     const moduleKey = module === '@minecraft/server' ? 'server' : 'server-ui'
     const entryModule = entry[moduleKey]
     let result = isBeta ? entryModule.beta : entryModule.formal
     if (!result) {
-      // fall back to whatever is available
       result = entryModule.formal || entryModule.beta
     }
     if (withFull) return result || ''
-    else {
-      const tmp = result.split('-').slice(0, 2) as [string, string]
-      tmp[1] = tmp[1].split('.')[0] as string
-      result = tmp.join('-')
-      return result || 'error'
-    }
+    return evalVersion(result || 'error')
   }
+
   return {
     refresh,
     generateVersion,
   }
 }
+
 let sapiEmul: null | ReturnType<typeof Sapi> = null
 export default new Proxy(
   {},
@@ -226,9 +173,9 @@ export default new Proxy(
     },
   }
 ) as ReturnType<typeof Sapi>
+
 export function evalVersion(result: string): string {
   const tmp = result.split('-').slice(0, 2) as [string, string]
   tmp[1] = tmp[1].split('.')[0] as string
-  result = tmp.join('-')
-  return result
+  return tmp.join('-')
 }
