@@ -1,6 +1,6 @@
-# Unreleased (since v0.2.7 / 2026-05-25)
+# Unreleased (since v0.2.8 / 2026-06-21)
 
-This changelog tracks changes committed after the v0.2.7 release tag.
+This changelog tracks changes committed after the v0.2.8 release tag.
 
 ### 2026-05-31
 
@@ -52,3 +52,6 @@ This changelog tracks changes committed after the v0.2.7 release tag.
 
 - **ci**: Fixed unused import (`fd24a06`)
 - **refactor**: Replaced `@rollup/plugin-terser` with custom minify plugins (oxc/terser/esbuild) (`f8f06b7`)
+- **fix**: Improved `sapi.ts` — fixed version comparison, added fetch retry, removed `_v` hack, improved types and error messages (`e3187a9`)
+- **feat**: Added `displayName` field for manifest `header.name` (`08e6da9`)
+- **feat**: Added validation to ensure name consistency between `mbler.config.js` and `package.json` (`5220017`)
