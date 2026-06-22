@@ -212,7 +212,7 @@ class Build {
       if (isBundle) {
         const rBuild = (await this.createRollup()) as RolldownBuild
         if (!this.rollupPlugin || !this.outdirs) {
-          throw new Error(`[build addon]: can't resolve rollup instance`)
+          throw new Error(`[build addon]: rollup instance not available`)
         }
         if (!this.isWatch) progress.update(50)
         // write script
@@ -245,7 +245,7 @@ class Build {
     }
     if (!this.isWatch) progress.update(70)
     if (!this.outdirs || !this.module)
-      throw new Error(`[build addon]: can't resolve outdirs`)
+      throw new Error(`[build addon]: output directories not initialized`)
     await generateRelease({
       outdirs: this.outdirs,
       module: this.module,
@@ -270,7 +270,7 @@ class Build {
    */
   private async createRollup() {
     if (!this.currentConfig || !this.srcDirs || !this.outdirs)
-      throw new Error(`[build addon]: can't first can this method`)
+      throw new Error(`[build addon]: internal error: called before initialization`)
     if (!this.currentConfig.script) return
     const main = path.join(
       this.srcDirs.behavior,
@@ -279,14 +279,14 @@ class Build {
     )
     if (!(await FileExist(main))) {
       throw new Error(
-        `[build addon]: main script ${main} is not exist: can't resolve entry`
+        `[build addon]: main script not found: ${main}`
       )
     }
     const plugin: Plugin[] = []
     const moduleDir = path.join(this.baseBuildDir, 'node_modules')
     if (!(await FileExist(moduleDir))) {
       throw new Error(
-        `[build addon]: node_modules is not exist in project root: can't resolve node_modules for rollup: ${moduleDir}`
+        `[build addon]: node_modules not found: ${moduleDir}`
       )
     }
     if (this.currentConfig.minify) {
@@ -304,7 +304,7 @@ class Build {
         const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
         if (!(await FileExist(tsconfigPath))) {
           throw new Error(
-            `[build addon]: ts-lang: tsconfig.json is not exist in project root: can't resolve tsconfig for rollup: ${tsconfigPath}`
+            `[build addon]: tsconfig.json not found: ${tsconfigPath}`
           )
         }
         const pluginConfig: CompileOpt = {
@@ -421,7 +421,7 @@ class Build {
       !this.currentConfig ||
       !this.rollupPlugin
     )
-      throw new Error(`[build addon]: can't first can this method`)
+      throw new Error(`[build addon]: internal error: called before initialization`)
     let output = this.currentConfig.script?.main
     if (!output) output = 'index.js'
     if (path.extname(output) !== 'js')
@@ -496,7 +496,7 @@ class Build {
       (isBundle && !this.rollupPlugin) ||
       !this.watchers
     )
-      throw new Error(`[build addon]: can't first can this method`)
+      throw new Error(`[build addon]: internal error: called before initialization`)
     const isConfigChange =
       path.relative(
         path.join(this.baseBuildDir, BuildConfig.ConfigFile),
@@ -574,7 +574,7 @@ class Build {
     if (isBehaviorChange || isResourcesChange) {
       const handlerBP = async () => {
         if (!this.srcDirs || !this.outdirs)
-          throw new Error(`[build addon]: can't first can this method`)
+          throw new Error(`[build addon]: internal error: called before initialization`)
         const relativePath = path.relative(this.srcDirs.behavior, filePath)
         await fs.cp(
           path.join(this.srcDirs.behavior, relativePath),
@@ -587,7 +587,7 @@ class Build {
       }
       const handlerRP = async () => {
         if (!this.srcDirs || !this.outdirs)
-          throw new Error(`[build addon]: can't first can this method`)
+          throw new Error(`[build addon]: internal error: called before initialization`)
         const relativePath = path.relative(this.srcDirs.resources, filePath)
         await fs.cp(
           path.join(this.srcDirs.resources, relativePath),
@@ -613,7 +613,7 @@ class Build {
   private async createWatcher() {
     const isBundle = this.currentConfig?.build?.bundle !== false
     if (!this.srcDirs || !this.outdirs || (isBundle && !this.rollupPlugin))
-      throw new Error(`[build addon]: can't first can this method`)
+      throw new Error(`[build addon]: internal error: called before initialization`)
     const chokidar = chokidarWatch(this.baseBuildDir, {
       ignored: [
         this.outdirs.behavior,
@@ -644,7 +644,7 @@ class Build {
 
   private async handlerManifest() {
     if (!this.currentConfig || !this.outdirs || !this.srcDirs || !this.module)
-      throw new Error(`[build addon]: can't first can this method`)
+      throw new Error(`[build addon]: internal error: called before initialization`)
     const otherManifestOption: {
       behavior: ManifestData
       resources: ManifestData
@@ -654,7 +654,7 @@ class Build {
     }
     const handlerBP = async () => {
       if (!this.outdirs || !this.currentConfig)
-        throw new Error(`[build addon]: can't first can this method`)
+        throw new Error(`[build addon]: internal error: called before initialization`)
       const manifest = await generateManifest(this.currentConfig, 'data')
       await writeJSON(path.join(this.outdirs.behavior, 'manifest.json'), {
         ...manifest,
@@ -663,7 +663,7 @@ class Build {
     }
     const handlerRP = async () => {
       if (!this.outdirs || !this.currentConfig)
-        throw new Error(`[build addon]: can't first can this method`)
+        throw new Error(`[build addon]: internal error: called before initialization`)
       const manifest = await generateManifest(this.currentConfig, 'resources')
       await writeJSON(path.join(this.outdirs.resources, 'manifest.json'), {
         ...manifest,
@@ -701,7 +701,7 @@ class Build {
   private loadData() {
     // check run time
     if (!this.currentConfig || !this.baseBuildDir)
-      throw new Error("[build data]: can't resolve again")
+      throw new Error("[build data]: already initialized")
     // source code dir
     this.srcDirs = {
       behavior: path.join(this.baseBuildDir, BuildConfig.behavior),
@@ -728,13 +728,13 @@ class Build {
    */
   private async handlerOtherAddon() {
     if (!this.srcDirs)
-      throw new Error("[build addon]: can't first can this method")
+      throw new Error("[build addon]: internal error: called before initialization")
     const isHasBp = await FileExist(this.srcDirs.behavior)
-    if (!isHasBp) throw new Error("[build addon]: can't resolve behavior")
+    if (!isHasBp) throw new Error("[build addon]: behavior source directory not found")
     // init copy resources
     const handlerBP = async () => {
       if (!this.srcDirs || !this.outdirs)
-        throw new Error("[build addon]: can't first can this method")
+        throw new Error("[build addon]: internal error: called before initialization")
       for (const f of await fs.readdir(this.srcDirs.behavior)) {
         const fType = await this.fileType(path.join(this.srcDirs.behavior, f))
         const includeType =
@@ -759,7 +759,7 @@ class Build {
     }
     const handlerRP = async () => {
       if (!this.srcDirs || !this.outdirs)
-        throw new Error("[build addon]: can't first can this method")
+        throw new Error("[build addon]: internal error: called before initialization")
       for (const f of await fs.readdir(this.srcDirs.resources)) {
         const fType = await this.fileType(path.join(this.srcDirs.resources, f))
         const includeType =
