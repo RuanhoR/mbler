@@ -58,7 +58,12 @@ export const BuildConfig = {
       items: 'directory',
       loot_tables: 'directory',
       recipes: 'directory',
-      scripts: 'skip', // special handling
+      /**
+       * Skipped from the default copy flow; handled separately by the build:
+       * - bundle: true  → bundled via rollup
+       * - bundle: false → copied as-is into the output
+       */
+      scripts: 'skip',
       spawn_rules: 'directory',
       structures: 'directory',
       texts: 'directory',
