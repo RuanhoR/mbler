@@ -162,6 +162,7 @@ export const templateMblerConfig: MblerConfigData = {
   description: 'demo',
   version: '0.0.0',
   mcVersion: '1.21.100',
+  minify: 'oxc',
   script: {
     main: '',
   },
