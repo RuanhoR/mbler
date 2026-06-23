@@ -62,22 +62,20 @@ describe('terserPlugin', () => {
     expect(plugin.name).toBe('mbler:terser')
   })
 
-  it('should have renderChunk hook', () => {
+  it('should have generateBundle hook', () => {
     const plugin = terserPlugin('/test')
-    expect(getHook(plugin, 'renderChunk')).not.toBeNull()
+    expect(getHook(plugin, 'generateBundle')).not.toBeNull()
   })
 
   it('should throw when terser is not installed', async () => {
     const plugin = terserPlugin('/nonexistent-path-12345')
-    const hook = getHook<(...args: any[]) => Promise<any>>(plugin, 'renderChunk')!
+    const hook = getHook<(outputOptions: any, bundle: any) => Promise<any>>(
+      plugin,
+      'generateBundle',
+    )!
+    const chunk = { type: 'chunk' as const, code: 'const x = 1' }
     await expect(
-      hook.call(
-        {} as any,
-        'const x = 1',
-        {} as any,
-        {} as any,
-        {} as any,
-      )
+      hook.call({} as any, {} as any, { 'index.js': chunk })
     ).rejects.toThrow(/terser/)
   })
 })
@@ -88,22 +86,20 @@ describe('esbuildPlugin', () => {
     expect(plugin.name).toBe('mbler:esbuild')
   })
 
-  it('should have renderChunk hook', () => {
+  it('should have generateBundle hook', () => {
     const plugin = esbuildPlugin('/test')
-    expect(getHook(plugin, 'renderChunk')).not.toBeNull()
+    expect(getHook(plugin, 'generateBundle')).not.toBeNull()
   })
 
   it('should throw when esbuild is not installed', async () => {
     const plugin = esbuildPlugin('/nonexistent-path-12345')
-    const hook = getHook<(...args: any[]) => Promise<any>>(plugin, 'renderChunk')!
+    const hook = getHook<(outputOptions: any, bundle: any) => Promise<any>>(
+      plugin,
+      'generateBundle',
+    )!
+    const chunk = { type: 'chunk' as const, code: 'const x = 1' }
     await expect(
-      hook.call(
-        {} as any,
-        'const x = 1',
-        {} as any,
-        {} as any,
-        {} as any,
-      )
+      hook.call({} as any, {} as any, { 'index.js': chunk })
     ).rejects.toThrow(/esbuild/)
   })
 })
