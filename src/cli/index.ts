@@ -62,9 +62,10 @@ const main = (function () {
   let currentWDManage: WorkDirManage
 
   const importBuild = async () => {
-    const { build } = typeof require == 'function'
-      ? require('mbler/build')
-      : await import('mbler/build')
+    const { build } =
+      typeof require == 'function'
+        ? require('mbler/build')
+        : await import('mbler/build')
     return build
   }
 
@@ -171,8 +172,17 @@ const main = (function () {
       args: [],
       options: [],
       async handler(ctx) {
-        const build = await importBuild()
-        return await build({ params: [], opts: ctx.opts }, ctx.workDir)
+        if (process.env.DEBUG == 'true') {
+          const importStart = performance.now()
+          const build = await importBuild()
+          console.debug(
+            `[mbler DEBUG]: import build usage: ${performance.now() - importStart}ms`
+          )
+          return await build({ params: [], opts: ctx.opts }, ctx.workDir)
+        } else {
+          const build = await importBuild()
+          return await build({ params: [], opts: ctx.opts }, ctx.workDir)
+        }
       },
     },
     {

@@ -27,7 +27,6 @@ const shared = /** @type {const} */ ({
   external,
   tsconfig: path.resolve('tsconfig.json'),
 })
-
 export default defineConfig([
   // JS bundles
   {
@@ -56,11 +55,13 @@ export default defineConfig([
         file: 'dist/build.js',
         format: 'cjs',
         sourcemap: true,
+        minify: isRelease || undefined,
       },
       {
         file: 'dist/build.esm.mjs',
         format: 'esm',
         sourcemap: true,
+        minify: isRelease || undefined,
       },
     ],
   },

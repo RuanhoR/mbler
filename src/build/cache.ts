@@ -22,8 +22,7 @@ export class BuildCacheManager {
   }
 
   private resolveMode(mode: BuildCacheMode | undefined): EffectiveCacheMode {
-    const value = mode ?? 'auto'
-    if (value === 'none') return 'none'
+    if (mode === 'none') return 'none'
     return 'file'
   }
 }

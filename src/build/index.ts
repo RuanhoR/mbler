@@ -1,10 +1,7 @@
-import * as mcxDef from '@mbler/mcx-core'
 import { watch as chokidarWatch } from 'chokidar'
 import * as fs from 'node:fs/promises'
 import path, { isAbsolute } from 'node:path'
 import {
-  rolldown as buildBundle,
-  watch as rolldownWatch,
   type Plugin,
   type RolldownLog,
   type RolldownWatcherEvent,
@@ -28,14 +25,12 @@ import {
   writeJSON,
 } from '../utils'
 import { BuildConfig } from './config'
-import { BuildCacheManager } from './cache'
-import { generateRelease } from './release'
 import { Postgress } from './postgress'
-import { terserPlugin, esbuildPlugin } from './minify'
-import { LanguagePlugin } from '@volar/language-core'
 import type { CompileOpt } from '@mbler/mcx-types'
 import { styleText } from 'node:util'
-import generateManifest from './manifest'
+import type { LanguagePlugin } from '@volar/language-core'
+import { BuildCacheManager } from './cache'
+
 class Build {
   currentConfig: MblerConfigData | null = null
   srcDirs:
@@ -56,7 +51,28 @@ class Build {
     private baseBuildDir: string,
     private resolve: (a: number) => void,
     private isWatch: boolean = false
-  ) {}
+  ) {
+    if (this.isDebug) {
+      const { performance } = require('perf_hooks')
+      const Module = require('module')
+      const originalRequire = Module.prototype.require
+      Module.prototype.require = function (id: string) {
+        const isCached = !!Module._cache[id]
+        const start = performance.now()
+        const result = originalRequire.call(this, id)
+        const duration = performance.now() - start
+
+        const status = isCached ? '🔄 CACHED' : '📦 FIRST'
+        if (duration > 5) {
+          console.log(
+            `[mbler Module load DEBUG]: ${status} [${duration.toFixed(2)}ms] ${id}`
+          )
+        }
+
+        return result
+      }
+    }
+  }
   /**
    * Start the watch mode.
    * This will perform an initial build (if not already done) and then
@@ -130,6 +146,7 @@ class Build {
       this.watchers = null
     }
   }
+  private isDebug = process.env.DEBUG == 'true'
   private rollupPlugin: Plugin[] | null = null
   private cacheManager: BuildCacheManager | null = null
   public init: boolean = false
@@ -184,28 +201,67 @@ class Build {
     if (!isAbsolute(this.baseBuildDir)) {
       throw new Error('[init build]: build dir is not absolute path')
     }
-    this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
+    /**
+     * on debug, show config load time
+     * This is for debug.
+     */
+    if (this.isDebug) {
+      const t0 = performance.now()
+      this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
+      console.debug(
+        `[mbler DEBUG] config loaded in ${(performance.now() - t0).toFixed(2)}ms`
+      )
+    } else {
+      this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
+    }
+    // save user build config
     if (this.currentConfig.build) this.buildConfig = this.currentConfig.build
+    // init cache
     this.cacheManager = new BuildCacheManager(
       this.baseBuildDir,
       this.buildConfig?.cache,
       this.isWatch,
       this.buildConfig?.cachePath
     )
+    if (this.isDebug) {
+      console.debug(
+        `[mbler DEBUG]: init cache: cache mode: ${this.cacheManager.getMode()}`
+      )
+    }
+    // run onStart hook
     if (this.buildConfig?.onStart)
       await this.buildConfig.onStart(this.currentConfig)
+    // load data
     this.loadData()
-    if (this.buildConfig?.clean !== false && this.outdirs) {
-      await Promise.all([
-        fs.rm(this.outdirs.behavior, { recursive: true, force: true }),
-        fs.rm(this.outdirs.resources, { recursive: true, force: true }),
-      ])
+    // batch exec
+    await Promise.all([
+      () => {
+        if (this.buildConfig?.clean !== false && this.outdirs) {
+          return Promise.all([
+            fs.rm(this.outdirs.behavior, { recursive: true, force: true }),
+            fs.rm(this.outdirs.resources, { recursive: true, force: true }),
+          ])
+        }
+      },
+      this.handlerOtherAddon(),
+    ])
+    if (!this.isWatch) {
+      progress.update(10)
+      if (this.isDebug) {
+        console.debug(
+          `[mbler DEBUG]: success build 10%. usage time: ${performance.now() - buildStart}ms`
+        )
+      }
     }
-    if (!this.isWatch) progress.update(10)
-    await this.handlerOtherAddon()
     await this.handlerManifest()
-    if (!this.isWatch) progress.update(30)
-
+    if (!this.isWatch) {
+      progress.update(30)
+      if (this.isDebug) {
+        console.debug(
+          `[mbler DEBUG]: success build 30%. usage time: ${performance.now() - buildStart}ms`
+        )
+      }
+    }
     const isBundle = this.currentConfig.build?.bundle !== false
 
     if (this.currentConfig.script) {
@@ -214,7 +270,14 @@ class Build {
         if (!this.rollupPlugin || !this.outdirs) {
           throw new Error(`[build addon]: rollup instance not available`)
         }
-        if (!this.isWatch) progress.update(50)
+        if (!this.isWatch) {
+          progress.update(50)
+          if (this.isDebug) {
+            console.debug(
+              `[mbler DEBUG]: success build 50%. usage time: ${performance.now() - buildStart}ms`
+            )
+          }
+        }
         // write script
         let output = this.currentConfig.script?.main
         if (!output) output = 'index.js'
@@ -243,15 +306,31 @@ class Build {
         }
       }
     }
-    if (!this.isWatch) progress.update(70)
+    if (!this.isWatch) {
+      progress.update(70)
+      if (this.isDebug) {
+        console.debug(
+          `[mbler DEBUG]: success build 70%. usage time: ${performance.now() - buildStart}ms`
+        )
+      }
+    }
     if (!this.outdirs || !this.module)
       throw new Error(`[build addon]: output directories not initialized`)
-    await generateRelease({
-      outdirs: this.outdirs,
-      module: this.module,
-    })
-    if (!this.isWatch) progress.update(80)
-    if (!this.isWatch) progress.update(100)
+    if (process.env.BUILD_MODULE == 'release') {
+      const generateRelease = require('./release').generateRelease
+      await generateRelease({
+        outdirs: this.outdirs,
+        module: this.module,
+      })
+    }
+    if (!this.isWatch) {
+      progress.update(100)
+      if (this.isDebug) {
+        console.debug(
+          `[mbler DEBUG]: success build. usage time: ${performance.now() - buildStart}ms`
+        )
+      }
+    }
     if (!this.isWatch) {
       const elapsed = ((performance.now() - buildStart) / 1000).toFixed(2)
       showText(
@@ -270,36 +349,53 @@ class Build {
    */
   private async createRollup() {
     if (!this.currentConfig || !this.srcDirs || !this.outdirs)
-      throw new Error(`[build addon]: internal error: called before initialization`)
+      throw new Error(
+        `[build addon]: internal error: called before initialization`
+      )
+    // no script handle
     if (!this.currentConfig.script) return
+    // entry file path
     const main = path.join(
       this.srcDirs.behavior,
       'scripts',
       this.currentConfig.script.main
     )
     if (!(await FileExist(main))) {
-      throw new Error(
-        `[build addon]: main script not found: ${main}`
-      )
+      throw new Error(`[build addon]: main script not found: ${main}`)
     }
     const plugin: Plugin[] = []
+    // moduleDir
     const moduleDir = path.join(this.baseBuildDir, 'node_modules')
     if (!(await FileExist(moduleDir))) {
-      throw new Error(
-        `[build addon]: node_modules not found: ${moduleDir}`
-      )
+      throw new Error(`[build addon]: node_modules not found: ${moduleDir}`)
     }
+    // handle minify option
     if (this.currentConfig.minify) {
-      if (this.currentConfig.minify === 'terser') {
-        plugin.push(terserPlugin(this.baseBuildDir))
-      } else if (this.currentConfig.minify === 'esbuild') {
-        plugin.push(esbuildPlugin(this.baseBuildDir))
+      if (
+        !['oxc', 'terser', 'esbuild', undefined].includes(
+          this.currentConfig.minify
+        )
+      ) {
+        throw new TypeError(
+          'ERR: [mbler]: mbler.config.js include inavild minify option: ' +
+            this.currentConfig.minify
+        )
       }
+      if (this.currentConfig.minify === 'terser') {
+        // terser (need install terser in user's project)
+        plugin.push(require('./minify').terserPlugin(this.baseBuildDir))
+      } else if (this.currentConfig.minify === 'esbuild') {
+        // esbuild (need install esbuild in user's project)
+        plugin.push(require('./minify').esbuildPlugin(this.baseBuildDir))
+      }
+      // (minify: oxc) handle at write option
     }
     if (this.buildConfig?.rollupPlugins) {
+      // push user plugins
       plugin.push(...this.buildConfig.rollupPlugins)
     }
     if (this.currentConfig.script?.lang == 'mcx') {
+      // mcx dsl plugin handle
       try {
         const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
         if (!(await FileExist(tsconfigPath))) {
@@ -316,7 +412,8 @@ class Build {
         if (this.mcxLanguagePluginCreator) {
           pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator
         }
-        plugin.push(mcxDef.rolldownPlugin(pluginConfig, this.outdirs))
+        const rolldownPlugin = require('@mbler/mcx-core').rolldownPlugin
+        plugin.push(rolldownPlugin(pluginConfig, this.outdirs!))
       } catch (err) {
         throw new Error(
           `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`,
@@ -340,6 +437,7 @@ class Build {
           : {}),
       },
     }
+    // push user hook
     if (this.buildConfig?.onWarn) {
       const onWarn: (
         warning: RolldownLog | string,
@@ -361,6 +459,7 @@ class Build {
         },
       })
     }
+    const buildBundle = require('rolldown').rolldown
     return await buildBundle(rollupOption)
   }
 
@@ -421,7 +520,9 @@ class Build {
       !this.currentConfig ||
       !this.rollupPlugin
     )
-      throw new Error(`[build addon]: internal error: called before initialization`)
+      throw new Error(
+        `[build addon]: internal error: called before initialization`
+      )
     let output = this.currentConfig.script?.main
     if (!output) output = 'index.js'
     if (path.extname(output) !== 'js')
@@ -438,6 +539,7 @@ class Build {
     if (this.currentConfig.minify === 'oxc') {
       outputOptions.minify = true
     }
+    const rolldownWatch = require('rolldown').watch
     const rollupWatcher = rolldownWatch({
       input: path.join(
         this.srcDirs.behavior,
@@ -496,7 +598,9 @@ class Build {
       (isBundle && !this.rollupPlugin) ||
       !this.watchers
     )
-      throw new Error(`[build addon]: internal error: called before initialization`)
+      throw new Error(
+        `[build addon]: internal error: called before initialization`
+      )
     const isConfigChange =
       path.relative(
         path.join(this.baseBuildDir, BuildConfig.ConfigFile),
@@ -574,7 +678,9 @@ class Build {
     if (isBehaviorChange || isResourcesChange) {
       const handlerBP = async () => {
         if (!this.srcDirs || !this.outdirs)
-          throw new Error(`[build addon]: internal error: called before initialization`)
+          throw new Error(
+            `[build addon]: internal error: called before initialization`
+          )
         const relativePath = path.relative(this.srcDirs.behavior, filePath)
         await fs.cp(
           path.join(this.srcDirs.behavior, relativePath),
@@ -587,7 +693,9 @@ class Build {
       }
       const handlerRP = async () => {
         if (!this.srcDirs || !this.outdirs)
-          throw new Error(`[build addon]: internal error: called before initialization`)
+          throw new Error(
+            `[build addon]: internal error: called before initialization`
+          )
         const relativePath = path.relative(this.srcDirs.resources, filePath)
         await fs.cp(
           path.join(this.srcDirs.resources, relativePath),
@@ -613,7 +721,9 @@ class Build {
   private async createWatcher() {
     const isBundle = this.currentConfig?.build?.bundle !== false
     if (!this.srcDirs || !this.outdirs || (isBundle && !this.rollupPlugin))
-      throw new Error(`[build addon]: internal error: called before initialization`)
+      throw new Error(
+        `[build addon]: internal error: called before initialization`
+      )
     const chokidar = chokidarWatch(this.baseBuildDir, {
       ignored: [
         this.outdirs.behavior,
@@ -644,7 +754,9 @@ class Build {
 
   private async handlerManifest() {
     if (!this.currentConfig || !this.outdirs || !this.srcDirs || !this.module)
-      throw new Error(`[build addon]: internal error: called before initialization`)
+      throw new Error(
+        `[build addon]: internal error: called before initialization`
+      )
     const otherManifestOption: {
       behavior: ManifestData
       resources: ManifestData
@@ -652,56 +764,51 @@ class Build {
       behavior: {} as ManifestData,
       resources: {} as ManifestData,
     }
-    const handlerBP = async () => {
-      if (!this.outdirs || !this.currentConfig)
-        throw new Error(`[build addon]: internal error: called before initialization`)
-      const manifest = await generateManifest(this.currentConfig, 'data')
-      await writeJSON(path.join(this.outdirs.behavior, 'manifest.json'), {
-        ...manifest,
-        ...otherManifestOption.behavior,
-      })
-    }
-    const handlerRP = async () => {
-      if (!this.outdirs || !this.currentConfig)
-        throw new Error(`[build addon]: internal error: called before initialization`)
-      const manifest = await generateManifest(this.currentConfig, 'resources')
-      await writeJSON(path.join(this.outdirs.resources, 'manifest.json'), {
-        ...manifest,
-        ...otherManifestOption.resources,
-      })
-    }
-    if (this.module == 'behavior' || this.module == 'all') {
-      const filePath = path.join(this.srcDirs.behavior, 'manifest.json')
+    const generateManifest = require('./manifest').default
+    const loadOtherManifest = async (moduleType: 'behavior' | 'resources') => {
+      const filePath = path.join(this.srcDirs![moduleType], 'manifest.json')
       if (await FileExist(filePath)) {
         try {
           const content = await fs.readFile(filePath, 'utf-8')
-          const json = JSON.parse(content)
-          otherManifestOption.behavior = json
+          return JSON.parse(content) as ManifestData
         } catch (_err) {
-          Logger.w('Build', 'invalid manifest.json in behavior')
+          Logger.w('Build', `invalid manifest.json in ${moduleType}`)
         }
       }
-      await handlerBP()
+      return {} as ManifestData
+    }
+    const tasks: Promise<void>[] = []
+    if (this.module == 'behavior' || this.module == 'all') {
+      tasks.push(
+        (async () => {
+          otherManifestOption.behavior = await loadOtherManifest('behavior')
+          const manifest = await generateManifest(this.currentConfig!, 'data')
+          await writeJSON(path.join(this.outdirs!.behavior, 'manifest.json'), {
+            ...manifest,
+            ...otherManifestOption.behavior,
+          })
+        })()
+      )
     }
     if (this.module == 'resources' || this.module == 'all') {
-      const filePath = path.join(this.srcDirs.resources, 'manifest.json')
-      if (await FileExist(filePath)) {
-        try {
-          const content = await fs.readFile(filePath, 'utf-8')
-          const json = JSON.parse(content)
-          otherManifestOption.resources = json
-        } catch (_err) {
-          Logger.w('Build', 'invalid manifest.json in resources')
-        }
-      }
-      await handlerRP()
+      tasks.push(
+        (async () => {
+          otherManifestOption.resources = await loadOtherManifest('resources')
+          const manifest = await generateManifest(this.currentConfig!, 'resources')
+          await writeJSON(path.join(this.outdirs!.resources, 'manifest.json'), {
+            ...manifest,
+            ...otherManifestOption.resources,
+          })
+        })()
+      )
     }
+    await Promise.all(tasks)
   }
 
   private loadData() {
     // check run time
     if (!this.currentConfig || !this.baseBuildDir)
-      throw new Error("[build data]: already initialized")
+      throw new Error('[build data]: already initialized')
     // source code dir
     this.srcDirs = {
       behavior: path.join(this.baseBuildDir, BuildConfig.behavior),
@@ -728,13 +835,18 @@ class Build {
    */
   private async handlerOtherAddon() {
     if (!this.srcDirs)
-      throw new Error("[build addon]: internal error: called before initialization")
+      throw new Error(
+        '[build addon]: internal error: called before initialization'
+      )
     const isHasBp = await FileExist(this.srcDirs.behavior)
-    if (!isHasBp) throw new Error("[build addon]: behavior source directory not found")
+    if (!isHasBp)
+      throw new Error('[build addon]: behavior source directory not found')
     // init copy resources
     const handlerBP = async () => {
       if (!this.srcDirs || !this.outdirs)
-        throw new Error("[build addon]: internal error: called before initialization")
+        throw new Error(
+          '[build addon]: internal error: called before initialization'
+        )
       for (const f of await fs.readdir(this.srcDirs.behavior)) {
         const fType = await this.fileType(path.join(this.srcDirs.behavior, f))
         const includeType =
@@ -759,7 +871,9 @@ class Build {
     }
     const handlerRP = async () => {
       if (!this.srcDirs || !this.outdirs)
-        throw new Error("[build addon]: internal error: called before initialization")
+        throw new Error(
+          '[build addon]: internal error: called before initialization'
+        )
       for (const f of await fs.readdir(this.srcDirs.resources)) {
         const fType = await this.fileType(path.join(this.srcDirs.resources, f))
         const includeType =
