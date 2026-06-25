@@ -151,7 +151,7 @@ export interface MblerConfigData {
   outdir?: MblerConfigOutdir // output
   description: string // addon description
   version: string // version, like be "0.0.1-beta"
-  mcVersion: string | string[] // use mcVersion, be like "1.21.100"
+  mcVersion: string // use mcVersion, be like "1.21.100"
   script?: MblerConfigScript // sapi option
   minify?: 'oxc' | 'terser' | 'esbuild' // use minify
   build?: Partial<MblerBuildConfig> // build config
