@@ -79,6 +79,7 @@
     "@types/babel__traverse": "7.28.0",
     "@types/node": "25.0.9",
     "@types/npm-registry-fetch": "8.0.9",
+    "@vitest/coverage-v8": "^4.1.9",
     "esbuild": "0.25.4",
     "eslint": "10.4.0",
     "globals": "17.0.0",
