@@ -1,6 +1,6 @@
 import i18n from '../i18n'
 import { showText } from '../utils'
-import { PublishManger } from '../publisher/publishManger'
+import { PublishManager } from '../publisher/publishManager'
 import { defineCommand } from './command'
 
 function fmt(t: string, vars: Record<string, string | number>) {
@@ -40,7 +40,7 @@ export const unpublishCommand = defineCommand({
     }
 
     try {
-      await PublishManger.unpublish(parsed.scope, parsed.name, parsed.version)
+      await PublishManager.unpublish(parsed.scope, parsed.name, parsed.version)
       showText(
         fmt(i18n.unpublish.success, {
           pkg: `${parsed.scope}/${parsed.name}`,

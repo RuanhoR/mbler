@@ -32,10 +32,10 @@ vi.mock('../../src/logger', () => ({
   },
 }))
 
-import { ConfigManger } from '../../src/publisher/configManger'
+import { ConfigManager } from '../../src/publisher/configManager'
 
 function resetState() {
-  const c = ConfigManger as unknown as Record<string, unknown>
+  const c = ConfigManager as unknown as Record<string, unknown>
   c.cacheValue = {}
   c.currentConfigPath = ''
   c.lastAccess = 0
@@ -43,7 +43,7 @@ function resetState() {
   c.lockResolver = null
 }
 
-describe('ConfigManger', () => {
+describe('ConfigManager', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     resetState()
@@ -54,11 +54,11 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockResolvedValue(true)
       mockReadJSON.mockResolvedValue({ myKey: 'myValue' })
 
-      const result = await ConfigManger.getKey<string>('myKey')
+      const result = await ConfigManager.getKey<string>('myKey')
       expect(result).toBe('myValue')
       // ensureConfigFile parses the config, loadConfigToCache also parses it
       expect(mockReadJSON).toHaveBeenCalledWith('/mock/config.json')
@@ -68,19 +68,19 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockResolvedValue(true)
       mockReadJSON.mockResolvedValue({ cachedKey: 'cachedValue' })
 
       // First call populates cache
-      const result1 = await ConfigManger.getKey<string>('cachedKey')
+      const result1 = await ConfigManager.getKey<string>('cachedKey')
       expect(result1).toBe('cachedValue')
 
       // Clear the readJSON spy so we can detect new calls
       mockReadJSON.mockClear()
 
       // Second call should use cache, not reload from file
-      const result2 = await ConfigManger.getKey<string>('cachedKey')
+      const result2 = await ConfigManager.getKey<string>('cachedKey')
       expect(result2).toBe('cachedValue')
 
       // ensureConfigFile still calls readJSON to validate, but loadConfigToCache should NOT
@@ -92,11 +92,11 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockResolvedValue(true)
       mockReadJSON.mockResolvedValue({})
 
-      const result = await ConfigManger.getKey<string>('nonexistent')
+      const result = await ConfigManager.getKey<string>('nonexistent')
       expect(result).toBeUndefined()
     })
 
@@ -104,10 +104,10 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockRejectedValue(new Error('File error'))
 
-      const result = await ConfigManger.getKey<string>('any')
+      const result = await ConfigManager.getKey<string>('any')
       expect(result).toBeUndefined()
     })
   })
@@ -117,15 +117,15 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockResolvedValue(true)
       mockReadJSON.mockResolvedValue({})
       mockWriteJSON.mockResolvedValue(undefined)
 
-      const result = await ConfigManger.setKey('myKey', 'myValue')
+      const result = await ConfigManager.setKey('myKey', 'myValue')
       expect(result).toBe(true)
       expect(mockWriteJSON).toHaveBeenCalled()
-      const c = ConfigManger as unknown as Record<string, unknown>
+      const c = ConfigManager as unknown as Record<string, unknown>
       expect((c.cacheValue as Record<string, unknown>).myKey).toBe('myValue')
     })
 
@@ -133,13 +133,13 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockResolvedValue(true)
       mockReadJSON.mockResolvedValue({ existingKey: 'oldValue' })
       mockWriteJSON.mockResolvedValue(undefined)
 
-      await ConfigManger.setKey('existingKey', 'newValue')
-      const c = ConfigManger as unknown as Record<string, unknown>
+      await ConfigManager.setKey('existingKey', 'newValue')
+      const c = ConfigManager as unknown as Record<string, unknown>
       expect((c.cacheValue as Record<string, unknown>).existingKey).toBe(
         'newValue'
       )
@@ -149,10 +149,10 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockRejectedValue(new Error('disk full'))
 
-      const result = await ConfigManger.setKey('key', 'val')
+      const result = await ConfigManager.setKey('key', 'val')
       expect(result).toBe(false)
     })
   })
@@ -162,11 +162,11 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockResolvedValue(false)
       mockWriteJSON.mockResolvedValue(undefined)
 
-      await ConfigManger.init({ initialized: true })
+      await ConfigManager.init({ initialized: true })
       expect(mockWriteJSON).toHaveBeenCalledWith('/mock/config.json', {
         initialized: true,
       })
@@ -176,10 +176,10 @@ describe('ConfigManger', () => {
       mockReadFile.mockResolvedValue(
         JSON.stringify({ point: '/mock/config.json' })
       )
-      ConfigManger.defaultConfigPoint = '/mock/config.json'
+      ConfigManager.defaultConfigPoint = '/mock/config.json'
       mockFileExists.mockResolvedValue(true)
 
-      await ConfigManger.init({ initialized: true })
+      await ConfigManager.init({ initialized: true })
       expect(mockWriteJSON).not.toHaveBeenCalled()
     })
   })
@@ -190,7 +190,7 @@ describe('ConfigManger', () => {
         JSON.stringify({ point: '/custom/config.json', update: '2024-01-01' })
       )
 
-      const point = await ConfigManger.getConfigPoint()
+      const point = await ConfigManager.getConfigPoint()
       expect(point).toBe('/custom/config.json')
     })
 
@@ -199,8 +199,8 @@ describe('ConfigManger', () => {
       mockFileExists.mockResolvedValue(false)
       mockWriteJSON.mockResolvedValue(undefined)
 
-      const point = await ConfigManger.getConfigPoint()
-      expect(point).toBe(ConfigManger.defaultConfigPoint)
+      const point = await ConfigManager.getConfigPoint()
+      expect(point).toBe(ConfigManager.defaultConfigPoint)
     })
   })
 })

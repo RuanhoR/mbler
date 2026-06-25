@@ -1,6 +1,6 @@
 import * as path from 'node:path'
 import { MblerConfigData } from '../types'
-import { FileExist, isValidVersion, readFileAsJson, showText } from '../utils'
+import { fileExists, isValidVersion, readFileAsJson, showText } from '../utils'
 import MBLERVersion from '../version'
 import { BuildConfig } from '../build/config'
 import { defineCommand } from './command'
@@ -36,7 +36,7 @@ export const versionCommand = defineCommand({
   async handler(ctx) {
     const newVersion = ctx.args.version
     if (newVersion) {
-      if (!(await FileExist(ctx.workDir))) {
+      if (!(await fileExists(ctx.workDir))) {
         showText("can't set workdir version, because not exists")
         return 1
       }

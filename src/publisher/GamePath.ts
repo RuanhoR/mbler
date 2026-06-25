@@ -1,6 +1,6 @@
 import i18n from '../i18n'
 import { input } from '../utils'
-import { ConfigManger } from './configManger'
+import { ConfigManager } from './configManager'
 
 export class GamePath {
   /**
@@ -14,16 +14,16 @@ export class GamePath {
       throw new Error('No path provided')
     }
     if (autoset) {
-      ConfigManger.setKey('gamePath', result)
+      ConfigManager.setKey('gamePath', result)
     }
     return result
   }
   static async getPath(): Promise<string | null> {
-    const path = await ConfigManger.getKey<string>('gamePath')
+    const path = await ConfigManager.getKey<string>('gamePath')
     return path || null
   }
   static async clearPath() {
-    await ConfigManger.setKey('gamePath', '')
+    await ConfigManager.setKey('gamePath', '')
   }
   static async getPathWithASK(): Promise<string> {
     let path = await this.getPath()

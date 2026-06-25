@@ -1,6 +1,6 @@
 import { showText } from '../utils'
-import { PublishManger } from '../publisher/publishManger'
-import { TokenManger } from '../publisher/tokenManger'
+import { PublishManager } from '../publisher/publishManager'
+import { TokenManager } from '../publisher/tokenManager'
 import i18n from '../i18n'
 import { defineCommand } from './command'
 
@@ -32,13 +32,13 @@ export const publishCommand = defineCommand({
     const buildRaw = (ctx.opts.build || '').trim().toLowerCase()
     const buildMode = buildRaw === 'skip' ? 'skip' : 'enable'
     try {
-      await TokenManger.waitVeirfy()
-      if (!TokenManger.isLogin) {
+      await TokenManager.waitVerify()
+      if (!TokenManager.isLogin) {
         showText(i18n.publish.notLoggedIn)
         return -1
       }
 
-      await PublishManger.publish(ctx.workDir, {
+      await PublishManager.publish(ctx.workDir, {
         build: buildMode,
         tag,
         onProgress: (progress) =>

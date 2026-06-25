@@ -6,8 +6,8 @@ vi.stubGlobal('fetch', mockFetch)
 const mockSetKey = vi.hoisted(() => vi.fn())
 const mockGetKey = vi.hoisted(() => vi.fn())
 
-vi.mock('../../src/publisher/configManger', () => ({
-  ConfigManger: {
+vi.mock('../../src/publisher/configManager', () => ({
+  ConfigManager: {
     setKey: mockSetKey,
     getKey: mockGetKey,
   },
@@ -19,10 +19,10 @@ vi.mock('../../src/config', () => ({
   },
 }))
 
-import { TokenManger } from '../../src/publisher/tokenManger'
+import { TokenManager } from '../../src/publisher/tokenManager'
 
 function resetState() {
-  const t = TokenManger as unknown as Record<string, unknown>
+  const t = TokenManager as unknown as Record<string, unknown>
   t.memoryToken = null
   t.isLogin = false
   t.isLoading = true
@@ -30,7 +30,7 @@ function resetState() {
   t.task = undefined
 }
 
-describe('TokenManger', () => {
+describe('TokenManager', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     resetState()
@@ -48,11 +48,11 @@ describe('TokenManger', () => {
           }),
       })
 
-      await TokenManger.setToken('valid-token')
-      expect(TokenManger.memoryToken).toBe('valid-token')
+      await TokenManager.setToken('valid-token')
+      expect(TokenManager.memoryToken).toBe('valid-token')
       expect(mockSetKey).toHaveBeenCalledWith('token', 'valid-token')
-      expect(TokenManger.isLogin).toBe(true)
-      expect(TokenManger.user).toEqual({
+      expect(TokenManager.isLogin).toBe(true)
+      expect(TokenManager.user).toEqual({
         name: 'testuser',
         uid: 1,
         mail: 'a@b.com',
@@ -63,7 +63,7 @@ describe('TokenManger', () => {
     it('should throw if config save fails', async () => {
       mockSetKey.mockResolvedValue(false)
 
-      await expect(TokenManger.setToken('token')).rejects.toThrow(
+      await expect(TokenManager.setToken('token')).rejects.toThrow(
         'Failed to store token'
       )
     })
@@ -79,8 +79,8 @@ describe('TokenManger', () => {
           }),
       })
 
-      await TokenManger.setToken('  spaced-token  ')
-      expect(TokenManger.memoryToken).toBe('spaced-token')
+      await TokenManager.setToken('  spaced-token  ')
+      expect(TokenManager.memoryToken).toBe('spaced-token')
     })
   })
 
@@ -95,10 +95,10 @@ describe('TokenManger', () => {
           }),
       })
 
-      await TokenManger.requestAPI('valid-token')
-      expect(TokenManger.isLogin).toBe(true)
-      expect(TokenManger.isLoading).toBe(false)
-      expect(TokenManger.user?.name).toBe('user')
+      await TokenManager.requestAPI('valid-token')
+      expect(TokenManager.isLogin).toBe(true)
+      expect(TokenManager.isLoading).toBe(false)
+      expect(TokenManager.user?.name).toBe('user')
     })
 
     it('should set isLogin false on API error', async () => {
@@ -107,23 +107,23 @@ describe('TokenManger', () => {
         json: () => Promise.resolve({ code: 400 }),
       })
 
-      await TokenManger.requestAPI('bad-token')
-      expect(TokenManger.isLogin).toBe(false)
-      expect(TokenManger.isLoading).toBe(false)
+      await TokenManager.requestAPI('bad-token')
+      expect(TokenManager.isLogin).toBe(false)
+      expect(TokenManager.isLoading).toBe(false)
     })
 
     it('should handle network errors gracefully', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'))
 
-      await TokenManger.requestAPI('some-token')
-      expect(TokenManger.isLogin).toBe(false)
-      expect(TokenManger.isLoading).toBe(false)
+      await TokenManager.requestAPI('some-token')
+      expect(TokenManager.isLogin).toBe(false)
+      expect(TokenManager.isLoading).toBe(false)
     })
 
     it('should skip when no token provided', async () => {
-      await TokenManger.requestAPI()
+      await TokenManager.requestAPI()
       expect(mockFetch).not.toHaveBeenCalled()
-      expect(TokenManger.isLoading).toBe(false)
+      expect(TokenManager.isLoading).toBe(false)
     })
   })
 
@@ -131,7 +131,7 @@ describe('TokenManger', () => {
     it('should return token from config', async () => {
       mockGetKey.mockResolvedValue('stored-token')
 
-      const token = await TokenManger.getToken()
+      const token = await TokenManager.getToken()
       expect(token).toBe('stored-token')
       expect(mockGetKey).toHaveBeenCalledWith('token')
     })
@@ -139,14 +139,14 @@ describe('TokenManger', () => {
     it('should return undefined when no token', async () => {
       mockGetKey.mockResolvedValue(undefined)
 
-      const token = await TokenManger.getToken()
+      const token = await TokenManager.getToken()
       expect(token).toBeUndefined()
     })
   })
 
   describe('init', () => {
     it('should verify token from memory', async () => {
-      TokenManger.memoryToken = 'mem-token'
+      TokenManager.memoryToken = 'mem-token'
       mockFetch.mockResolvedValue({
         ok: true,
         json: () =>
@@ -156,8 +156,8 @@ describe('TokenManger', () => {
           }),
       })
 
-      await TokenManger.init()
-      expect(TokenManger.isLogin).toBe(true)
+      await TokenManager.init()
+      expect(TokenManager.isLogin).toBe(true)
     })
 
     it('should verify token from config when no memory token', async () => {
@@ -176,16 +176,16 @@ describe('TokenManger', () => {
           }),
       })
 
-      await TokenManger.init()
+      await TokenManager.init()
       expect(mockGetKey).toHaveBeenCalledWith('token')
     })
 
     it('should set loading false when no token found', async () => {
       mockGetKey.mockResolvedValue(undefined)
 
-      await TokenManger.init()
-      expect(TokenManger.isLoading).toBe(false)
-      expect(TokenManger.isLogin).toBe(false)
+      await TokenManager.init()
+      expect(TokenManager.isLoading).toBe(false)
+      expect(TokenManager.isLogin).toBe(false)
     })
   })
 })

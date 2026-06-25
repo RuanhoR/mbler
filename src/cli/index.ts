@@ -4,7 +4,7 @@ import i18n from '../i18n'
 import Logger from '../logger'
 import { showText } from '../utils'
 import path from 'node:path'
-import WorkDirManage from './WorkDirManage'
+import WorkDirManager from './WorkDirManager'
 import { CommandDef, parseArgs, parseRawParams } from './command'
 
 import { configCommand } from './config'
@@ -59,7 +59,7 @@ function defaultCommand(commandcc: string): void {
 }
 
 const main = (function () {
-  let currentWDManage: WorkDirManage
+  let currentWDManager: WorkDirManager
 
   const importBuild = async () => {
     const { build } =
@@ -105,9 +105,9 @@ const main = (function () {
       args: [{ name: 'path', description: 'Working directory path' }],
       options: [],
       async handler(ctx) {
-        if (!currentWDManage) return 0
+        if (!currentWDManager) return 0
         if (ctx.args.path) {
-          showText(await currentWDManage.set(path.resolve(ctx.args.path)))
+          showText(await currentWDManager.set(path.resolve(ctx.args.path)))
         } else {
           showText(ctx.workDir)
         }
@@ -127,13 +127,13 @@ const main = (function () {
       ],
       options: [],
       async handler(ctx) {
-        if (!currentWDManage) return 0
+        if (!currentWDManager) return 0
         const param = ctx.args.mode
         if (param === 'off') {
-          await currentWDManage.setDisabled(true)
+          await currentWDManager.setDisabled(true)
           showText(i18n.workdir.disabled)
         } else if (param === 'on') {
-          await currentWDManage.setDisabled(false)
+          await currentWDManager.setDisabled(false)
           showText(i18n.workdir.enabled)
         } else {
           showText(i18n.workdir.invalidParam)
@@ -222,12 +222,12 @@ const main = (function () {
     const cmdName = raw.params[0] || ''
 
     if (raw.opts.cwp) {
-      currentWDManage = new WorkDirManage(path.resolve(raw.opts.cwp))
+      currentWDManager = new WorkDirManager(path.resolve(raw.opts.cwp))
     } else {
-      currentWDManage = new WorkDirManage()
+      currentWDManager = new WorkDirManager()
     }
 
-    const workDir = await currentWDManage.get()
+    const workDir = await currentWDManager.get()
 
     if (!cmdName) {
       showText(i18n.description)

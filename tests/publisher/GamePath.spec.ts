@@ -12,8 +12,8 @@ vi.mock('../../src/utils', async (importOriginal) => {
   }
 })
 
-vi.mock('../../src/publisher/configManger', () => ({
-  ConfigManger: {
+vi.mock('../../src/publisher/configManager', () => ({
+  ConfigManager: {
     setKey: mockSetKey,
     getKey: mockGetKey,
   },

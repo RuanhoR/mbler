@@ -10,14 +10,14 @@ import { generateRelease } from '../build/release'
 import config from '../config'
 import { PublishMetadata } from '../types'
 import { readFile } from 'node:fs/promises'
-import { TokenManger } from './tokenManger'
+import { TokenManager } from './tokenManager'
 import i18n from '../i18n'
 
 function fmt(t: string, vars: Record<string, string | number>) {
   return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''))
 }
 
-export class PublishManger {
+export class PublishManager {
   static async publish(
     projectPath: string,
     options: {
@@ -27,7 +27,7 @@ export class PublishManger {
       tag?: string
     }
   ) {
-    if (TokenManger.isLoading) await TokenManger.init()
+    if (TokenManager.isLoading) await TokenManager.init()
     if (!(await fileExists(projectPath))) {
       throw new Error(i18n.publish.projectPathNotExist)
     }
@@ -111,8 +111,8 @@ export class PublishManger {
     await generateRelease(option)
     onProgress(70)
     onMessage(i18n.publish.publishToMarket)
-    const session = await PublishManger.createSession(metadata)
-    await PublishManger.publishToMarketplace(outputPath, session)
+    const session = await PublishManager.createSession(metadata)
+    await PublishManager.publishToMarketplace(outputPath, session)
     onProgress(100)
     onMessage(i18n.publish.publishSuccess)
     onMessage(
@@ -124,9 +124,9 @@ export class PublishManger {
     )
   }
   static async unpublish(scope: string, name: string, version: string) {
-    if (TokenManger.isLoading) await TokenManger.waitVeirfy()
-    if (!TokenManger.isLogin) throw new Error(i18n.publish.notLoginError)
-    const token = await TokenManger.getToken()
+    if (TokenManager.isLoading) await TokenManager.waitVerify()
+    if (!TokenManager.isLogin) throw new Error(i18n.publish.notLoginError)
+    const token = await TokenManager.getToken()
     if (!token) throw new Error(i18n.publish.tokenMissing)
     const response = await fetch(
       `${config.defaultPmnxBASE}/unpublish/${scope}/${name}/${version}`,
@@ -149,9 +149,9 @@ export class PublishManger {
     return true
   }
   static async createSession(metadata: PublishMetadata) {
-    if (TokenManger.isLoading) await TokenManger.waitVeirfy()
-    if (!TokenManger.isLogin) throw new Error(i18n.publish.notLoginError)
-    const token = await TokenManger.getToken()
+    if (TokenManager.isLoading) await TokenManager.waitVerify()
+    if (!TokenManager.isLogin) throw new Error(i18n.publish.notLoginError)
+    const token = await TokenManager.getToken()
     if (!token) throw new Error(i18n.publish.tokenMissing)
     const response = await fetch(
       `${config.defaultPmnxBASE}/publish/session/${metadata.scope}/${metadata.name}/create`,
@@ -189,7 +189,7 @@ export class PublishManger {
       'file',
       new File([fileBit], fileName, { type: 'application/zip' })
     )
-    const token = await TokenManger.getToken()
+    const token = await TokenManager.getToken()
     if (!token) throw new Error(i18n.publish.tokenMissing)
     const response = await fetch(
       `${config.defaultPmnxBASE}/publish/session/${session}/upload`,

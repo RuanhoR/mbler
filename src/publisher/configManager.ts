@@ -4,7 +4,7 @@ import config from '../config'
 import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import Logger from '../logger'
-export class ConfigManger {
+export class ConfigManager {
   /**
    * @description Mbler Config File Default Point
    */
@@ -142,7 +142,7 @@ export class ConfigManger {
       return true
     } catch (error) {
       Logger.e(
-        'ConfigManger',
+        'ConfigManager',
         'Failed to set key: ' +
           (error instanceof Error ? error.message : String(error))
       )

@@ -63,11 +63,11 @@ vi.mock('../../src/i18n', () => ({
   },
 }))
 
-import { PublishManger } from '../../src/publisher/publishManger'
-import { TokenManger } from '../../src/publisher/tokenManger'
+import { PublishManager } from '../../src/publisher/publishManager'
+import { TokenManager } from '../../src/publisher/tokenManager'
 
 function resetTokenState() {
-  const t = TokenManger as unknown as Record<string, unknown>
+  const t = TokenManager as unknown as Record<string, unknown>
   t.memoryToken = null
   t.isLogin = false
   t.isLoading = false
@@ -89,7 +89,7 @@ function setupConfigWithToken(token: string) {
   mockReadFileAsJson.mockResolvedValue({ token })
 }
 
-describe('PublishManger', () => {
+describe('PublishManager', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     resetTokenState()
@@ -97,7 +97,7 @@ describe('PublishManger', () => {
 
   describe('unpublish', () => {
     it('should send unpublish request with token', async () => {
-      const t = TokenManger as unknown as Record<string, unknown>
+      const t = TokenManager as unknown as Record<string, unknown>
       t.isLogin = true
       t.isLoading = false
       setupConfigWithToken('valid-token')
@@ -107,7 +107,7 @@ describe('PublishManger', () => {
         json: () => Promise.resolve({ code: 200, data: {} }),
       })
 
-      await PublishManger.unpublish('@scope', 'pkg', '1.0.0')
+      await PublishManager.unpublish('@scope', 'pkg', '1.0.0')
       expect(mockFetch).toHaveBeenCalledWith(
         'https://d.pmnx.qzz.io/unpublish/@scope/pkg/1.0.0',
         expect.objectContaining({
@@ -120,19 +120,19 @@ describe('PublishManger', () => {
     })
 
     it('should throw when not logged in', async () => {
-      const t = TokenManger as unknown as Record<string, unknown>
+      const t = TokenManager as unknown as Record<string, unknown>
       t.isLogin = false
       t.isLoading = false
 
       await expect(
-        PublishManger.unpublish('@s', 'n', '1.0.0')
+        PublishManager.unpublish('@s', 'n', '1.0.0')
       ).rejects.toThrow('Not logged in')
     })
   })
 
   describe('createSession', () => {
     it('should create session and return session key', async () => {
-      const t = TokenManger as unknown as Record<string, unknown>
+      const t = TokenManager as unknown as Record<string, unknown>
       t.isLogin = true
       t.isLoading = false
       setupConfigWithToken('my-token')
@@ -145,7 +145,7 @@ describe('PublishManger', () => {
           }),
       })
 
-      const session = await PublishManger.createSession({
+      const session = await PublishManager.createSession({
         readme: 'readme content',
         scope: '@scope',
         name: 'pkg',
@@ -157,7 +157,7 @@ describe('PublishManger', () => {
     })
 
     it('should fallback to sessionId', async () => {
-      const t = TokenManger as unknown as Record<string, unknown>
+      const t = TokenManager as unknown as Record<string, unknown>
       t.isLogin = true
       t.isLoading = false
       setupConfigWithToken('my-token')
@@ -170,7 +170,7 @@ describe('PublishManger', () => {
           }),
       })
 
-      const session = await PublishManger.createSession({
+      const session = await PublishManager.createSession({
         readme: 'r',
         scope: '@s',
         name: 'n',
@@ -184,7 +184,7 @@ describe('PublishManger', () => {
 
   describe('publishToMarketplace', () => {
     it('should upload zip file successfully', async () => {
-      const t = TokenManger as unknown as Record<string, unknown>
+      const t = TokenManager as unknown as Record<string, unknown>
       t.isLogin = true
       t.isLoading = false
       setupConfigWithToken('upload-token')
@@ -194,7 +194,7 @@ describe('PublishManger', () => {
         json: () => Promise.resolve({ data: 'successfully uploaded' }),
       })
 
-      const result = await PublishManger.publishToMarketplace(
+      const result = await PublishManager.publishToMarketplace(
         '/tmp/file.zip',
         'session-123'
       )
@@ -202,7 +202,7 @@ describe('PublishManger', () => {
     })
 
     it('should throw on upload failure', async () => {
-      const t = TokenManger as unknown as Record<string, unknown>
+      const t = TokenManager as unknown as Record<string, unknown>
       t.isLogin = true
       t.isLoading = false
       setupConfigWithToken('token')
@@ -213,7 +213,7 @@ describe('PublishManger', () => {
       })
 
       await expect(
-        PublishManger.publishToMarketplace('/tmp/file.zip', 'session-123')
+        PublishManager.publishToMarketplace('/tmp/file.zip', 'session-123')
       ).rejects.toThrow('Failed to upload zip file')
     })
   })
@@ -222,7 +222,7 @@ describe('PublishManger', () => {
     it('should throw when package.json missing', async () => {
       mockReadFileAsJson.mockRejectedValue(new Error('ENOENT'))
 
-      await expect(PublishManger.buildProject('/project')).rejects.toThrow()
+      await expect(PublishManager.buildProject('/project')).rejects.toThrow()
     })
   })
 })

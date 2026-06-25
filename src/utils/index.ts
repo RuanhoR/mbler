@@ -5,15 +5,6 @@ import { Input } from '../commander'
 import { spawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
 import Logger from '../logger'
-export async function FileExist(file: string): Promise<boolean> {
-  try {
-    const f = await fs.stat(file)
-    if (f) return true
-  } catch {
-    return false
-  }
-  return false
-}
 export function join(baseDir: string, inputPath: string): string {
   return path.isAbsolute(inputPath) ? inputPath : path.join(baseDir, inputPath)
 }
@@ -116,7 +107,7 @@ export async function writeJSON(
   data: unknown
 ): Promise<void> {
   const content = JSON.stringify(data, null, 2)
-  if (!(await FileExist(path.dirname(filePath)))) {
+  if (!(await fileExists(path.dirname(filePath)))) {
     await fs
       .mkdir(path.dirname(filePath), { recursive: true })
       .catch(() => void 0)

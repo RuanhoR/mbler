@@ -1,5 +1,5 @@
 import { input, showText } from '../utils'
-import { TokenManger } from '../publisher/tokenManger'
+import { TokenManager } from '../publisher/tokenManager'
 import { defineCommand } from './command'
 
 export const loginCommand = defineCommand({
@@ -19,19 +19,19 @@ export const loginCommand = defineCommand({
       return -1
     }
     try {
-      const prevToken = await TokenManger.getToken()
-      await TokenManger.setToken(token.trim())
-      await TokenManger.waitVeirfy()
-      if (!TokenManger.isLogin) {
+      const prevToken = await TokenManager.getToken()
+      await TokenManager.setToken(token.trim())
+      await TokenManager.waitVerify()
+      if (!TokenManager.isLogin) {
         if (prevToken && typeof prevToken === 'string') {
-          await TokenManger.setToken(prevToken)
-          await TokenManger.waitVeirfy()
+          await TokenManager.setToken(prevToken)
+          await TokenManager.waitVerify()
         }
         showText('Login failed: invalid token')
         return -1
       }
       showText(
-        `Login successful: ${TokenManger.user?.name || 'unknown user'}`
+        `Login successful: ${TokenManager.user?.name || 'unknown user'}`
       )
       return 0
     } catch (error) {

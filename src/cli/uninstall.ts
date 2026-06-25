@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import i18n from '../i18n'
 import { showText } from '../utils'
 import { GamePath } from '../publisher/GamePath'
-import { ConfigManger } from '../publisher/configManger'
+import { ConfigManager } from '../publisher/configManager'
 import { defineCommand } from './command'
 
 function fmt(t: string, vars: Record<string, string | number>) {
@@ -57,11 +57,11 @@ export const uninstallCommand = defineCommand({
       await fs.rm(resourceDir, { recursive: true, force: true })
 
       const installed =
-        (await ConfigManger.getKey<Array<{ id: string }>>(
+        (await ConfigManager.getKey<Array<{ id: string }>>(
           'installedPackages'
         )) || []
       const filtered = installed.filter((pkg) => pkg.id !== id)
-      await ConfigManger.setKey('installedPackages', filtered)
+      await ConfigManager.setKey('installedPackages', filtered)
 
       showText(
         fmt(i18n.uninstall.success, {

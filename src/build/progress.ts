@@ -1,6 +1,6 @@
 import { styleText } from 'node:util'
 import { showText } from '../utils'
-export class Postgress {
+export class Progress {
   private max: number
   constructor(max: number) {
     this.max = max

@@ -1,5 +1,5 @@
 import i18n from '../i18n'
-import { InstallManger } from '../publisher/installManger'
+import { InstallManager } from '../publisher/installManager'
 import { showText } from '../utils'
 import { defineCommand } from './command'
 
@@ -40,9 +40,9 @@ export const viewCommand = defineCommand({
     try {
       let info
       try {
-        info = await InstallManger.info(parsed.scope, parsed.name)
+        info = await InstallManager.info(parsed.scope, parsed.name)
       } catch {
-        info = await InstallManger.info(parsed.scope.slice(1), parsed.name)
+        info = await InstallManager.info(parsed.scope.slice(1), parsed.name)
       }
       if (!info.versions || info.versions.length === 0) {
         showText(

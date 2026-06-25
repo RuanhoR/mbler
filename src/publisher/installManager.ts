@@ -2,7 +2,7 @@ import { writeFile } from 'node:fs/promises'
 import config from '../config'
 import { MNXPackageInfoResult, MNXPackageVersionInfoResult } from '../types'
 
-export class InstallManger {
+export class InstallManager {
   private static encodeScope(scope: string): string {
     return encodeURIComponent(scope.startsWith('@') ? scope : `@${scope}`)
   }

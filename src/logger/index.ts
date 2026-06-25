@@ -10,7 +10,7 @@ function _clean(promise: Promise<void>): () => void {
     })
   }
 }
-async function FileExist(file: string): Promise<boolean> {
+async function fileExists(file: string): Promise<boolean> {
   try {
     const f = await fs.stat(file)
     if (f) return true
@@ -23,12 +23,12 @@ function writeLog(logContent: string): void {
   async function write() {
     try {
       const dir = path.dirname(logFile)
-      if (!(await FileExist(dir))) {
+      if (!(await fileExists(dir))) {
         // ensure the directory exists, root-to-leaf
         await fs.mkdir(dir, { recursive: true }).catch(() => void 0)
       }
       // if file does not exist, create it (touch)
-      if (!(await FileExist(logFile))) {
+      if (!(await fileExists(logFile))) {
         await fs.writeFile(logFile, '')
       }
     } catch (err) {

@@ -1,13 +1,13 @@
 import { PMNXProfile } from '../types'
 import config from './../config'
-import { ConfigManger } from './configManger'
+import { ConfigManager } from './configManager'
 
-export class TokenManger {
+export class TokenManager {
   static memoryToken: string | null = null
   static async setToken(newToken: string) {
     const token = newToken.trim()
     this.memoryToken = token
-    const saved = await ConfigManger.setKey<string>('token', token)
+    const saved = await ConfigManager.setKey<string>('token', token)
     if (!saved) {
       throw new Error('Failed to store token')
     }
@@ -15,7 +15,7 @@ export class TokenManger {
     await this.task
   }
   static getToken(): Promise<string | void> {
-    return ConfigManger.getKey<string>('token')
+    return ConfigManager.getKey<string>('token')
   }
   static isLogin: boolean = false
   static task: Promise<void>
@@ -30,7 +30,7 @@ export class TokenManger {
       this.isLoading = false
     }
   }
-  static async waitVeirfy() {
+  static async waitVerify() {
     if (!this.task) await this.init()
     return await this.task
   }

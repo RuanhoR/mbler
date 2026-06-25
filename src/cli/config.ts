@@ -1,5 +1,5 @@
 import i18n from '../i18n'
-import { ConfigManger } from '../publisher/configManger'
+import { ConfigManager } from '../publisher/configManager'
 import { showText } from '../utils'
 import { defineCommand } from './command'
 
@@ -50,7 +50,7 @@ export const configCommand = defineCommand({
           showText(i18n.config.missingArg)
           return -1
         }
-        const value = await ConfigManger.getKey<unknown>(key)
+        const value = await ConfigManager.getKey<unknown>(key)
         showText(
           fmt(i18n.config.getResult, { key, value: valueToString(value) })
         )
@@ -65,7 +65,7 @@ export const configCommand = defineCommand({
           return -1
         }
         const value = parseValue(raw)
-        const ok = await ConfigManger.setKey(key, value)
+        const ok = await ConfigManager.setKey(key, value)
         if (!ok) {
           showText(fmt(i18n.config.failed, { error: 'write failed' }))
           return -1
@@ -79,12 +79,12 @@ export const configCommand = defineCommand({
       if (sub === 'point') {
         const next = ctx.args.key
         if (!next || next === 'get') {
-          const point = await ConfigManger.getConfigPoint()
+          const point = await ConfigManager.getConfigPoint()
           showText(fmt(i18n.config.pointGet, { path: point }))
           return 0
         }
         try {
-          await ConfigManger.setConfigPoint(next)
+          await ConfigManager.setConfigPoint(next)
           showText(fmt(i18n.config.pointSetSuccess, { path: next }))
           return 0
         } catch (error) {

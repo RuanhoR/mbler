@@ -8,23 +8,23 @@ const configPath = path.join(
   homedir(), // ~/.cache/mbler/lang.db: push language config
   '.cache/mbler/lang.db'
 )
-function isLanguareName(
+function isLanguageName(
   language: string
 ): language is (typeof LanguageNames)[number] {
   return LanguageNames.includes(language)
 }
 class Lang {
-  currenyLang: (typeof LanguageNames)[number] = 'zh'
+  currentLang: (typeof LanguageNames)[number] = 'zh'
   init() {
     try {
       const TheyLang = fs.readFileSync(configPath, 'utf-8').toString().trim()
-      if (isLanguareName(TheyLang)) {
-        this.currenyLang = TheyLang
+      if (isLanguageName(TheyLang)) {
+        this.currentLang = TheyLang
       } else {
         throw new Error('[setup lang]: set lang error')
       }
     } catch {
-      this.currenyLang = 'zh'
+      this.currentLang = 'zh'
     }
   }
   set(newLang: (typeof LanguageNames)[number]) {
@@ -35,14 +35,14 @@ class Lang {
         })
       }
       fs.writeFileSync(configPath, newLang)
-      this.currenyLang = newLang
+      this.currentLang = newLang
       return true
     }
     return false
   }
   get() {
     try {
-      if (this.currenyLang == 'zh') return ZhLang
+      if (this.currentLang == 'zh') return ZhLang
       return enLang
     } catch {
       return ZhLang

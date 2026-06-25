@@ -3,9 +3,9 @@ import fs from 'node:fs/promises'
 import i18n from '../i18n'
 import config from '../config'
 import { GamePath } from '../publisher/GamePath'
-import { ConfigManger } from '../publisher/configManger'
+import { ConfigManager } from '../publisher/configManager'
 import { showText, compareVersion, isValidVersion } from '../utils'
-import { InstallManger } from '../publisher/installManger'
+import { InstallManager } from '../publisher/installManager'
 import { defineCommand } from './command'
 
 function fmt(t: string, vars: Record<string, string | number>) {
@@ -66,7 +66,7 @@ export const installCommand = defineCommand({
     showText(fmt(i18n.install.installing, { pkg }))
     try {
       if (!version) {
-        const pkgInfo = await InstallManger.info(scope, name)
+        const pkgInfo = await InstallManager.info(scope, name)
         if (!pkgInfo.versions || pkgInfo.versions.length === 0) {
           showText(
             fmt(i18n.install.packageNotFound, { pkg: `${scope}/${name}` })
@@ -93,7 +93,7 @@ export const installCommand = defineCommand({
         `${Date.now()}`
       )
       await fs.mkdir(tmpDir, { recursive: true })
-      await InstallManger.download(
+      await InstallManager.download(
         scope,
         name,
         version,
@@ -145,7 +145,7 @@ export const installCommand = defineCommand({
 
       const id = `${scope.slice(1)}-${name}-${version}`
       const installed =
-        (await ConfigManger.getKey<Array<Record<string, unknown>>>(
+        (await ConfigManager.getKey<Array<Record<string, unknown>>>(
           'installedPackages'
         )) || []
       for (const addon of addons) {
@@ -156,7 +156,7 @@ export const installCommand = defineCommand({
         await fs.cp(addon.root, dest, { recursive: true })
         installed.push({ id, scope, name, version, type: addon.type })
       }
-      await ConfigManger.setKey('installedPackages', installed)
+      await ConfigManager.setKey('installedPackages', installed)
 
       await fs.rm(tmpDir, { recursive: true, force: true })
       showText(

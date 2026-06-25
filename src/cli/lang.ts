@@ -11,9 +11,9 @@ export const langCommand = defineCommand({
   handler(ctx) {
     const show =
       ctx.args.language === undefined
-        ? i18n.__internal.class.currenyLang
+        ? i18n.__internal.class.currentLang
         : (i18n.__internal.set(ctx.args.language),
-          i18n.__internal.class.currenyLang)
+          i18n.__internal.class.currentLang)
     showText(show)
     return 0
   },

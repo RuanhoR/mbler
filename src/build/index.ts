@@ -18,14 +18,14 @@ import type {
   MblerConfigData,
 } from '../types'
 import {
-  FileExist,
+  fileExists,
   join,
   ReadProjectMblerConfig,
   showText,
   writeJSON,
 } from '../utils'
 import { BuildConfig } from './config'
-import { Postgress } from './postgress'
+import { Progress } from './progress'
 import type { CompileOpt } from '@mbler/mcx-types'
 import { styleText } from 'node:util'
 import type { LanguagePlugin } from '@volar/language-core'
@@ -196,7 +196,7 @@ class Build {
    */
   private async build() {
     const buildStart = performance.now()
-    const progress = new Postgress(100)
+    const progress = new Progress(100)
     this.init = true
     if (!isAbsolute(this.baseBuildDir)) {
       throw new Error('[init build]: build dir is not absolute path')
@@ -301,7 +301,7 @@ class Build {
         const srcScriptDir = path.join(this.srcDirs!.behavior, 'scripts')
         const outputDir = this.buildConfig?.outputDir || 'scripts'
         const outPath = path.join(this.outdirs!.behavior, outputDir)
-        if (await FileExist(srcScriptDir)) {
+        if (await fileExists(srcScriptDir)) {
           await fs.cp(srcScriptDir, outPath, { recursive: true, force: true })
         }
       }
@@ -360,13 +360,13 @@ class Build {
       'scripts',
       this.currentConfig.script.main
     )
-    if (!(await FileExist(main))) {
+    if (!(await fileExists(main))) {
       throw new Error(`[build addon]: main script not found: ${main}`)
     }
     const plugin: Plugin[] = []
     // moduleDir
     const moduleDir = path.join(this.baseBuildDir, 'node_modules')
-    if (!(await FileExist(moduleDir))) {
+    if (!(await fileExists(moduleDir))) {
       throw new Error(`[build addon]: node_modules not found: ${moduleDir}`)
     }
     // handle minify option
@@ -398,7 +398,7 @@ class Build {
       // mcx dsl plugin handle
       try {
         const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
-        if (!(await FileExist(tsconfigPath))) {
+        if (!(await fileExists(tsconfigPath))) {
           throw new Error(
             `[build addon]: tsconfig.json not found: ${tsconfigPath}`
           )
@@ -767,7 +767,7 @@ class Build {
     const generateManifest = require('./manifest').default
     const loadOtherManifest = async (moduleType: 'behavior' | 'resources') => {
       const filePath = path.join(this.srcDirs![moduleType], 'manifest.json')
-      if (await FileExist(filePath)) {
+      if (await fileExists(filePath)) {
         try {
           const content = await fs.readFile(filePath, 'utf-8')
           return JSON.parse(content) as ManifestData
@@ -838,7 +838,7 @@ class Build {
       throw new Error(
         '[build addon]: internal error: called before initialization'
       )
-    const isHasBp = await FileExist(this.srcDirs.behavior)
+    const isHasBp = await fileExists(this.srcDirs.behavior)
     if (!isHasBp)
       throw new Error('[build addon]: behavior source directory not found')
     // init copy resources
@@ -897,11 +897,11 @@ class Build {
       }
     }
     const tasks: Promise<void>[] = []
-    if (await FileExist(this.srcDirs.behavior)) {
+    if (await fileExists(this.srcDirs.behavior)) {
       this.module = 'behavior'
       tasks.push(handlerBP())
     }
-    if (await FileExist(this.srcDirs.resources)) {
+    if (await fileExists(this.srcDirs.resources)) {
       if (this.module == 'behavior') {
         this.module = 'all'
       } else {

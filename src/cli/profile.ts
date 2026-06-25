@@ -1,5 +1,5 @@
 import { showText } from '../utils'
-import { TokenManger } from '../publisher/tokenManger'
+import { TokenManager } from '../publisher/tokenManager'
 import i18n from '../i18n'
 import { defineCommand } from './command'
 
@@ -11,13 +11,13 @@ export const profileCommand = defineCommand({
   options: [],
   async handler(_ctx) {
     try {
-      await TokenManger.waitVeirfy()
-      if (!TokenManger.isLogin || !TokenManger.user) {
+      await TokenManager.waitVerify()
+      if (!TokenManager.isLogin || !TokenManager.user) {
         showText(i18n.publish.notLoggedIn)
         return -1
       }
 
-      const user = TokenManger.user
+      const user = TokenManager.user
       showText(`User: ${user.name}`)
       showText(`UID: ${user.uid}`)
       showText(`Mail: ${user.mail}`)

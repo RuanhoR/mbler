@@ -15,9 +15,9 @@ vi.mock('../../src/config', () => ({
   },
 }))
 
-import { InstallManger } from '../../src/publisher/installManger'
+import { InstallManager } from '../../src/publisher/installManager'
 
-describe('InstallManger', () => {
+describe('InstallManager', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -30,7 +30,7 @@ describe('InstallManger', () => {
       })
       mockWriteFile.mockResolvedValue(undefined)
 
-      await InstallManger.download('@scope', 'mypkg', '1.0.0', '/tmp/out.zip')
+      await InstallManager.download('@scope', 'mypkg', '1.0.0', '/tmp/out.zip')
       expect(mockFetch).toHaveBeenCalledWith(
         'https://d.pmnx.qzz.io/package/%40scope/mypkg/v/1.0.0/download'
       )
@@ -47,12 +47,12 @@ describe('InstallManger', () => {
       })
       mockWriteFile.mockResolvedValue(undefined)
 
-      await InstallManger.download('scope', 'pkg', '1.0.0', '/tmp/o.zip')
+      await InstallManager.download('scope', 'pkg', '1.0.0', '/tmp/o.zip')
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('%40scope')
       )
 
-      await InstallManger.download('@scope2', 'pkg', '1.0.0', '/tmp/o.zip')
+      await InstallManager.download('@scope2', 'pkg', '1.0.0', '/tmp/o.zip')
       expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('%40scope2')
       )
@@ -66,7 +66,7 @@ describe('InstallManger', () => {
       })
 
       await expect(
-        InstallManger.download('@s', 'n', '1.0.0', '/tmp/o.zip')
+        InstallManager.download('@s', 'n', '1.0.0', '/tmp/o.zip')
       ).rejects.toThrow('Failed to download package: 404 Not Found')
     })
   })
@@ -83,7 +83,7 @@ describe('InstallManger', () => {
         json: () => Promise.resolve({ code: 200, data: mockData }),
       })
 
-      const result = await InstallManger.info('@scope', 'mypkg')
+      const result = await InstallManager.info('@scope', 'mypkg')
       expect(result).toEqual(mockData)
       expect(mockFetch).toHaveBeenCalledWith(
         'https://d.pmnx.qzz.io/package/%40scope/mypkg/info'
@@ -97,7 +97,7 @@ describe('InstallManger', () => {
       })
 
       await expect(
-        InstallManger.info('@scope', 'mypkg')
+        InstallManager.info('@scope', 'mypkg')
       ).rejects.toThrow('Failed to get package info')
     })
   })
@@ -117,7 +117,7 @@ describe('InstallManger', () => {
         json: () => Promise.resolve({ code: 200, data: mockData }),
       })
 
-      const result = await InstallManger.versionInfo('@scope', 'pkg', '1.0.0')
+      const result = await InstallManager.versionInfo('@scope', 'pkg', '1.0.0')
       expect(result).toEqual(mockData)
     })
 
@@ -129,7 +129,7 @@ describe('InstallManger', () => {
       })
 
       await expect(
-        InstallManger.versionInfo('@s', 'n', '1.0.0')
+        InstallManager.versionInfo('@s', 'n', '1.0.0')
       ).rejects.toThrow('Failed to get package version info')
     })
   })
