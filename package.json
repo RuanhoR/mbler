@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@mbler/mcx": "0.0.3",
-    "@mbler/mcx-core": "0.1.2",
+    "@mbler/mcx-core": "0.1.2-rc.6",
     "@mbler/mcx-server": "0.1.1-rc.4",
     "@volar/language-core": "2.4.28",
     "@volar/typescript": "2.4.28",
