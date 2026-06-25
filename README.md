@@ -33,43 +33,32 @@ npm install -g mbler
 ## Quick Start
 
 ```bash
-# Initialize a new project
-mbler init
+pnpm create mbler
 
-# Build the addon
-mbler build
-
-# Build release .mcaddon package
-BUILD_MODULE=release mbler build
-
-# Watch for changes and rebuild
-mbler watch
-
-# Set working directory
-mbler work ./my-addon
+pnpm build
 ```
 
 ## CLI Commands
 
-| Command | Alias | Description |
-|---|---|---|
-| `help [command]` | `h` | Show help for a command |
-| `init [args...]` | | Initialize a project config file |
-| `build` | | Build the addon (behavior + resources) |
-| `watch` | | Watch mode with incremental rebuild |
-| `work [path]` | `c` | Set or display the working directory |
-| `set-work-dir <on\|off>` | | Enable/disable persistent working directory |
-| `version [version]` | | Show or set version; `-show commit\|version` |
-| `lang [zh\|en]` | | Switch CLI language |
-| `config <get\|set\|point> [key] [value]` | | Global configuration |
-| `publish` | | Publish to PMNX marketplace (`-tag`, `-build skip\|enable`) |
-| `unpublish <package>` | | Remove a package from PMNX |
-| `install <package>` | | Install a PMNX package |
-| `uninstall <package>` | | Remove a PMNX package |
-| `login [token]` | | Authenticate with PMNX marketplace |
-| `profile` | | View current user profile |
-| `view <package>` | | View package details |
-| `log <point\|clean>` | | Log management |
+| Command                                  | Alias | Description                                                 |
+| ---------------------------------------- | ----- | ----------------------------------------------------------- |
+| `help [command]`                         | `h`   | Show help for a command                                     |
+| `init [args...]`                         |       | Initialize a project config file                            |
+| `build`                                  |       | Build the addon (behavior + resources)                      |
+| `watch`                                  |       | Watch mode with incremental rebuild                         |
+| `work [path]`                            | `c`   | Set or display the working directory                        |
+| `set-work-dir <on\|off>`                 |       | Enable/disable persistent working directory                 |
+| `version [version]`                      |       | Show or set version; `-show commit\|version`                |
+| `lang [zh\|en]`                          |       | Switch CLI language                                         |
+| `config <get\|set\|point> [key] [value]` |       | Global configuration                                        |
+| `publish`                                |       | Publish to PMNX marketplace (`-tag`, `-build skip\|enable`) |
+| `unpublish <package>`                    |       | Remove a package from PMNX                                  |
+| `install <package>`                      |       | Install a PMNX package                                      |
+| `uninstall <package>`                    |       | Remove a PMNX package                                       |
+| `login [token]`                          |       | Authenticate with PMNX marketplace                          |
+| `profile`                                |       | View current user profile                                   |
+| `view <package>`                         |       | View package details                                        |
+| `log <point\|clean>`                     |       | Log management                                              |
 
 ## Configuration
 
@@ -85,10 +74,10 @@ export default defineConfig({
   mcVersion: '1.21.120',
   script: {
     main: 'index.ts',
-    lang: 'mcx',    // 'ts' | 'mcx' | 'js'
-    ui: true,       // enable @minecraft/server-ui
+    lang: 'mcx', // 'ts' | 'mcx' | 'js'
+    ui: true, // enable @minecraft/server-ui
   },
-  minify: false,    // 'oxc' | 'terser' | 'esbuild'
+  minify: false, // 'oxc' | 'terser' | 'esbuild'
   outdir: {
     behavior: './dist/dep',
     resources: './dist/res',
