@@ -377,7 +377,7 @@ class Build {
         )
       ) {
         throw new TypeError(
-          'ERR: [mbler]: mbler.config.js include inavild minify option: ' +
+          'ERR: [mbler]: mbler.config.js include invalid minify option: ' +
             this.currentConfig.minify
         )
       }

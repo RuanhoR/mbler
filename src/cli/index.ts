@@ -37,18 +37,11 @@ function defaultCommand(commandcc: string): void {
         cur: number,
         index: number
       ): { max: number; index: number; indices: number[] } => {
-        try {
-          if (cur > acc.max) {
-            return { max: cur, index: index, indices: [] }
-          } else if (cur === acc.max) {
-            acc.indices.push(index)
-            return acc
-          }
-        } catch (err) {
-          Logger.w(
-            'matchDefault',
-            (err as Error).stack || (err as Error).message
-          )
+        if (cur > acc.max) {
+          return { max: cur, index: index, indices: [] }
+        } else if (cur === acc.max) {
+          acc.indices.push(index)
+          return acc
         }
         return acc
       },
@@ -69,8 +62,11 @@ const main = (function () {
     return build
   }
 
-  const importWatch = () => {
-    const { watch } = require('mbler/build')
+  const importWatch = async () => {
+    const { watch } =
+      typeof require == 'function'
+        ? require('mbler/build')
+        : await import('mbler/build')
     return watch
   }
 
@@ -191,8 +187,8 @@ const main = (function () {
       description: i18n.help.watch,
       args: [],
       options: [],
-      handler(ctx) {
-        const watch = importWatch()
+      async handler(ctx) {
+        const watch = await importWatch()
         return watch({ params: [], opts: ctx.opts }, ctx.workDir) as number
       },
     },
