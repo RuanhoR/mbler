@@ -5,6 +5,7 @@ const mockInput = vi.hoisted(() => vi.fn())
 const mockGetToken = vi.hoisted(() => vi.fn())
 const mockSetToken = vi.hoisted(() => vi.fn())
 const mockWaitVerify = vi.hoisted(() => vi.fn())
+const mockTokenState = vi.hoisted(() => ({ isLogin: false, user: undefined as { name: string } | undefined }))
 
 vi.mock('../../src/utils', () => ({
   showText: mockShowText,
@@ -16,6 +17,8 @@ vi.mock('../../src/publisher/tokenManager', () => ({
     getToken: mockGetToken,
     setToken: mockSetToken,
     waitVerify: mockWaitVerify,
+    get isLogin() { return mockTokenState.isLogin },
+    get user() { return mockTokenState.user },
   },
 }))
 
@@ -24,14 +27,16 @@ import { loginCommand } from '../../src/cli/login'
 describe('loginCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockTokenState.isLogin = false
+    mockTokenState.user = undefined
   })
 
   it('should login with token from args', async () => {
     mockGetToken.mockResolvedValue(undefined)
     mockSetToken.mockResolvedValue(undefined)
     mockWaitVerify.mockResolvedValue(undefined)
-    const TokenManager = (await vi.importMock('../../src/publisher/tokenManager')).TokenManager
-    Object.assign(TokenManager, { isLogin: true, user: { name: 'testuser' } })
+    mockTokenState.isLogin = true
+    mockTokenState.user = { name: 'testuser' }
 
     const code = await loginCommand.handler({
       args: { token: 'valid-token' },
@@ -46,8 +51,8 @@ describe('loginCommand', () => {
     mockGetToken.mockResolvedValue(undefined)
     mockSetToken.mockResolvedValue(undefined)
     mockWaitVerify.mockResolvedValue(undefined)
-    const TokenManager = (await vi.importMock('../../src/publisher/tokenManager')).TokenManager
-    Object.assign(TokenManager, { isLogin: true, user: { name: 'u' } })
+    mockTokenState.isLogin = true
+    mockTokenState.user = { name: 'u' }
 
     const code = await loginCommand.handler({
       args: { token: undefined },

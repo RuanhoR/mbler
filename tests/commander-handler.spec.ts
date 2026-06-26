@@ -21,14 +21,14 @@ describe('Commander handler', () => {
   })
 
   it('should import commander module', async () => {
-    const mod = await import('../../src/commander/index')
+    const mod = await import('../src/commander/index')
     expect(mod.Input).toBeDefined()
     expect(mod.click).toBeDefined()
     expect(mod.onEnd).toBeDefined()
   })
 
   it('should handle onEnd registration', async () => {
-    const mod = await import('../../src/commander/index')
+    const mod = await import('../src/commander/index')
     const task = vi.fn()
     mod.onEnd(task)
     expect(task).not.toHaveBeenCalled()

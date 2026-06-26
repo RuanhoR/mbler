@@ -29,6 +29,7 @@ describe('Utils - ReadProjectMblerConfig', () => {
           mcVersion: '1.21.100',
         },
       }),
+      // @ts-expect-error virtual option supported at runtime
       { virtual: true }
     )
 
@@ -55,6 +56,7 @@ describe('Utils - ReadProjectMblerConfig', () => {
           mcVersion: '1.21.100',
         },
       }),
+      // @ts-expect-error virtual option supported at runtime
       { virtual: true }
     )
 

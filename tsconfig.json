@@ -35,7 +35,8 @@
   },
   "include": [
     "./src/**/*",
-    "rollup.config.mjs"
+    "rollup.config.mjs",
+    "./tests/**/*"
   ],
   "exclude": [
     "./src/template/**/*"

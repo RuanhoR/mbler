@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 const mockAppendFile = vi.hoisted(() => vi.fn())
 const mockMkdir = vi.hoisted(() => vi.fn())
@@ -23,7 +23,11 @@ import Logger from '../src/logger'
 describe('Logger', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     Logger.run = []
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   describe('i', () => {
@@ -37,7 +41,7 @@ describe('Logger', () => {
       await Promise.all(Logger.run)
 
       expect(mockAppendFile).toHaveBeenCalledOnce()
-      const call = mockAppendFile.mock.calls[0][1] as string
+      const call = mockAppendFile.mock.calls[0]?.[1] as string | undefined
       expect(call).toContain('[INFO TestTag]')
       expect(call).toContain('test message')
     })
@@ -51,7 +55,7 @@ describe('Logger', () => {
       Logger.w('WarnTag', 'warning message')
       await Promise.all(Logger.run)
 
-      const call = mockAppendFile.mock.calls[0][1] as string
+      const call = mockAppendFile.mock.calls[0]?.[1] as string | undefined
       expect(call).toContain('[WARN WarnTag]')
       expect(call).toContain('warning message')
     })
@@ -65,7 +69,7 @@ describe('Logger', () => {
       Logger.e('ErrTag', 'error message')
       await Promise.all(Logger.run)
 
-      const call = mockAppendFile.mock.calls[0][1] as string
+      const call = mockAppendFile.mock.calls[0]?.[1] as string | undefined
       expect(call).toContain('[ERROR ErrTag]')
       expect(call).toContain('error message')
     })
@@ -79,7 +83,7 @@ describe('Logger', () => {
       Logger.d('DebugTag', 'debug message')
       await Promise.all(Logger.run)
 
-      const call = mockAppendFile.mock.calls[0][1] as string
+      const call = mockAppendFile.mock.calls[0]?.[1] as string | undefined
       expect(call).toContain('[DEBUG DebugTag]')
       expect(call).toContain('debug message')
     })

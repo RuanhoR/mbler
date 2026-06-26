@@ -16,7 +16,7 @@ vi.mock('../../src/i18n', () => ({
   },
 }))
 
-import { Input } from '../../src/commander'
+import { Input } from '../src/commander'
 
 describe('Commander - Input.use', () => {
   beforeEach(() => {

@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+const mockShowText = vi.hoisted(() => vi.fn())
 const mockGetKey = vi.hoisted(() => vi.fn())
 const mockSetKey = vi.hoisted(() => vi.fn())
 const mockGetConfigPoint = vi.hoisted(() => vi.fn())
 const mockSetConfigPoint = vi.hoisted(() => vi.fn())
+
+vi.mock('../../src/utils', () => ({
+  showText: mockShowText,
+}))
 
 vi.mock('../../src/publisher/configManager', () => ({
   ConfigManager: {
