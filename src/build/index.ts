@@ -220,7 +220,6 @@ class Build {
     this.cacheManager = new BuildCacheManager(
       this.baseBuildDir,
       this.buildConfig?.cache,
-      this.isWatch,
       this.buildConfig?.cachePath
     )
     if (this.isDebug) {
@@ -624,7 +623,6 @@ class Build {
       this.cacheManager = new BuildCacheManager(
         this.baseBuildDir,
         this.buildConfig?.cache,
-        this.isWatch,
         this.buildConfig?.cachePath
       )
       this.loadData()
@@ -794,7 +792,10 @@ class Build {
       tasks.push(
         (async () => {
           otherManifestOption.resources = await loadOtherManifest('resources')
-          const manifest = await generateManifest(this.currentConfig!, 'resources')
+          const manifest = await generateManifest(
+            this.currentConfig!,
+            'resources'
+          )
           await writeJSON(path.join(this.outdirs!.resources, 'manifest.json'), {
             ...manifest,
             ...otherManifestOption.resources,

@@ -7,7 +7,6 @@ export class BuildCacheManager {
   constructor(
     _projectRoot: string,
     mode: BuildCacheMode | undefined,
-    private readonly isWatch: boolean,
     _cachePath?: string
   ) {
     this.mode = this.resolveMode(mode)
