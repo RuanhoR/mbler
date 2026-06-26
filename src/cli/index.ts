@@ -2,11 +2,10 @@ import { argv } from 'node:process'
 import { cmdList } from '../types'
 import i18n from '../i18n'
 import Logger from '../logger'
-import { showText } from '../utils'
+import { ReadProjectMblerConfig, showText } from '../utils'
 import path from 'node:path'
 import WorkDirManager from './WorkDirManager'
 import { CommandDef, parseArgs, parseRawParams } from './command'
-
 import { configCommand } from './config'
 import { initCommand } from './init'
 import { versionCommand } from './version'
@@ -59,7 +58,7 @@ const main = (function () {
       typeof require == 'function'
         ? require('mbler/build')
         : await import('mbler/build')
-    return build
+    return build as (typeof import('mbler/build'))['build']
   }
 
   const importWatch = async () => {
@@ -168,17 +167,49 @@ const main = (function () {
       args: [],
       options: [],
       async handler(ctx) {
-        if (process.env.DEBUG == 'true') {
-          const importStart = performance.now()
-          const build = await importBuild()
-          console.debug(
-            `[mbler DEBUG]: import build usage: ${performance.now() - importStart}ms`
-          )
-          return await build({ params: [], opts: ctx.opts }, ctx.workDir)
-        } else {
-          const build = await importBuild()
-          return await build({ params: [], opts: ctx.opts }, ctx.workDir)
+        const isDebug = process.env.DEBUG == 'true'
+        if (isDebug) {
+          const Module = require('module')
+          const originalRequire = Module.prototype.require
+          Module.prototype.require = function (id: string) {
+            const isCached = !!Module._cache[id]
+            const start = performance.now()
+            const result = originalRequire.call(this, id)
+            const duration = performance.now() - start
+
+            const status = isCached ? '[CACHED]' : '[FIRST]'
+            if (duration > 5) {
+              console.log(
+                `[mbler Module load DEBUG]: ${status} [${duration.toFixed(2)}ms] ${id}`
+              )
+            }
+
+            return result
+          }
         }
+        const startTime = performance.now()
+        const result = await Promise.all([
+          importBuild().then((r) => {
+            if (isDebug)
+              console.debug(
+                `[mbler DEBUG]: import builder usage: ${performance.now() - startTime}ms`
+              )
+            return r
+          }),
+          ReadProjectMblerConfig(ctx.workDir).then((r) => {
+            // perf: preload @mbler/mcx-core
+            if (r.script?.lang == 'mcx') {
+              import('@mbler/mcx-core')
+            }
+            if (isDebug)
+              console.debug(
+                `[mbler DEBUG]: load config usage time: ${performance.now() - startTime}ms`
+              )
+            return r
+          }),
+        ])
+        const builder = result[0]
+        return builder(result[1], ctx.workDir)
       },
     },
     {

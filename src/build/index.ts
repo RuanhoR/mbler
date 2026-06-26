@@ -47,31 +47,12 @@ class Build {
     | ((ts: typeof import('typescript')) => LanguagePlugin<unknown>)
     | null = null
   constructor(
-    opts: Record<string, string>,
+    config: MblerConfigData,
     private baseBuildDir: string,
     private resolve: (a: number) => void,
     private isWatch: boolean = false
   ) {
-    if (this.isDebug) {
-      const { performance } = require('perf_hooks')
-      const Module = require('module')
-      const originalRequire = Module.prototype.require
-      Module.prototype.require = function (id: string) {
-        const isCached = !!Module._cache[id]
-        const start = performance.now()
-        const result = originalRequire.call(this, id)
-        const duration = performance.now() - start
-
-        const status = isCached ? '🔄 CACHED' : '📦 FIRST'
-        if (duration > 5) {
-          console.log(
-            `[mbler Module load DEBUG]: ${status} [${duration.toFixed(2)}ms] ${id}`
-          )
-        }
-
-        return result
-      }
-    }
+    this.currentConfig = config
   }
   /**
    * Start the watch mode.
@@ -195,24 +176,14 @@ class Build {
    * emitted.
    */
   private async build() {
+    if (!this.currentConfig) {
+      throw new TypeError('[mbler Builder]: cannot load config')
+    }
     const buildStart = performance.now()
     const progress = new Progress(100)
     this.init = true
     if (!isAbsolute(this.baseBuildDir)) {
       throw new Error('[init build]: build dir is not absolute path')
-    }
-    /**
-     * on debug, show config load time
-     * This is for debug.
-     */
-    if (this.isDebug) {
-      const t0 = performance.now()
-      this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
-      console.debug(
-        `[mbler DEBUG] config loaded in ${(performance.now() - t0).toFixed(2)}ms`
-      )
-    } else {
-      this.currentConfig = await ReadProjectMblerConfig(this.baseBuildDir)
     }
     // save user build config
     if (this.currentConfig.build) this.buildConfig = this.currentConfig.build
@@ -326,7 +297,7 @@ class Build {
       progress.update(100)
       if (this.isDebug) {
         console.debug(
-          `[mbler DEBUG]: success build. usage time: ${performance.now() - buildStart}ms`
+          `[mbler DEBUG]: success build. build usage time: ${performance.now() - buildStart}ms`
         )
       }
     }
@@ -918,15 +889,15 @@ class Build {
     await Promise.all(tasks)
   }
 }
-function build(cliParam: CliParam, work: string): Promise<number> {
+function build(config: MblerConfigData, work: string): Promise<number> {
   return new Promise<number>((resolve) => {
-    new Build(cliParam.opts, work, resolve).start()
+    new Build(config, work, resolve).start()
   })
 }
-function watch(cliParam: CliParam, work: string): Promise<number> {
+function watch(config: MblerConfigData, work: string): Promise<number> {
   return new Promise<number>((resolve, reject) => {
     try {
-      const build = new Build(cliParam.opts, work, resolve, true)
+      const build = new Build(config, work, resolve, true)
       build.start().then(() => {
         build.watch()
         showText(
