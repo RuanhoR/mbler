@@ -11,12 +11,7 @@ import {
 } from 'rolldown'
 import { onEnd } from '../commander'
 import Logger from '../logger'
-import type {
-  CliParam,
-  ManifestData,
-  MblerBuildConfig,
-  MblerConfigData,
-} from '../types'
+import type { ManifestData, MblerBuildConfig, MblerConfigData } from '../types'
 import {
   fileExists,
   join,
