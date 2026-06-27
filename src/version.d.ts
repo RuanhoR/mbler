@@ -1,1 +1,5 @@
-export default { commit: string, version: string }
+interface ExportValue {
+  commit: string
+  version: string
+}
+export default ExportValue
