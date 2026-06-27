@@ -1,5 +1,6 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { MblerConfigData, templateMblerConfig } from '../types'
 import { Input } from '../commander'
 import { spawn } from 'node:child_process'
@@ -11,7 +12,7 @@ export function join(baseDir: string, inputPath: string): string {
 export async function ReadProjectMblerConfig(
   project: string
 ): Promise<MblerConfigData> {
-  const fileExport = await import(path.join(project, BuildConfig.ConfigFile))
+  const fileExport = await import(pathToFileURL(path.join(project, BuildConfig.ConfigFile)).href)
   const file = (fileExport as { default: MblerConfigData }).default || {}
   for (const key in file) {
     if (!(key in templateMblerConfig)) {
@@ -210,7 +211,7 @@ export function runCommand(
   )
   const p = spawn(param[0] as string, param.slice(1), {
     cwd: cwd,
-    shell: false,
+    shell: process.platform === 'win32',
     stdio: stdio,
     timeout: 1000 * 60 * 10,
   })

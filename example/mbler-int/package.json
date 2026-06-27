@@ -8,13 +8,14 @@
   "type": "module",
   "scripts": {
     "dev": "mbler dev",
-    "build": "BUILD_MODULE=release mbler build",
+    "build": "cross-env BUILD_MODULE=release mbler build",
     "dev-build": "mbler build"
   },
   "devDependencies": {
     "@minecraft/server": "^2.5.0",
     "@minecraft/server-ui": "^2.0.0",
     "@types/node": "^25.6.0",
+    "cross-env": "^7.0.3",
     "mbler": "0.2.4-rc.4",
     "typescript": "^6.0.2"
   }

@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.8-rc.2",
+  "version": "0.2.8-rc.3",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -49,7 +49,7 @@
   "dependencies": {
     "@mbler/mcx": "0.0.3",
     "@mbler/mcx-core": "0.1.2-rc.7",
-    "@mbler/mcx-server": "0.1.1-rc.4",
+    "@mbler/mcx-server": "0.1.1-rc.5",
     "@volar/language-core": "2.4.28",
     "@volar/typescript": "2.4.28",
     "adm-zip": "0.5.16",

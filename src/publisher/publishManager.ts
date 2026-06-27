@@ -237,7 +237,7 @@ export class PublishManager {
     }
     const pkgManager = (pkgData.packageManager as string) || 'npm'
     await new Promise((resolve, reject) => {
-      const child = spawn(pkgManager, ['run', 'build'], { cwd: projectPath })
+      const child = spawn(pkgManager, ['run', 'build'], { cwd: projectPath, shell: process.platform === 'win32' })
       child.on('close', (code) => {
         if (code === 0) {
           resolve(void 0)
