@@ -15,7 +15,7 @@ importers:
         specifier: 0.1.2-rc.7
         version: 0.1.2-rc.7(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
       '@mbler/mcx-server':
-        specifier: 0.1.1-rc.4
+        specifier: ^0.1.1-rc.4
         version: 0.1.1-rc.4(@minecraft/vanilla-data@1.26.21)(@volar/language-service@2.4.28)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
       '@volar/language-core':
         specifier: 2.4.28
