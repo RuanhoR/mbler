@@ -12,8 +12,8 @@ importers:
         specifier: 0.0.3
         version: 0.0.3
       '@mbler/mcx-core':
-        specifier: 0.1.2-rc.7
-        version: 0.1.2-rc.7(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
+        specifier: 0.1.2-rc.8
+        version: 0.1.2-rc.8(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
       '@mbler/mcx-server':
         specifier: ^0.1.1-rc.4
         version: 0.1.1-rc.4(@minecraft/vanilla-data@1.26.21)(@volar/language-service@2.4.28)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
@@ -392,8 +392,8 @@ packages:
       rolldown: 1.0.0-rc.18
       rollup: 4.59.0
 
-  '@mbler/mcx-core@0.1.2-rc.7':
-    resolution: {integrity: sha512-I/ciz3RohC39xMLsdAjq8im2/7Rh0V4d9WH+bKd8/VDL/e7b4u/sm981YN6fuyrOH+LHKUbvTH32LnManMOvAw==}
+  '@mbler/mcx-core@0.1.2-rc.8':
+    resolution: {integrity: sha512-wGW1+y6TflSVM/AP86vgyfDp1dguyF+XGD+3QlLJyLf+MOJVjplXPj9YYSCppEx/qz1JmFH5Y2zH+zVLeGde4Q==}
     peerDependencies:
       rolldown: 1.0.0-rc.18
       rollup: 4.59.0
@@ -1727,7 +1727,7 @@ snapshots:
 
   '@babel/generator@7.28.5':
     dependencies:
-      '@babel/parser': 7.28.5
+      '@babel/parser': 7.29.7
       '@babel/types': 7.29.7
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
@@ -1959,7 +1959,7 @@ snapshots:
     transitivePeerDependencies:
       - '@minecraft/vanilla-data'
 
-  '@mbler/mcx-core@0.1.2-rc.7(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)':
+  '@mbler/mcx-core@0.1.2-rc.8(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)':
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5

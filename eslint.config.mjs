@@ -10,7 +10,7 @@ export default [
       globals: globals.node,
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['eslint.config.mjs', 'rollup.config.mjs'],
+          allowDefaultProject: ['eslint.config.mjs', 'rollup.config.mjs', 'src/version.d.ts'],
         },
         tsconfigRootDir: import.meta.dirname,
       },
