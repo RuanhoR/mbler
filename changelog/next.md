@@ -55,3 +55,16 @@ This changelog tracks changes committed after the v0.2.8 release tag.
 - **fix**: Improved `sapi.ts` — fixed version comparison, added fetch retry, removed `_v` hack, improved types and error messages (`e3187a9`)
 - **feat**: Added `displayName` field for manifest `header.name` (`08e6da9`)
 - **feat**: Added validation to ensure name consistency between `mbler.config.js` and `package.json` (`5220017`)
+
+### 2026-06-21 — 2026-06-27
+
+- **test**: Increased coverage to ~68% with 39 test files and 204 tests; added coverage/ to .gitignore (`a025f7d`, `4af1ee2`, `568678f`)
+- **test**: Enhanced test coverage and improved mocking in various test files (`4af1ee2`)
+- **chore**: Updated LICENSE (`d378103`)
+- **refactor**: Updated Build constructor to accept `MblerConfigData` and streamlined config loading (`4b03f23`)
+- **fix**: Cross-platform compatibility — forward slash normalization for dynamic `import()` on Windows, `shell: true` for spawn on Windows (`1baf950`, `16d7601`)
+- **chore**: Updated dependencies — `@mbler/mcx-core` to 0.1.2-rc.8/rc.9, `@mbler/mcx` to 0.0.4-rc.1, `@mbler/mcx-types` to 0.0.4-rc.2 (`b9e6935`, `ea289dc`)
+
+### 2026-06-28
+
+- **chore**: Updated `@mbler/mcx` to 0.0.4-rc.1, `@mbler/mcx-core` to 0.1.2-rc.9, `@mbler/mcx-types` to 0.0.4-rc.2; published mbler@0.2.8-rc.4 (`ea289dc`)
