@@ -167,9 +167,9 @@ export const templateMblerConfig: MblerConfigData = {
     main: '',
   },
   outdir: {
-    behavior: '',
-    resources: '',
-    dist: '',
+    behavior: 'dist/dep',
+    resources: 'dist/res',
+    dist: 'dist-pkg',
   },
   build: {
     rollupPlugins: [],

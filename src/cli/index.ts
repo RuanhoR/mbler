@@ -219,8 +219,43 @@ const main = (function () {
       args: [],
       options: [],
       async handler(ctx) {
-        const watch = await importWatch()
-        return watch({ params: [], opts: ctx.opts }, ctx.workDir) as number
+        const isDebug = process.env.DEBUG == 'true'
+        if (isDebug) {
+          const Module = require('module')
+          const originalRequire = Module.prototype.require
+          Module.prototype.require = function (id: string) {
+            const isCached = !!Module._cache[id]
+            const start = performance.now()
+            const result = originalRequire.call(this, id)
+            const duration = performance.now() - start
+            const status = isCached ? '[CACHED]' : '[FIRST]'
+            if (duration > 5) {
+              console.log(
+                `[mbler Module load DEBUG]: ${status} [${duration.toFixed(2)}ms] ${id}`
+              )
+            }
+            return result
+          }
+        }
+        const startTime = performance.now()
+        const result = await Promise.all([
+          importWatch().then((r) => {
+            if (isDebug)
+              console.debug(
+                `[mbler DEBUG]: import watcher usage: ${performance.now() - startTime}ms`
+              )
+            return r
+          }),
+          ReadProjectMblerConfig(ctx.workDir).then((r) => {
+            if (isDebug)
+              console.debug(
+                `[mbler DEBUG]: load config usage time: ${performance.now() - startTime}ms`
+              )
+            return r
+          }),
+        ])
+        const watch = result[0]
+        return watch(result[1], ctx.workDir) as number
       },
     },
     initCommand,

@@ -1,7 +1,7 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { MblerConfigData, templateMblerConfig } from '../types'
+import { MblerBuildConfig, MblerConfigData, MblerConfigOutdir, templateMblerConfig } from '../types'
 import { Input } from '../commander'
 import { spawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
@@ -27,6 +27,8 @@ export async function ReadProjectMblerConfig(
   const config: MblerConfigData = {
     ...templateMblerConfig,
     ...file,
+    outdir: { ...templateMblerConfig.outdir, ...file.outdir } as MblerConfigOutdir,
+    build: { ...templateMblerConfig.build, ...file.build } as Partial<MblerBuildConfig>,
   }
   try {
     const pkgRaw = await fs.readFile(
