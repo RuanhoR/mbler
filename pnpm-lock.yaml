@@ -12,8 +12,8 @@ importers:
         specifier: 0.0.4-rc.1
         version: 0.0.4-rc.1
       '@mbler/mcx-core':
-        specifier: 0.1.2-rc.9
-        version: 0.1.2-rc.9(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
+        specifier: 0.1.2-rc.10
+        version: 0.1.2-rc.10(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
       '@mbler/mcx-server':
         specifier: ^0.1.2-rc.1
         version: 0.1.2-rc.1(@minecraft/vanilla-data@1.26.21)(@volar/language-service@2.4.28)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
@@ -386,8 +386,12 @@ packages:
     resolution: {integrity: sha512-CM+QKhw6C/tkvMcCz8OPfuCsYyAdaEWYKwQ9oI2d6SpoF4Dk7gB5QXTpcxxMTwvqZFNJEuZFCXyVEA3desZ3zA==}
     engines: {node: '>=20'}
 
-  '@mbler/mcx-core@0.1.2':
-    resolution: {integrity: sha512-jkswI/SihiDX7pgvN6Z2xhI+J4VIHbzX81Mg4T4vLeBTFelrclWbJhVh9MRMTKj1Nj6jzPMcWNyu6kGCkK6lrQ==}
+  '@mbler/mcx-component@0.0.0-alpha.2':
+    resolution: {integrity: sha512-94+CudsXyy2x1ryzHinvKKUUb6kTKhKBD1F9obThKfM1KdmpA9dwbt7Jmdq8pY2eOnemhFD3SG/bD/Dzi3sZng==}
+    engines: {node: '>=20'}
+
+  '@mbler/mcx-core@0.1.2-rc.10':
+    resolution: {integrity: sha512-ZNaKB377acV1F5wSLDadWBElTzDqB7R3jcAocdZW77hFqkz8++k2mhcYSKC/XmjWKqBSQ/Rz07/p1tAT4JwHnA==}
     peerDependencies:
       rolldown: 1.0.0-rc.18
       rollup: 4.59.0
@@ -1950,12 +1954,19 @@ snapshots:
     transitivePeerDependencies:
       - '@minecraft/vanilla-data'
 
-  '@mbler/mcx-core@0.1.2(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)':
+  '@mbler/mcx-component@0.0.0-alpha.2(@minecraft/vanilla-data@1.26.21)':
+    dependencies:
+      '@mbler/mcx-types': 0.0.4-rc.2(@minecraft/vanilla-data@1.26.21)
+    transitivePeerDependencies:
+      - '@minecraft/vanilla-data'
+
+  '@mbler/mcx-core@0.1.2-rc.10(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)':
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5
       '@babel/types': 7.28.6
-      '@mbler/mcx-types': 0.0.4-rc.1(@minecraft/vanilla-data@1.26.21)
+      '@mbler/mcx-component': 0.0.0-alpha.2(@minecraft/vanilla-data@1.26.21)
+      '@mbler/mcx-types': 0.0.4-rc.2(@minecraft/vanilla-data@1.26.21)
       '@volar/language-core': 2.4.28
       magic-string: 0.30.21
       rolldown: 1.0.0-rc.18
@@ -1982,7 +1993,7 @@ snapshots:
   '@mbler/mcx-server@0.1.2-rc.1(@minecraft/vanilla-data@1.26.21)(@volar/language-service@2.4.28)(rolldown@1.0.0-rc.18)(rollup@4.59.0)':
     dependencies:
       '@mbler/mcx': 0.0.4-rc.1
-      '@mbler/mcx-core': 0.1.2(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
+      '@mbler/mcx-core': 0.1.2-rc.9(@minecraft/vanilla-data@1.26.21)(rolldown@1.0.0-rc.18)(rollup@4.59.0)
       '@mbler/mcx-types': 0.0.4(@minecraft/vanilla-data@1.26.21)
       '@volar/language-core': 2.4.28
       '@volar/language-server': 2.4.28

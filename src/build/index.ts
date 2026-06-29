@@ -528,6 +528,7 @@ class Build {
         include: path.join(this.srcDirs.behavior, 'scripts/**/*'),
         exclude: [
           path.join(this.baseBuildDir, 'node_modules/**/*'),
+          path.join(this.baseBuildDir, '.git/**/*'),
           this.outdirs.behavior,
           this.outdirs.resources,
           this.outdirs.dist,
@@ -694,6 +695,7 @@ class Build {
         this.outdirs.resources,
         this.outdirs.dist,
         path.join(this.baseBuildDir, 'node_modules'),
+        path.join(this.baseBuildDir, '.git'),
       ],
       ignoreInitial: true,
       interval: 100,
