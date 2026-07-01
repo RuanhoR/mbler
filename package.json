@@ -42,7 +42,7 @@
     "pretest": "pnpm gen:version",
     "test": "vitest run",
     "prepare": "simple-git-hooks",
-    "check": "pnpm lint && pnpm test && pnpm type-check",
+    "check": "pnpm pretest && pnpm lint && pnpm test && pnpm type-check",
     "type-check": "tsc --noEmit",
     "format": "prettier ./src ./example --write"
   },
