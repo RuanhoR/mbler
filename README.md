@@ -2,10 +2,10 @@
 
 [![CI](https://github.com/RuanhoR/mbler/actions/workflows/lint.yml/badge.svg)](https://github.com/RuanhoR/mbler/actions/workflows/lint.yml)
 [![npm](https://img.shields.io/npm/v/mbler)](https://npmjs.com/package/mbler)
-[![License](https://img.shields.io/github/license/RuanhoR/mbler)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Node](https://img.shields.io/node/v/mbler)](https://nodejs.org)
 [![Gitee](https://img.shields.io/badge/Gitee-mirror-red)](https://gitee.com/n304sc-haoran/mbler.git)
-
+[![Star](https://img.shields.io/github/stars/RuanhoR/mbler)](https://github.com/RuanhoR/mbler/stargazers)
 A development toolchain for Minecraft Bedrock Edition Addons, built on [Rolldown](https://rolldown.rs).
 
 ## Features
