@@ -9,6 +9,11 @@ import Logger from '../logger'
 export function join(baseDir: string, inputPath: string): string {
   return path.isAbsolute(inputPath) ? inputPath : path.join(baseDir, inputPath)
 }
+const requiredConfigKeys: (keyof MblerConfigData)[] = [
+  'description',
+  'mcVersion',
+]
+
 export async function ReadProjectMblerConfig(
   project: string
 ): Promise<MblerConfigData> {
@@ -21,6 +26,13 @@ export async function ReadProjectMblerConfig(
     if (!(key in templateMblerConfig)) {
       throw new Error(
         `[read config]: read config from '${project}' error: Unexpected '${key}'`
+      )
+    }
+  }
+  for (const key of requiredConfigKeys) {
+    if (!(key in file) || file[key] === undefined || file[key] === '') {
+      throw new Error(
+        `[read config]: '${key}' is required in ${BuildConfig.ConfigFile}`
       )
     }
   }
