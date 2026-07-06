@@ -117,6 +117,9 @@ export interface language {
     pointSetFailed: string
     failed: string
   }
+  build: {
+    noBuildModuleRelease: string
+  }
   commander: {
     selectTip: string
   }
@@ -149,6 +152,7 @@ export interface MblerConfigData {
   name: string // addon name (package scope, e.g. "@scope/name")
   displayName?: string // display name shown in manifest (falls back to name)
   outdir?: MblerConfigOutdir // output
+  outGameOnDev?: boolean // output directly to game development packs
   description: string // addon description
   version: string // version, like be "0.0.1-beta"
   mcVersion: string // use mcVersion, be like "1.21.100"
@@ -171,6 +175,7 @@ export const templateMblerConfig: MblerConfigData = {
     resources: 'dist/res',
     dist: 'dist-pkg',
   },
+  outGameOnDev: false,
   build: {
     rollupPlugins: [],
     cache: 'auto',

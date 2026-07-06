@@ -132,6 +132,10 @@ git https://github.com/RuanhoR/mbler/`,
     pointSetFailed: '配置文件指向设置失败: {error}',
     failed: '配置操作失败: {error}',
   },
+  build: {
+    noBuildModuleRelease:
+      '未指定BUILD_MODULE=release，将遵循配置输出到游戏目录',
+  },
   commander: {
     selectTip: '(按 b 确认，n 键选择下一个)',
   },

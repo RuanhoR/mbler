@@ -19,6 +19,8 @@ import {
   showText,
   writeJSON,
 } from '../utils'
+import i18n from '../i18n'
+import { GamePath } from '../publisher/GamePath'
 import { BuildConfig } from './config'
 import { Progress } from './progress'
 import type { CompileOpt } from '@mbler/mcx-types'
@@ -197,7 +199,7 @@ class Build {
     if (this.buildConfig?.onStart)
       await this.buildConfig.onStart(this.currentConfig)
     // load data
-    this.loadData()
+    await this.loadData()
     // batch exec
     await Promise.all([
       () => {
@@ -592,7 +594,7 @@ class Build {
         this.buildConfig?.cache,
         this.buildConfig?.cachePath
       )
-      this.loadData()
+      await this.loadData()
       if (
         this.isChange(oldConfig, this.currentConfig, [
           'name',
@@ -774,7 +776,7 @@ class Build {
     await Promise.all(tasks)
   }
 
-  private loadData() {
+  private async loadData() {
     // check run time
     if (!this.currentConfig || !this.baseBuildDir)
       throw new Error('[build data]: already initialized')
@@ -784,16 +786,29 @@ class Build {
       resources: path.join(this.baseBuildDir, BuildConfig.resources), // res
     }
     // output dir
-    this.outdirs = {
-      behavior: this.currentConfig.outdir?.behavior
-        ? join(this.baseBuildDir, this.currentConfig.outdir.behavior)
-        : path.join(this.baseBuildDir, 'dist/dep'),
-      resources: this.currentConfig.outdir?.resources
-        ? join(this.baseBuildDir, this.currentConfig.outdir.resources)
-        : path.join(this.baseBuildDir, 'dist/res'),
-      dist: this.currentConfig.outdir?.dist
-        ? join(this.baseBuildDir, this.currentConfig.outdir.dist)
-        : path.join(this.baseBuildDir, 'dist-pkg'),
+    if (this.currentConfig.outGameOnDev && process.env.BUILD_MODULE != 'release') {
+      showText(i18n.build.noBuildModuleRelease)
+      const gamePath = await GamePath.getPathWithASK()
+      const packName = this.currentConfig.name.replace(/^@/, '').replace('/', '-')
+      this.outdirs = {
+        behavior: path.join(gamePath, 'development_behavior_packs', packName),
+        resources: path.join(gamePath, 'development_resource_packs', packName),
+        dist: this.currentConfig.outdir?.dist
+          ? join(this.baseBuildDir, this.currentConfig.outdir.dist)
+          : path.join(this.baseBuildDir, 'dist-pkg'),
+      }
+    } else {
+      this.outdirs = {
+        behavior: this.currentConfig.outdir?.behavior
+          ? join(this.baseBuildDir, this.currentConfig.outdir.behavior)
+          : path.join(this.baseBuildDir, 'dist/dep'),
+        resources: this.currentConfig.outdir?.resources
+          ? join(this.baseBuildDir, this.currentConfig.outdir.resources)
+          : path.join(this.baseBuildDir, 'dist/res'),
+        dist: this.currentConfig.outdir?.dist
+          ? join(this.baseBuildDir, this.currentConfig.outdir.dist)
+          : path.join(this.baseBuildDir, 'dist-pkg'),
+      }
     }
   }
 

@@ -130,6 +130,10 @@ export default {
     pointSetFailed: 'Failed to set config pointer: {error}',
     failed: 'Config command failed: {error}',
   },
+  build: {
+    noBuildModuleRelease:
+      'BUILD_MODULE=release not set, will output to game directory per config',
+  },
   commander: {
     selectTip: '(Press b to confirm, n to select next)',
   },
