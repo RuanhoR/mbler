@@ -28,9 +28,6 @@
       "types": "./dist/build.d.ts",
       "import": "./dist/build.esm.mjs",
       "require": "./dist/build.js"
-    },
-    "./client": {
-      "types": "./client.d.ts"
     }
   },
   "types": "./dist/types/index.d.ts",
