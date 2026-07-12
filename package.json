@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.9",
+  "version": "0.2.9-rc.3",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
   },
   "packageManager": "pnpm@11.0.9",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "main": "./dist/index.mjs",
   "exports": {
     ".": {
@@ -65,8 +65,8 @@
     "registry": "https://registry.npmjs.org"
   },
   "bin": {
-    "mbler": "bin/mbler.js",
-    "mcx-tsc": "bin/mcx-tsc.js"
+    "mbler": "bin/mbler.cjs",
+    "mcx-tsc": "bin/mcx-tsc.cjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

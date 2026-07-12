@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const mbler = require('./../dist')
+const mbler = require('./../dist/index.mjs')
 
 /**
  * @license MIT
