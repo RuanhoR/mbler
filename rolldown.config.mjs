@@ -34,66 +34,31 @@ export default defineConfig([
     input: 'src/index.ts',
     output: [
       {
-        file: 'dist/index.js',
-        format: 'cjs',
-        sourcemap: true,
-        minify: isRelease || undefined,
-      },
-      {
-        file: 'dist/index.esm.mjs',
+        dir: "./dist",
+        entryFileNames: "[name].mjs",
         format: 'esm',
-        sourcemap: true,
+        sourcemap: false,
         minify: isRelease || undefined,
       },
     ],
+    plugins: [
+      dts()
+    ]
   },
   {
     ...shared,
     input: { build: 'src/index.build.ts' },
     output: [
       {
-        file: 'dist/build.js',
-        format: 'cjs',
-        sourcemap: true,
-        minify: isRelease || undefined,
-      },
-      {
-        file: 'dist/build.esm.mjs',
+        dir: "./dist",
+        entryFileNames: "[name].mjs",
         format: 'esm',
-        sourcemap: true,
+        sourcemap: false,
         minify: isRelease || undefined,
       },
     ],
-  },
-  // DTS bundles
-  {
-    ...shared,
-    input: 'src/index.ts',
-    output: {
-      dir: 'dist',
-      format: 'esm',
-    },
     plugins: [
-      dts({
-        tsconfig: path.resolve('tsconfig.json'),
-        resolver: 'tsc',
-        emitDtsOnly: true,
-      }),
-    ],
-  },
-  {
-    ...shared,
-    input: { build: 'src/index.build.ts' },
-    output: {
-      dir: 'dist',
-      format: 'esm',
-    },
-    plugins: [
-      dts({
-        tsconfig: path.resolve('tsconfig.json'),
-        resolver: 'tsc',
-        emitDtsOnly: true,
-      }),
-    ],
-  },
+      dts()
+    ]
+  }
 ])
