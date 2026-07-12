@@ -1,8 +1,6 @@
 import * as path from 'node:path'
-import { MblerConfigData } from '../types'
 import { fileExists, isValidVersion, readFileAsJson, showText } from '../utils'
 import MBLERVersion from '../version'
-import { BuildConfig } from '../build/config'
 import { defineCommand } from './command'
 
 function showVersion(ctx: { opts: Record<string, string> }) {
@@ -47,10 +45,7 @@ export const versionCommand = defineCommand({
       const pkgJSON = await readFileAsJson<{ version: string }>(
         path.join(ctx.workDir, 'package.json')
       )
-      const mblerConfigJSON = await readFileAsJson<MblerConfigData>(
-        path.join(ctx.workDir, BuildConfig.ConfigFile)
-      )
-      mblerConfigJSON.version = pkgJSON.version = newVersion
+      pkgJSON.version = newVersion
     } else {
       showVersion(ctx)
     }

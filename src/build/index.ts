@@ -789,7 +789,7 @@ class Build {
     if (this.currentConfig.outGameOnDev && process.env.BUILD_MODULE != 'release') {
       showText(i18n.build.noBuildModuleRelease)
       const gamePath = await GamePath.getPathWithASK()
-      const packName = this.currentConfig.name.replace(/^@/, '').replace('/', '-')
+      const packName = (this.currentConfig.name ?? 'unknown').replace(/^@/, '').replace('/', '-')
       this.outdirs = {
         behavior: path.join(gamePath, 'development_behavior_packs', packName),
         resources: path.join(gamePath, 'development_resource_packs', packName),

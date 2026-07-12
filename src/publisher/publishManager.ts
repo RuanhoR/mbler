@@ -9,7 +9,7 @@ import { spawn } from 'node:child_process'
 import { generateRelease } from '../build/release'
 import config from '../config'
 import { PublishMetadata } from '../types'
-import { readFile } from 'node:fs/promises'
+import { readFile, stat as fsStat } from 'node:fs/promises'
 import { TokenManager } from './tokenManager'
 import i18n from '../i18n'
 
@@ -85,31 +85,32 @@ export class PublishManager {
     if (!found) {
       throw new Error(i18n.publish.readmeNotFound)
     }
-    const metadata: PublishMetadata = {
-      readme: await readFile(found, 'utf-8'),
-      scope: (mblerConfig.name.split('/').length > 1
-        ? mblerConfig.name.split('/')[0]
-        : '') as string,
-      name:
-        mblerConfig.name.split('/').length > 1
-          ? (mblerConfig.name.split('/')[1] ?? '')
-          : (pkgData.name as string),
-      version: mblerConfig.version,
-      version_tag: tag || 'latest',
-    }
-    if (
-      !metadata.name ||
-      !metadata.version ||
-      !metadata.readme ||
-      !metadata.scope
-    ) {
-      throw new Error(i18n.publish.metadataInvalid)
-    }
-    if (!/^@\w+\/\w+$/.test(mblerConfig.name)) {
+    const pkgName = pkgData.name as string
+    if (!/^@\w+\/\w+$/.test(pkgName)) {
       throw new Error(i18n.publish.packageNameInvalid)
     }
+    const scope = pkgName.split('/')[0]!
+    const name = pkgName.split('/')[1]!
+    const metadata: PublishMetadata = {
+      readme: await readFile(found, 'utf-8'),
+      scope,
+      name,
+      version: pkgData.version as string,
+      version_tag: tag || 'latest',
+    }
+    if (!metadata.version || !metadata.readme) {
+      throw new Error(i18n.publish.metadataInvalid)
+    }
+
     await generateRelease(option)
     onProgress(70)
+
+    const outZipStat = await fsStat(outputPath).catch(() => null)
+    const zipSize = outZipStat ? outZipStat.size : 0
+    onMessage(
+      `Package: ${pkgName}@${pkgData.version as string} (${zipSize > 0 ? `${(zipSize / 1024).toFixed(1)} KB` : 'unknown size'})`
+    )
+
     onMessage(i18n.publish.publishToMarket)
     const session = await PublishManager.createSession(metadata)
     await PublishManager.publishToMarketplace(outputPath, session)

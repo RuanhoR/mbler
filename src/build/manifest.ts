@@ -9,14 +9,16 @@ async function generateManifest(
   config: MblerConfigData,
   type: 'data' | 'resources'
 ): Promise<ManifestData> {
-  const hashRaw = `${config.name}-${type}-${config.script?.lang || 'js'}--mbler-hash-raw--:build-manifest`
+  const configName = config.name || 'unknown'
+  const configVersion = config.version || '0.0.0'
+  const hashRaw = `${configName}-${type}-${config.script?.lang || 'js'}--mbler-hash-raw--:build-manifest`
   const manifest: ManifestData = {
     format_version: 2,
     header: {
-      name: config.displayName || config.name,
+      name: config.displayName || configName,
       description: config.description,
       uuid: fromString(hashRaw, BuildConfig.salt.header),
-      version: stringToNumberArray(config.version),
+      version: stringToNumberArray(configVersion),
       min_engine_version: stringToNumberArray(
         typeof config.mcVersion === 'string'
           ? config.mcVersion
@@ -30,7 +32,7 @@ async function generateManifest(
         type: type,
         uuid: fromString(hashRaw, BuildConfig.salt.module),
         description: `From Mbler(https://github.com/RuanhoR/mbler). welcome to star and contribute!`,
-        version: stringToNumberArray(config.version),
+        version: stringToNumberArray(configVersion),
       },
     ],
   }
@@ -65,7 +67,7 @@ async function generateManifest(
       language: 'javascript',
       uuid: fromString(hashRaw, BuildConfig.salt.sapi),
       description: `sapi generate by mbler, weclome to download and star at https://github.com/RuanhoR/mbler`,
-      version: stringToNumberArray(config.version),
+      version: stringToNumberArray(configVersion),
     })
     manifest.capabilities = ['script_eval']
     manifest.dependencies = [
