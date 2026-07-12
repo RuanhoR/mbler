@@ -222,7 +222,7 @@ describe('PublishManager - extended', () => {
       ).rejects.toThrow('README file not found')
     })
 
-    it('should throw on invalid metadata (no scope)', async () => {
+    it('should throw on invalid package name format', async () => {
       const t = TokenManager as unknown as Record<string, unknown>
       t.isLogin = true
       t.isLoading = false
@@ -240,7 +240,7 @@ describe('PublishManager - extended', () => {
 
       await expect(
         PublishManager.publish('/project', { build: 'skip', tag: 'latest' })
-      ).rejects.toThrow('Invalid metadata')
+      ).rejects.toThrow('Package name must be in the format of @scope/name')
     })
   })
 })
