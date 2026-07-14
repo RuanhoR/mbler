@@ -1,5 +1,4 @@
 import { writeFile } from 'node:fs/promises'
-import config from '../config'
 import { MNXPackageInfoResult, MNXPackageVersionInfoResult } from '../types'
 import { ConfigManager } from './configManager'
 

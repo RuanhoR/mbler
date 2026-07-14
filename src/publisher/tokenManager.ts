@@ -1,5 +1,4 @@
 import { PMNXProfile } from '../types'
-import config from './../config'
 import { ConfigManager } from './configManager'
 
 export class TokenManager {

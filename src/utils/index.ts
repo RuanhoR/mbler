@@ -1,6 +1,5 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { MblerBuildConfig, MblerConfigData, MblerConfigOutdir, templateMblerConfig } from '../types'
 import { Input } from '../commander'
 import { spawn } from 'node:child_process'
@@ -231,13 +230,13 @@ export function runCommand(
   let data = ''
   const promise = new Promise<{ code: number | null; data: string }>(
     (r) =>
-      (resolve = (...argv) => {
-        Logger.i(
-          'Utils: runCommand',
-          `run command: '${param.join(' ')}' return: ${JSON.stringify(argv[0])}`
-        )
-        r(...argv)
-      })
+    (resolve = (...argv) => {
+      Logger.i(
+        'Utils: runCommand',
+        `run command: '${param.join(' ')}' return: ${JSON.stringify(argv[0])}`
+      )
+      r(...argv)
+    })
   )
   const p = spawn(param[0] as string, param.slice(1), {
     cwd: cwd,
