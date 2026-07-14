@@ -2,7 +2,7 @@ import { argv } from 'node:process'
 import { cmdList } from '../types'
 import i18n from '../i18n'
 import Logger from '../logger'
-import { ReadProjectMblerConfig, showText } from '../utils'
+import { ReadProjectMblerConfig, flushOutputQueue, showText } from '../utils'
 import path from 'node:path'
 import WorkDirManager from './WorkDirManager'
 import { CommandDef, parseArgs, parseRawParams } from './command'
@@ -293,18 +293,29 @@ const main = (function () {
 
     if (!cmdName) {
       showText(i18n.description)
-      process.exit(0)
+      await flushOutputQueue()
+      process.exitCode = 0
+      if (process.stdin.isTTY) process.stdin.setRawMode(false)
+      process.stdin.pause()
+      return
     }
 
     const def = cmdMap[cmdName]
     if (typeof def !== 'object') {
       defaultCommand(cmdName)
-      process.exit(1)
+      await flushOutputQueue()
+      process.exitCode = 1
+      if (process.stdin.isTTY) process.stdin.setRawMode(false)
+      process.stdin.pause()
+      return
     }
 
     const args = parseArgs(def, raw.params.slice(1))
     const code = await def.handler({ args, opts: raw.opts, workDir })
-    process.exit(code)
+    await flushOutputQueue()
+    process.exitCode = code
+    if (process.stdin.isTTY) process.stdin.setRawMode(false)
+    process.stdin.pause()
   }
 })()
 

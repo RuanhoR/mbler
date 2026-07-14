@@ -151,13 +151,18 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
     name: string
   ): void {
     if (typeof curr !== 'function') return
+    if (ctrl && (raw === 'return' || raw === 'enter')) {
+      curr(currstr)
+      curr = null
+      currstr = ''
+      console.log('\n')
+      return
+    }
     if (ctrl || alt) return
     if (raw) {
       if (raw === 'return' || raw === 'enter') {
-        curr(currstr)
-        curr = null
-        currstr = ''
-        console.log('\n')
+        currstr += '\n'
+        refreshInput()
         return
       }
       if (raw === 'backspace') {
@@ -173,8 +178,23 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
   })
 
   function refreshInput(): void {
-    const out = `\x1b[2K\r${tip}${show ? currstr : ''}`
-    process.stdout.write(out)
+    const lines = currstr.split('\n')
+    const lineCount = lines.length
+    if (lineCount > 1) {
+      process.stdout.write(`\x1b[${lineCount - 1}A`)
+    }
+    for (let i = 0; i < lineCount; i++) {
+      process.stdout.write(`\x1b[2K\r`)
+      if (i === 0) {
+        process.stdout.write(tip)
+      }
+      if (show) {
+        process.stdout.write(lines[i] || '')
+      }
+      if (i < lineCount - 1) {
+        process.stdout.write('\n')
+      }
+    }
   }
   /**
    * 输入文本

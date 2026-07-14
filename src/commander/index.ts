@@ -1,3 +1,4 @@
+import { writeSync } from 'node:fs'
 import * as readline from 'readline'
 import i18n from '../i18n/index.js'
 if (process.stdin.isTTY) {
@@ -16,7 +17,7 @@ const tasks: Array<
   (name: string, ctrl: boolean, alt: boolean, raw: string) => void
 > = []
 process.on('exit', (_code) => {
-  process.stdout.write('\x1b[?25h')
+  writeSync(1, '\x1b[?25h')
 })
 const endTasks: (() => void)[] = []
 export function onEnd(task: () => void) {
@@ -26,7 +27,9 @@ click('c', {
   ctrl: true,
 }).then(() => {
   endTasks.forEach((task) => task())
-  process.exit(0)
+  process.exitCode = 0
+  if (process.stdin.isTTY) process.stdin.setRawMode(false)
+  process.stdin.pause()
 })
 function handler(
   name: string,
