@@ -10,6 +10,7 @@ vi.mock('../../src/publisher/configManager', () => ({
   ConfigManager: {
     setKey: mockSetKey,
     getKey: mockGetKey,
+    getRegistry: vi.fn().mockResolvedValue('https://d.pmnx.qzz.io'),
   },
 }))
 

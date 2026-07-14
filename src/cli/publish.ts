@@ -17,13 +17,13 @@ export const publishCommand = defineCommand({
     {
       name: 'tag',
       alias: 't',
-      description: 'Version tag name',
+      description: i18n.publish.tagDescription,
       default: 'latest',
     },
     {
       name: 'build',
       alias: 'b',
-      description: 'Build mode: skip or enable',
+      description: i18n.publish.buildDescription,
       default: 'enable',
     },
   ],

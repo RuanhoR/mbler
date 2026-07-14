@@ -44,8 +44,9 @@ export class TokenManager {
       return
     }
     try {
+      const base = await ConfigManager.getRegistry()
       const result = await fetch(
-        `${config.defaultPmnxBASE}/token/${token}/verify`,
+        `${base}/token/${token}/verify`,
         {
           method: 'GET',
           credentials: 'omit',

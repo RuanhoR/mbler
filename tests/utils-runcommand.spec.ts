@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import { tmpdir } from 'node:os'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -8,8 +9,8 @@ describe('runCommand with stdout capture', () => {
   it('should capture stdout data from a command', async () => {
     const { runCommand } = await import('../src/utils/index')
     const result = await runCommand(
-      [process.execPath, '-e', 'process.stdout.write("hello")'],
-      '/tmp',
+      [process.execPath, '-e', "process.stdout.write('hello')"],
+      tmpdir(),
       'pipe'
     )
     expect(result.code).toBe(0)

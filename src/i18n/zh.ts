@@ -94,6 +94,8 @@ git https://github.com/RuanhoR/mbler/`,
     packageJsonNotFound: '未找到 package.json',
     noBuildScript: 'package.json 中未找到 build 脚本',
     buildFailed: '构建失败，退出码: {code}',
+    tagDescription: '版本标签名称',
+    buildDescription: '构建模式: skip 或 enable',
   },
   install: {
     failedNoPackageJson: '安装失败：工作目录必须包含 package.json',
@@ -131,6 +133,14 @@ git https://github.com/RuanhoR/mbler/`,
     pointSetSuccess: '配置文件指向已设置为: {path}',
     pointSetFailed: '配置文件指向设置失败: {error}',
     failed: '配置操作失败: {error}',
+  },
+  profile: {
+    user: '用户: {name}',
+    uid: 'UID: {uid}',
+    mail: '邮箱: {mail}',
+    created: '创建时间: {created}',
+    avatarUrl: '头像 URL: {url}',
+    failed: '获取用户信息失败: {error}',
   },
   build: {
     noBuildModuleRelease:

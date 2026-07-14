@@ -80,6 +80,8 @@ export interface language {
     packageJsonNotFound: string
     noBuildScript: string
     buildFailed: string
+    tagDescription: string
+    buildDescription: string
   }
   install: {
     failedNoPackageJson: string
@@ -115,6 +117,14 @@ export interface language {
     pointGet: string
     pointSetSuccess: string
     pointSetFailed: string
+    failed: string
+  }
+  profile: {
+    user: string
+    uid: string
+    mail: string
+    created: string
+    avatarUrl: string
     failed: string
   }
   build: {
@@ -161,8 +171,10 @@ export interface MblerConfigData {
   build?: Partial<MblerBuildConfig> // build config
 }
 export const templateMblerConfig: MblerConfigData = {
+  name: '',
   displayName: '',
   description: 'demo',
+  version: '',
   mcVersion: '1.21.100',
   minify: 'oxc',
   script: {

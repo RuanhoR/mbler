@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 import config from '../config'
 import { MNXPackageInfoResult, MNXPackageVersionInfoResult } from '../types'
+import { ConfigManager } from './configManager'
 
 export class InstallManager {
   private static encodeScope(scope: string): string {
@@ -15,8 +16,9 @@ export class InstallManager {
     version: string,
     outputPath: string
   ) {
+    const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${config.defaultPmnxBASE}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/download`
+      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/download`
     )
     if (!response.ok) {
       throw new Error(
@@ -30,8 +32,9 @@ export class InstallManager {
     scope: string,
     name: string
   ): Promise<MNXPackageInfoResult> {
+    const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${config.defaultPmnxBASE}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/info`
+      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/info`
     )
     const data = (await response.json()) as {
       code: number
@@ -49,8 +52,9 @@ export class InstallManager {
     name: string,
     version: string
   ): Promise<MNXPackageVersionInfoResult> {
+    const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${config.defaultPmnxBASE}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/info`
+      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/info`
     )
     if (!response.ok) {
       throw new Error(

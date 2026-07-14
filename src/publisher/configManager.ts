@@ -156,4 +156,9 @@ export class ConfigManager {
       await writeJSON(configPath, defaultConfig)
     }
   }
+
+  static async getRegistry(): Promise<string> {
+    const saved = await this.getKey<string>('registry')
+    return saved || config.defaultPmnxBASE
+  }
 }

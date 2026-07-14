@@ -17,10 +17,8 @@ const requiredConfigKeys: (keyof MblerConfigData)[] = [
 export async function ReadProjectMblerConfig(
   project: string
 ): Promise<MblerConfigData> {
-  const configPath = path.join(project, BuildConfig.ConfigFile)
-  const fileExport = await import(
-    process.platform === 'win32' ? pathToFileURL(configPath).href : configPath
-  )
+  const configPath = path.resolve(project, BuildConfig.ConfigFile)
+  const fileExport = await import(configPath.replace(/\\/g, '/'))
   const file = (fileExport as { default: MblerConfigData }).default || {}
   for (const key in file) {
     if (!(key in templateMblerConfig)) {

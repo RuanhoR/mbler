@@ -110,6 +110,7 @@ describe('runCommand', () => {
       '/tmp',
       'ignore'
     )
-    expect(result.code).toBe(-1)
+    // On Windows with shell:true, the shell returns exit code 1 instead of -1
+    expect(result.code === -1 || result.code === 1).toBe(true)
   })
 })

@@ -9,6 +9,14 @@ vi.mock('../../src/utils', () => ({
 vi.mock('../../src/i18n', () => ({
   default: {
     publish: { notLoggedIn: 'Not logged in' },
+    profile: {
+      user: 'User: {name}',
+      uid: 'UID: {uid}',
+      mail: 'Mail: {mail}',
+      created: 'Created: {created}',
+      avatarUrl: 'Avatar URL: {url}',
+      failed: 'Profile failed: {error}',
+    },
   },
 }))
 

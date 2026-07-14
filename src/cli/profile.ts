@@ -3,6 +3,10 @@ import { TokenManager } from '../publisher/tokenManager'
 import i18n from '../i18n'
 import { defineCommand } from './command'
 
+function fmt(t: string, vars: Record<string, string | number | undefined>) {
+  return t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''))
+}
+
 export const profileCommand = defineCommand({
   name: 'profile',
   aliases: [],
@@ -18,18 +22,20 @@ export const profileCommand = defineCommand({
       }
 
       const user = TokenManager.user
-      showText(`User: ${user.name}`)
-      showText(`UID: ${user.uid}`)
-      showText(`Mail: ${user.mail}`)
-      showText(`Created: ${user.ctime}`)
+      showText(fmt(i18n.profile.user, { name: user.name }))
+      showText(fmt(i18n.profile.uid, { uid: user.uid }))
+      showText(fmt(i18n.profile.mail, { mail: user.mail }))
+      showText(fmt(i18n.profile.created, { created: user.ctime }))
       if (user.avatar_url) {
-        showText(`Avatar URL: ${user.avatar_url}`)
+        showText(fmt(i18n.profile.avatarUrl, { url: user.avatar_url }))
       }
 
       return 0
     } catch (error) {
       showText(
-        `Profile failed: ${error instanceof Error ? error.message : String(error)}`
+        fmt(i18n.profile.failed, {
+          error: error instanceof Error ? error.message : String(error),
+        })
       )
       return -1
     }

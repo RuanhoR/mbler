@@ -90,6 +90,8 @@ export default {
     packageJsonNotFound: 'package.json not found',
     noBuildScript: 'No build script found in package.json',
     buildFailed: 'Build failed with code {code}',
+    tagDescription: 'Version tag name',
+    buildDescription: 'Build mode: skip or enable',
   },
   install: {
     failedNoPackageJson:
@@ -129,6 +131,14 @@ export default {
     pointSetSuccess: 'Config file pointer set to: {path}',
     pointSetFailed: 'Failed to set config pointer: {error}',
     failed: 'Config command failed: {error}',
+  },
+  profile: {
+    user: 'User: {name}',
+    uid: 'UID: {uid}',
+    mail: 'Mail: {mail}',
+    created: 'Created: {created}',
+    avatarUrl: 'Avatar URL: {url}',
+    failed: 'Profile failed: {error}',
   },
   build: {
     noBuildModuleRelease:

@@ -8,6 +8,7 @@ import {
 import { spawn } from 'node:child_process'
 import { generateRelease } from '../build/release'
 import config from '../config'
+import { ConfigManager } from './configManager'
 import { PublishMetadata } from '../types'
 import { readFile, stat as fsStat } from 'node:fs/promises'
 import { TokenManager } from './tokenManager'
@@ -129,8 +130,9 @@ export class PublishManager {
     if (!TokenManager.isLogin) throw new Error(i18n.publish.notLoginError)
     const token = await TokenManager.getToken()
     if (!token) throw new Error(i18n.publish.tokenMissing)
+    const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${config.defaultPmnxBASE}/unpublish/${scope}/${name}/${version}`,
+      `${base}/unpublish/${scope}/${name}/${version}`,
       {
         method: 'POST',
         headers: {
@@ -154,8 +156,9 @@ export class PublishManager {
     if (!TokenManager.isLogin) throw new Error(i18n.publish.notLoginError)
     const token = await TokenManager.getToken()
     if (!token) throw new Error(i18n.publish.tokenMissing)
+    const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${config.defaultPmnxBASE}/publish/session/${metadata.scope}/${metadata.name}/create`,
+      `${base}/publish/session/${metadata.scope}/${metadata.name}/create`,
       {
         method: 'POST',
         headers: {
@@ -192,8 +195,9 @@ export class PublishManager {
     )
     const token = await TokenManager.getToken()
     if (!token) throw new Error(i18n.publish.tokenMissing)
+    const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${config.defaultPmnxBASE}/publish/session/${session}/upload`,
+      `${base}/publish/session/${session}/upload`,
       {
         method: 'POST',
         headers: {
@@ -212,7 +216,7 @@ export class PublishManager {
         `${i18n.publish.uploadZipFailed}: ${result.data}` +
           JSON.stringify(
             {
-              url: `${config.defaultPmnxBASE}/publish/session/${session}/upload`,
+              url: `${base}/publish/session/${session}/upload`,
               status: response.status,
               statusText: response.statusText,
               body: result,

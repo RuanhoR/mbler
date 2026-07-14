@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import * as path from 'node:path'
 import {
   compareVersion,
   isValidVersion,
@@ -69,7 +70,7 @@ describe('stringToNumberArray', () => {
 
 describe('join', () => {
   it('should join relative paths', () => {
-    expect(join('/base', 'sub/file.ts')).toBe('/base/sub/file.ts')
+    expect(join('/base', 'sub/file.ts')).toBe(path.join('/base', 'sub/file.ts'))
   })
 
   it('should return absolute path unchanged', () => {
