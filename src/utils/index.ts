@@ -5,6 +5,7 @@ import { Input } from '../commander'
 import { spawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
 import Logger from '../logger'
+import { pathToFileURL } from 'node:url'
 export function join(baseDir: string, inputPath: string): string {
   return path.isAbsolute(inputPath) ? inputPath : path.join(baseDir, inputPath)
 }
@@ -17,7 +18,7 @@ export async function ReadProjectMblerConfig(
   project: string
 ): Promise<MblerConfigData> {
   const configPath = path.resolve(project, BuildConfig.ConfigFile)
-  const fileExport = await import(configPath.replace(/\\/g, '/'))
+  const fileExport = await import(String(pathToFileURL(configPath)))
   const file = (fileExport as { default: MblerConfigData }).default || {}
   for (const key in file) {
     if (!(key in templateMblerConfig)) {
