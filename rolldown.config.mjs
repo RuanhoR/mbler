@@ -18,6 +18,8 @@ const external = [
   '@volar/typescript/lib/quickstart/runTsc.js',
   'mbler/build',
   ...dependencies,
+  /@mbler\/*/,
+  /typescript\/*/
 ]
 
 const isRelease = process.env.BUILD_MODULE === 'release'

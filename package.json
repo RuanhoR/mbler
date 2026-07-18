@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.9-rc.9",
+  "version": "0.2.9-rc.11",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -68,7 +68,7 @@
   "peerDependencies": {
     "@mbler/mcx-core": ">=0.1.3-rc.4",
     "typescript": "^5.9.3",
-    "rolldown": "^1.0.0"
+    "rolldown": "^1.2.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
