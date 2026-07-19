@@ -36,6 +36,8 @@ export default {
     view: 'mbler view @<scope>/<name>\nShow package versions',
     config:
       'mbler config get <key>\nmbler config set <key> <value>\nmbler config point <path>\nmbler config point get',
+    cache:
+      'mbler cache list\n  - Show cache usage\nmbler cache refresh sapi_version\n  - Refresh sapi version cache\nmbler cache sapi_version clear\n  - Clear sapi version cache',
   },
   init: {
     useUI: 'Use UI? (y/n): ',

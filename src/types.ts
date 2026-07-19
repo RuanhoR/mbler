@@ -21,6 +21,7 @@ export const cmdList = [
   'log',
   'view',
   'config',
+  'cache',
 ] as const
 type HelpCommand = (typeof cmdList)[number]
 export interface language {

@@ -73,6 +73,27 @@ const Sapi = function (): {
     return reValue
   }
 
+  const CACHE_TTL_DAYS = 5
+
+  async function loadCacheFromDisk(): Promise<void> {
+    const txt = await fs.promises.readFile(cacheFile, 'utf-8')
+    const raw = JSON.parse(txt) as Array<Record<string, unknown>>
+    if (raw.length > 0) {
+      const first = raw[0]
+      if (first && typeof first === 'object' && '_cachedAt' in first) {
+        const cachedAt = new Date(first._cachedAt as string)
+        const diffDays = (Date.now() - cachedAt.getTime()) / (1000 * 60 * 60 * 24)
+        if (diffDays >= CACHE_TTL_DAYS) {
+          await refresh()
+          return
+        }
+        cacheData = raw.slice(1) as typeof cacheData
+        return
+      }
+    }
+    cacheData = raw as typeof cacheData
+  }
+
   async function refresh() {
     const serverMap = await fetchData('@minecraft/server')
     const uiMap = await fetchData('@minecraft/server-ui')
@@ -98,8 +119,10 @@ const Sapi = function (): {
     arr.sort((a, b) => compareVersion(a.version, b.version))
     cacheData = arr
 
+    const cacheWithMeta = [{ _cachedAt: new Date().toISOString() }, ...arr]
+
     await fs.promises.mkdir(config.tmpdir, { recursive: true }).catch(() => {})
-    await fs.promises.writeFile(cacheFile, JSON.stringify(arr, null, 2), 'utf-8')
+    await fs.promises.writeFile(cacheFile, JSON.stringify(cacheWithMeta, null, 2), 'utf-8')
   }
 
   async function generateVersion(
@@ -110,8 +133,7 @@ const Sapi = function (): {
   ): Promise<string> {
     if (!cacheData) {
       try {
-        const txt = await fs.promises.readFile(cacheFile, 'utf-8')
-        cacheData = JSON.parse(txt)
+        await loadCacheFromDisk()
       } catch {
         await refresh()
       }

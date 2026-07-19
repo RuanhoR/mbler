@@ -41,6 +41,8 @@ git https://github.com/RuanhoR/mbler/`,
     view: 'mbler view @<scope>/<name>\n查看包的版本列表',
     config:
       'mbler config get <key>\nmbler config set <key> <value>\nmbler config point <path>\nmbler config point get',
+    cache:
+      'mbler cache list\n  - 显示缓存占用\nmbler cache refresh sapi_version\n  - 刷新 sapi 版本缓存\nmbler cache sapi_version clear\n  - 清除 sapi 版本缓存',
   },
   init: {
     useUI: '使用UI模块? (y/n): ',
