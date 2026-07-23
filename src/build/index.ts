@@ -706,6 +706,8 @@ class Build {
       await this.onChange(filePath)
     }
     chokidar.on('change', onChange)
+    chokidar.on('add', onChange)
+    chokidar.on('addDir', onChange)
     if (isBundle && this.currentConfig?.script) {
       const rollupWatcher = await this.createRollupWatcher()
       this.watchers = {
