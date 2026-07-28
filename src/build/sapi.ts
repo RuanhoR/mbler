@@ -171,7 +171,11 @@ const Sapi = function (): {
       result = entryModule.formal || entryModule.beta
     }
     if (withFull) return result || ''
-    return evalVersion(result || 'error')
+    result = evalVersion(result || 'error')
+    if (!isBeta) {
+      result = result.split('-')[0] || result
+    }
+    return result
   }
 
   return {
@@ -197,7 +201,8 @@ export default new Proxy(
 ) as ReturnType<typeof Sapi>
 
 export function evalVersion(result: string): string {
-  const tmp = result.split('-').slice(0, 2) as [string, string]
-  tmp[1] = tmp[1].split('.')[0] as string
-  return tmp.join('-')
+  const parts = result.split('-')
+  if (parts.length < 2) return result
+  const pre = parts[1] as string
+  return parts[0] + '-' + pre.split('.')[0]
 }

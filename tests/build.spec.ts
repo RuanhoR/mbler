@@ -184,7 +184,7 @@ describe('sapiVersion', () => {
         false,
         false
       )
-    ).toBe('2.1.0-beta')
+    ).toBe('2.1.0')
     expect(
       await sapi.generateVersion(
         '@minecraft/server-ui',
