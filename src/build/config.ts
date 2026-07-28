@@ -12,6 +12,7 @@ export const BuildConfig = {
     public: {
       'pack_icon.png': 'file',
       'manifest.json': 'file',
+      subpacks: 'directory',
     },
     resources: {
       'biomes_client.json': 'file',
