@@ -27,6 +27,7 @@ import type { CompileOpt } from '@mbler/mcx-types'
 import { styleText } from 'node:util'
 import type { LanguagePlugin } from '@volar/language-core'
 import { BuildCacheManager } from './cache'
+import { generateArchives } from './archive'
 
 class Build {
   currentConfig: MblerConfigData | null = null
@@ -283,6 +284,13 @@ class Build {
     }
     if (!this.outdirs || !this.module)
       throw new Error(`[build addon]: output directories not initialized`)
+    const archiveConfig = this.currentConfig.archive
+    if (archiveConfig?.enabled && archiveConfig?.autoGenerate) {
+      const { behavior, resources } = this.outdirs
+      for (const packDir of [behavior, resources]) {
+        await generateArchives(packDir, archiveConfig)
+      }
+    }
     if (process.env.BUILD_MODULE == 'release') {
       const generateRelease = require('./release').generateRelease
       await generateRelease({

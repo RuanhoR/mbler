@@ -78,6 +78,12 @@ export default defineConfig({
     ui: true, // enable @minecraft/server-ui
   },
   minify: false, // 'oxc' | 'terser' | 'esbuild'
+  archive: {
+    enabled: true, // pack sub-directories into .brarchive on build
+    autoGenerate: true,
+    exclude: ['textures/**'], // skip these sub-directories (glob)
+    concurrency: 16, // max directories archived in parallel
+  },
   outdir: {
     behavior: './dist/dep',
     resources: './dist/res',
@@ -97,6 +103,7 @@ mbler/
 │   ├── cli/                # Command definitions & dispatcher
 │   ├── build/              # Build engine (Rolldown-based)
 │   │   ├── manifest.ts     # manifest.json generator
+│   │   ├── archive.ts      # .brarchive packaging
 │   │   ├── release.ts      # .mcaddon packaging
 │   │   ├── cache.ts        # Incremental build cache
 │   │   ├── minify.ts       # Minifier plugins

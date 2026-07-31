@@ -39,6 +39,10 @@ export async function ReadProjectMblerConfig(
     ...file,
     outdir: { ...templateMblerConfig.outdir, ...file.outdir } as MblerConfigOutdir,
     build: { ...templateMblerConfig.build, ...file.build } as Partial<MblerBuildConfig>,
+    archive: {
+      ...templateMblerConfig.archive!,
+      ...(file.archive ?? {}),
+    } as NonNullable<MblerConfigData['archive']>,
   }
   try {
     const pkgRaw = await fs.readFile(

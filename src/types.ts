@@ -159,6 +159,12 @@ export interface MblerBuildConfig {
   onStart: (ctx: MblerConfigData) => void | Promise<void>
   onWarn: (ctx: MblerConfigData, warning: Error) => void | Promise<void>
 }
+export interface MblerArchiveConfig {
+  enabled?: boolean // generate archives on build
+  autoGenerate?: boolean // generate archives during build
+  exclude?: string[] // subdirectory glob patterns to skip (e.g. "textures/**")
+  concurrency?: number // max directories archived in parallel
+}
 export interface MblerConfigData {
   name?: string // addon name (package scope, e.g. "@scope/name"), fallback to package.json
   displayName?: string // display name shown in manifest (falls back to name)
@@ -169,6 +175,7 @@ export interface MblerConfigData {
   mcVersion: string // use mcVersion, be like "1.21.100"
   script?: MblerConfigScript // sapi option
   minify?: 'oxc' | 'terser' | 'esbuild' // use minify
+  archive?: MblerArchiveConfig // brarchive packaging config
   build?: Partial<MblerBuildConfig> // build config
 }
 export const templateMblerConfig: MblerConfigData = {
@@ -187,6 +194,12 @@ export const templateMblerConfig: MblerConfigData = {
     dist: 'dist-pkg',
   },
   outGameOnDev: false,
+  archive: {
+    enabled: false,
+    autoGenerate: true,
+    exclude: [],
+    concurrency: 16,
+  },
   build: {
     rollupPlugins: [],
     cache: 'auto',

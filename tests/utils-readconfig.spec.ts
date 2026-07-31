@@ -102,4 +102,32 @@ describe('Utils - ReadProjectMblerConfig', () => {
     const result = await ReadProjectMblerConfig(tmpDir)
     expect(result.outdir?.behavior).toBe('custom/bp')
   })
+
+  it('should accept archive config and deep-merge defaults', async () => {
+    writeConfig(
+      `export default { description: "desc", mcVersion: "1.21.100", archive: { enabled: true, exclude: ["textures/**"] } }`
+    )
+    const { ReadProjectMblerConfig } = await import('../src/utils/index')
+    const result = await ReadProjectMblerConfig(tmpDir)
+    expect(result.archive).toEqual({
+      enabled: true,
+      autoGenerate: true,
+      exclude: ['textures/**'],
+      concurrency: 16,
+    })
+  })
+
+  it('should use archive defaults when archive is omitted', async () => {
+    writeConfig(
+      `export default { description: "desc", mcVersion: "1.21.100" }`
+    )
+    const { ReadProjectMblerConfig } = await import('../src/utils/index')
+    const result = await ReadProjectMblerConfig(tmpDir)
+    expect(result.archive).toEqual({
+      enabled: false,
+      autoGenerate: true,
+      exclude: [],
+      concurrency: 16,
+    })
+  })
 })
