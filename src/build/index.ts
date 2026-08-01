@@ -25,7 +25,6 @@ import { BuildConfig } from './config'
 import { Progress } from './progress'
 import type { CompileOpt } from '@mbler/mcx-types'
 import { styleText } from 'node:util'
-import type { LanguagePlugin } from '@volar/language-core'
 import { BuildCacheManager } from './cache'
 import { generateArchives } from './archive'
 
@@ -40,9 +39,6 @@ class Build {
     | {
         [key in 'behavior' | 'resources' | 'dist']: string
       }
-    | null = null
-  mcxLanguagePluginCreator:
-    | ((ts: typeof import('typescript')) => LanguagePlugin<unknown>)
     | null = null
   constructor(
     config: MblerConfigData,
@@ -383,9 +379,6 @@ class Build {
           tsconfigPath: tsconfigPath,
           sourcemap: false,
           ts: await import('typescript'),
-        }
-        if (this.mcxLanguagePluginCreator) {
-          pluginConfig.mcxLanguagePlugin = this.mcxLanguagePluginCreator
         }
         const rolldownPlugin = require('@mbler/mcx-core').rolldownPlugin
         plugin.push(rolldownPlugin(pluginConfig, this.outdirs!))

@@ -1,6 +1,6 @@
 {
   "name": "mbler",
-  "version": "0.2.11",
+  "version": "0.2.12-rc.1",
   "description": "mcx DSL cli",
   "repository": {
     "type": "git",
@@ -44,7 +44,6 @@
     "format": "prettier ./src ./example --write"
   },
   "dependencies": {
-    "@volar/language-core": "2.4.28",
     "adm-zip": "0.6.0",
     "chokidar": "5.0.0",
     "mcbe-brarchive-ts": "^0.1.2",
