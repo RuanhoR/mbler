@@ -20,7 +20,6 @@ A development toolchain for Minecraft Bedrock Edition Addons, built on [Rolldown
 - **Release packaging** — Build `.mcaddon` archives via `BUILD_MODULE=release` environment variable
 - **PMNX Marketplace** — Publish, install, uninstall, and manage addon packages
 - **i18n** — Built-in internationalization (English & Chinese)
-- **`mcx-tsc`** — Standalone MCX type-checker binary
 
 ## Installation
 
@@ -97,8 +96,7 @@ export default defineConfig({
 ```
 mbler/
 ├── bin/                    # CLI entry points
-│   ├── mbler.js            # Main CLI binary
-│   └── mcx-tsc.js          # MCX type-checker
+│   └── mbler.js            # Main CLI binary
 ├── src/
 │   ├── cli/                # Command definitions & dispatcher
 │   ├── build/              # Build engine (Rolldown-based)

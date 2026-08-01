@@ -44,9 +44,7 @@
     "format": "prettier ./src ./example --write"
   },
   "dependencies": {
-    "@mbler/mcx-server": "^0.1.2-rc.1",
     "@volar/language-core": "2.4.28",
-    "@volar/typescript": "2.4.28",
     "adm-zip": "0.6.0",
     "chokidar": "5.0.0",
     "mcbe-brarchive-ts": "^0.1.2",
@@ -63,8 +61,7 @@
     "registry": "https://registry.npmjs.org"
   },
   "bin": {
-    "mbler": "bin/mbler.cjs",
-    "mcx-tsc": "bin/mcx-tsc.cjs"
+    "mbler": "bin/mbler.cjs"
   },
   "peerDependencies": {
     "@mbler/mcx-core": ">=0.1.3-rc.4",

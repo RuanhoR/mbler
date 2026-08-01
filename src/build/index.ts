@@ -939,4 +939,3 @@ export { build, watch }
 export default Build
 export { Build }
 export { default as Sapi } from './sapi'
-export { default as McxTsc } from './plugin-mcx-tsc'

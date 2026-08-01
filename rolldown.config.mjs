@@ -15,7 +15,6 @@ const dependencies = Object.keys(
 )
 
 const external = [
-  '@volar/typescript/lib/quickstart/runTsc.js',
   'mbler/build',
   ...dependencies,
   /@mbler\/*/,
