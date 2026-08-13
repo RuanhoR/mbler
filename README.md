@@ -6,6 +6,7 @@
 [![Node](https://img.shields.io/node/v/mbler)](https://nodejs.org)
 [![Gitee](https://img.shields.io/badge/Gitee-mirror-red)](https://gitee.com/n304sc-haoran/mbler.git)
 [![Star](https://img.shields.io/github/stars/RuanhoR/mbler)](https://github.com/RuanhoR/mbler/stargazers)
+[![Codacy](https://app.codacy.com/project/badge/Grade/RuanhoR/mbler)](https://app.codacy.com/gh/RuanhoR/mbler/dashboard)
 A development toolchain for Minecraft Bedrock Edition Addons, built on [Rolldown](https://rolldown.rs).
 
 ## Features
