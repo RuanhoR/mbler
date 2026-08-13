@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { MblerBuildConfig, MblerConfigData, MblerConfigOutdir, templateMblerConfig } from '../types'
 import { Input } from '../commander'
-import { spawn } from 'node:child_process'
+import spawn from 'cross-spawn'
 import { BuildConfig } from '../build/config'
 import Logger from '../logger'
 import { pathToFileURL } from 'node:url'
@@ -245,7 +245,6 @@ export function runCommand(
   )
   const p = spawn(param[0] as string, param.slice(1), {
     cwd: cwd,
-    shell: process.platform === 'win32',
     stdio: stdio,
     timeout: 1000 * 60 * 10,
   })

@@ -109,7 +109,7 @@ describe('PublishManager', () => {
 
       await PublishManager.unpublish('@scope', 'pkg', '1.0.0')
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://d.pmnx.qzz.io/unpublish/@scope/pkg/1.0.0',
+        'https://d.pmnx.qzz.io/unpublish/%40scope/pkg/1.0.0',
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({

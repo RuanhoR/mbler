@@ -5,7 +5,7 @@ import {
   readFileAsJson,
   ReadProjectMblerConfig,
 } from '../utils'
-import { spawn } from 'node:child_process'
+import spawn from 'cross-spawn'
 import { generateRelease } from '../build/release'
 import config from '../config'
 import { ConfigManager } from './configManager'
@@ -132,7 +132,7 @@ export class PublishManager {
     if (!token) throw new Error(i18n.publish.tokenMissing)
     const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${base}/unpublish/${scope}/${name}/${version}`,
+      `${base}/unpublish/${encodeURIComponent(scope)}/${encodeURIComponent(name)}/${encodeURIComponent(version)}`,
       {
         method: 'POST',
         headers: {
@@ -158,7 +158,7 @@ export class PublishManager {
     if (!token) throw new Error(i18n.publish.tokenMissing)
     const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${base}/publish/session/${metadata.scope}/${metadata.name}/create`,
+      `${base}/publish/session/${encodeURIComponent(metadata.scope)}/${encodeURIComponent(metadata.name)}/create`,
       {
         method: 'POST',
         headers: {
@@ -197,7 +197,7 @@ export class PublishManager {
     if (!token) throw new Error(i18n.publish.tokenMissing)
     const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${base}/publish/session/${session}/upload`,
+      `${base}/publish/session/${encodeURIComponent(session)}/upload`,
       {
         method: 'POST',
         headers: {
@@ -240,9 +240,9 @@ export class PublishManager {
     if (!scripts?.build) {
       throw new Error(i18n.publish.noBuildScript)
     }
-    const pkgManager = (pkgData.packageManager as string) || 'npm'
+    const pm = (pkgData.packageManager as string)?.split('@')[0] || 'npm'
     await new Promise((resolve, reject) => {
-      const child = spawn(pkgManager, ['run', 'build'], { cwd: projectPath, shell: process.platform === 'win32' })
+      const child = spawn(pm, ['run', 'build'], { cwd: projectPath })
       child.on('close', (code) => {
         if (code === 0) {
           resolve(void 0)

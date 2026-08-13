@@ -159,6 +159,19 @@ export class ConfigManager {
 
   static async getRegistry(): Promise<string> {
     const saved = await this.getKey<string>('registry')
-    return saved || config.defaultPmnxBASE
+    return normalizeRegistryBase(saved || config.defaultPmnxBASE)
   }
+}
+
+export function normalizeRegistryBase(base: string): string {
+  let parsed: URL
+  try {
+    parsed = new URL(base)
+  } catch {
+    parsed = new URL(config.defaultPmnxBASE)
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    parsed = new URL(config.defaultPmnxBASE)
+  }
+  return parsed.toString().replace(/\/+$/, '')
 }

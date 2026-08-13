@@ -143,7 +143,9 @@ export const installCommand = defineCommand({
         throw new Error(i18n.install.noValidAddon)
       }
 
-      const id = `${scope.slice(1)}-${name}-${version}`
+      const safe = (s: string) =>
+        s.replace(/[\\/]/g, '-').replace(/\.\./g, '')
+      const id = `${safe(scope.slice(1))}-${safe(name)}-${safe(version)}`
       const installed =
         (await ConfigManager.getKey<Array<Record<string, unknown>>>(
           'installedPackages'

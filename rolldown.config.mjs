@@ -5,14 +5,14 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import * as path from 'node:path'
 import { execSync } from 'node:child_process'
 
+const pkg = JSON.parse(readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8'))
+
 writeFileSync(
   path.join(process.cwd(), 'src/version.ts'),
-  `export default { commit: \`${execSync('git log -1').toString().replace(/`/g, '\\`')}\`, version: "${JSON.parse(readFileSync(path.join(import.meta.dirname, 'package.json')).toString()).version}" }`
+  `export default { commit: \`${execSync('git log -1').toString().replace(/`/g, '\\`')}\`, version: "${pkg.version}" }`
 )
 
-const dependencies = Object.keys(
-  JSON.parse(readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')).dependencies || {}
-)
+const dependencies = Object.keys(pkg.dependencies || {})
 
 const external = [
   'mbler/build',
