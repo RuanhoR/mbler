@@ -1,12 +1,17 @@
 # MBLER
 
+---
+
 [![CI](https://github.com/RuanhoR/mbler/actions/workflows/lint.yml/badge.svg)](https://github.com/RuanhoR/mbler/actions/workflows/lint.yml)
 [![npm](https://img.shields.io/npm/v/mbler)](https://npmjs.com/package/mbler)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Node](https://img.shields.io/node/v/mbler)](https://nodejs.org)
 [![Gitee](https://img.shields.io/badge/Gitee-mirror-red)](https://gitee.com/n304sc-haoran/mbler.git)
 [![Star](https://img.shields.io/github/stars/RuanhoR/mbler)](https://github.com/RuanhoR/mbler/stargazers)
-[![Codacy](https://app.codacy.com/project/badge/Grade/RuanhoR/mbler)](https://app.codacy.com/gh/RuanhoR/mbler/dashboard)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/9e9522b1f8f642d28e3a1d20ff5dfc19)](https://app.codacy.com/gh/RuanhoR/mbler/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
+---
+
 A development toolchain for Minecraft Bedrock Edition Addons, built on [Rolldown](https://rolldown.rs).
 
 ## Features
