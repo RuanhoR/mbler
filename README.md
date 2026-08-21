@@ -43,6 +43,10 @@ pnpm create mbler
 pnpm build
 ```
 
+## Example Project
+
+[Bedwars Addon](https://github.com/RuanhoR/mcbe-bedwars-addon) | [RedStonePlugin Addon: Place, Cut](https://github.com/RuanhoR/mcbe-redstoneplugin-addon) | [Luckly Block Addon](https://github.com/RuanhoR/LuckBlock)
+
 ## CLI Commands
 
 | Command                                  | Alias | Description                                                 |
@@ -65,62 +69,9 @@ pnpm build
 | `view <package>`                         |       | View package details                                        |
 | `log <point\|clean>`                     |       | Log management                                              |
 
-## Configuration
+## Other Language README
 
-Create a `mbler.config.js` in your project root:
-
-```js
-// @ts-check
-import { defineConfig } from 'mbler'
-export default defineConfig({
-  name: 'my-addon',
-  description: 'A custom Minecraft addon',
-  version: '0.0.1',
-  mcVersion: '1.21.120',
-  script: {
-    main: 'index.ts',
-    lang: 'mcx', // 'ts' | 'mcx' | 'js'
-    ui: true, // enable @minecraft/server-ui
-  },
-  minify: false, // 'oxc' | 'terser' | 'esbuild'
-  archive: {
-    enabled: true, // pack sub-directories into .brarchive on build
-    autoGenerate: true,
-    exclude: ['textures/**'], // skip these sub-directories (glob)
-    concurrency: 16, // max directories archived in parallel
-  },
-  outdir: {
-    behavior: './dist/dep',
-    resources: './dist/res',
-    dist: './dist.mcaddon',
-  },
-})
-```
-
-## Project Structure
-
-```
-mbler/
-├── bin/                    # CLI entry points
-│   └── mbler.js            # Main CLI binary
-├── src/
-│   ├── cli/                # Command definitions & dispatcher
-│   ├── build/              # Build engine (Rolldown-based)
-│   │   ├── manifest.ts     # manifest.json generator
-│   │   ├── archive.ts      # .brarchive packaging
-│   │   ├── release.ts      # .mcaddon packaging
-│   │   ├── cache.ts        # Incremental build cache
-│   │   ├── minify.ts       # Minifier plugins
-│   │   └── sapi.ts         # SAPI version resolver
-│   ├── publisher/          # PMNX marketplace integration
-│   ├── i18n/               # Internationalization (zh, en)
-│   ├── uuid/               # Deterministic UUID generation
-│   └── utils/              # Shared utilities
-├── example/mbler-int/      # Example addon project
-├── tests/                  # Test suite (Vitest)
-├── dist/                   # Build output
-└── package.json
-```
+[中文](./README_zh.md)
 
 ## Related Repos
 
@@ -130,8 +81,6 @@ mbler/
 
 - [English Docs](https://mbler-docs.ruanhor.dpdns.org/)
 - [中文文档](https://zh-mbler-docs.ruanhor.dpdns.org/)
-- [한국어](./README_ko.md)
-- [日本語](./README_ja.md)
 
 ## Release Platforms
 
