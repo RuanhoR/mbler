@@ -20,7 +20,7 @@ export default {
       'mbler watch\n  - run build and enter watch mode; changes will trigger rebuilds',
     lang: 'mbler lang [?:language]\n- No args: show current language\n- language = "zh” | “en": set language',
     version:
-      'mbler version\n - Version control command\n- No args: Shows version + commit hash\n- --show=<commit|version>: Filters output\n- <new_version>: Updates version in both package.json and config file',
+      'mbler version\n - Version control command\n- No args: Shows version + commit hash\n- --show=<commit|version>: Filters output\n- <new_version>: Updates the version in package.json',
     'set-work-dir':
       'mbler set-work-dir <on|off>\n  - on: Enable work dir feature\n  - off: Disable work dir feature, use process.cwd() directly',
     publish:

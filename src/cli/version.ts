@@ -1,5 +1,11 @@
 import * as path from 'node:path'
-import { fileExists, isValidVersion, readFileAsJson, showText } from '../utils'
+import {
+  fileExists,
+  isValidVersion,
+  readFileAsJson,
+  showText,
+  writeJSON,
+} from '../utils'
 import MBLERVersion from '../version'
 import { defineCommand } from './command'
 
@@ -42,10 +48,10 @@ export const versionCommand = defineCommand({
         showText("can't set version, it is not a valid version")
         return 1
       }
-      const pkgJSON = await readFileAsJson<{ version: string }>(
-        path.join(ctx.workDir, 'package.json')
-      )
+      const pkgPath = path.join(ctx.workDir, 'package.json')
+      const pkgJSON = await readFileAsJson<{ version: string }>(pkgPath)
       pkgJSON.version = newVersion
+      await writeJSON(pkgPath, pkgJSON)
     } else {
       showVersion(ctx)
     }

@@ -4,12 +4,14 @@ const mockFileExists = vi.hoisted(() => vi.fn())
 const mockIsValidVersion = vi.hoisted(() => vi.fn())
 const mockReadFileAsJson = vi.hoisted(() => vi.fn())
 const mockShowText = vi.hoisted(() => vi.fn())
+const mockWriteJSON = vi.hoisted(() => vi.fn())
 
 vi.mock('../../src/utils', () => ({
   fileExists: mockFileExists,
   isValidVersion: mockIsValidVersion,
   readFileAsJson: mockReadFileAsJson,
   showText: mockShowText,
+  writeJSON: mockWriteJSON,
 }))
 
 vi.mock('../../src/version', () => ({
