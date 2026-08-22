@@ -3,9 +3,6 @@ import * as fs from 'node:fs/promises'
 import path, { isAbsolute } from 'node:path'
 import {
   type Plugin,
-  type RolldownLog,
-  type RolldownWatcherEvent,
-  type RolldownOptions,
   type RolldownBuild,
   type RolldownWatcher,
 } from 'rolldown'
@@ -17,16 +14,16 @@ import {
   join,
   ReadProjectMblerConfig,
   showText,
-  writeJSON,
+  writeJSON
 } from '../utils'
-import i18n from '../i18n'
-import { GamePath } from '../publisher/GamePath'
+import { styleText } from 'node:util'
 import { BuildConfig } from './config'
 import { Progress } from './progress'
-import type { CompileOpt } from '@mbler/mcx-types'
-import { styleText } from 'node:util'
 import { BuildCacheManager } from './cache'
 import { generateArchives } from './archive'
+import { copyIncludedEntries, safeCopy } from './copy'
+import { resolveOutDirs, resolveSourceDirs } from './dirs'
+import { createRollupBuild, createRollupWatch, type RollupBuildContext } from './rollup'
 
 class Build {
   currentConfig: MblerConfigData | null = null
@@ -134,27 +131,6 @@ class Build {
    * This field is populated during `handlerOtherAddon`.
    */
   public module: 'behavior' | 'resources' | 'all' | null = null
-  /**
-   * Determine whether a path refers to a regular file or a directory.
-   * Follows symbolic links recursively.  Throws if the path exists but
-   * is not one of the expected types.
-   *
-   * @param filePath file system path to inspect
-   * @returns "file" or "directory"
-   */
-  private async fileType(filePath: string): Promise<'file' | 'directory'> {
-    const stat = await fs.lstat(filePath)
-    if (stat.isFile()) {
-      return 'file'
-    }
-    if (stat.isDirectory()) {
-      return 'directory'
-    }
-    if (stat.isSymbolicLink()) {
-      return await this.fileType(await fs.readlink(filePath))
-    }
-    throw new Error('[build addon]: invalid file type')
-  }
   /**
    * Perform a single build of the project located at {@link baseBuildDir}.
    * The process is roughly:
@@ -310,6 +286,21 @@ class Build {
       this.resolve(0)
     }
   }
+  private rollupCtx(): RollupBuildContext {
+    if (!this.currentConfig || !this.srcDirs || !this.outdirs)
+      throw new Error(
+        `[build addon]: internal error: called before initialization`
+      )
+    return {
+      currentConfig: this.currentConfig,
+      baseBuildDir: this.baseBuildDir,
+      srcDirs: this.srcDirs,
+      outdirs: this.outdirs,
+      buildConfig: this.buildConfig,
+      cacheManager: this.cacheManager
+    }
+  }
+
   /**
    * Create and return a Rollup build instance configured for the
    * project's script.  The Rollup configuration mirrors the options
@@ -319,116 +310,17 @@ class Build {
    * (in which case nothing needs to be bundled).
    */
   private async createRollup() {
-    if (!this.currentConfig || !this.srcDirs || !this.outdirs)
+    if (!this.currentConfig) {
       throw new Error(
         `[build addon]: internal error: called before initialization`
       )
-    // no script handle
+    }
     if (!this.currentConfig.script) return
-    // entry file path
-    const main = path.join(
-      this.srcDirs.behavior,
-      'scripts',
-      this.currentConfig.script.main
-    )
-    if (!(await fileExists(main))) {
-      throw new Error(`[build addon]: main script not found: ${main}`)
-    }
-    const plugin: Plugin[] = []
-    // moduleDir
-    const moduleDir = path.join(this.baseBuildDir, 'node_modules')
-    if (!(await fileExists(moduleDir))) {
-      throw new Error(`[build addon]: node_modules not found: ${moduleDir}`)
-    }
-    // handle minify option
-    if (this.currentConfig.minify) {
-      if (
-        !['oxc', 'terser', 'esbuild', undefined].includes(
-          this.currentConfig.minify
-        )
-      ) {
-        throw new TypeError(
-          'ERR: [mbler]: mbler.config.js include invalid minify option: ' +
-            this.currentConfig.minify
-        )
-      }
-      if (this.currentConfig.minify === 'terser') {
-        // terser (need install terser in user's project)
-        plugin.push(require('./minify').terserPlugin(this.baseBuildDir))
-      } else if (this.currentConfig.minify === 'esbuild') {
-        // esbuild (need install esbuild in user's project)
-        plugin.push(require('./minify').esbuildPlugin(this.baseBuildDir))
-      }
-      // (minify: oxc) handle at write option
-    }
-    if (this.buildConfig?.rollupPlugins) {
-      // push user plugins
-      plugin.push(...this.buildConfig.rollupPlugins)
-    }
-    if (this.currentConfig.script?.lang == 'mcx') {
-      // mcx dsl plugin handle
-      try {
-        const tsconfigPath = path.join(this.baseBuildDir, 'tsconfig.json')
-        if (!(await fileExists(tsconfigPath))) {
-          throw new Error(
-            `[build addon]: tsconfig.json not found: ${tsconfigPath}`
-          )
-        }
-        const pluginConfig: CompileOpt = {
-          moduleDir: moduleDir,
-          tsconfigPath: tsconfigPath,
-          sourcemap: false,
-          ts: await import('typescript'),
-        }
-        const rolldownPlugin = require('@mbler/mcx-core').rolldownPlugin
-        plugin.push(rolldownPlugin(pluginConfig, this.outdirs!))
-      } catch (err) {
-        throw new Error(
-          `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`,
-          { cause: err }
-        )
-      }
-    }
+    const ctx = this.rollupCtx()
+    const { plugins, build } = await createRollupBuild(ctx)
     // save plugin array for watcher re-use
-    this.rollupPlugin = plugin
-    const rollupOption: RolldownOptions = {
-      input: main,
-      external: [
-        '@minecraft/server',
-        '@minecraft/server-ui',
-        ...(this.buildConfig?.rollupExternal ?? []),
-      ],
-      plugins: plugin,
-      experimental: {
-        ...(this.cacheManager?.shouldUseIncrementalBuild()
-          ? { incrementalBuild: true }
-          : {}),
-      },
-    }
-    // push user hook
-    if (this.buildConfig?.onWarn) {
-      const onWarn: (
-        warning: RolldownLog | string,
-        defaultHandler: (warning: string | (() => string)) => void
-      ) => void = (warning, _defaultHandler) => {
-        const msg =
-          typeof warning === 'string'
-            ? warning
-            : warning.message || 'Unknown warning'
-        this.buildConfig?.onWarn?.(this.currentConfig!, new Error(msg))
-      }
-      rollupOption.onwarn = onWarn
-    }
-    if (this.buildConfig?.onEnd) {
-      plugin.push({
-        name: 'build-end-plugin',
-        buildEnd: () => {
-          return this.buildConfig?.onEnd?.(this.currentConfig!)
-        },
-      })
-    }
-    const buildBundle = require('rolldown').rolldown
-    return await buildBundle(rollupOption)
+    this.rollupPlugin = plugins
+    return build
   }
 
   /**
@@ -482,82 +374,13 @@ class Build {
   }
 
   private async createRollupWatcher() {
-    if (
-      !this.srcDirs ||
-      !this.outdirs ||
-      !this.currentConfig ||
-      !this.rollupPlugin
-    )
+    if (!this.rollupPlugin)
       throw new Error(
         `[build addon]: internal error: called before initialization`
       )
-    let output = this.currentConfig.script?.main
-    if (!output) output = 'index.js'
-    if (path.extname(output) !== 'js')
-      output =
-        output.slice(0, output.length - path.extname(output).length) + '.js'
-    if (this.buildConfig?.outputFilename)
-      output = this.buildConfig.outputFilename
-    const outputDir = this.buildConfig?.outputDir || 'scripts'
-    const outputOptions: Record<string, unknown> = {
-      file: join(path.join(this.outdirs.behavior, outputDir), output),
-      format: 'esm',
-      sourcemap: false,
-    }
-    if (this.currentConfig.minify === 'oxc') {
-      outputOptions.minify = true
-    }
-    const rolldownWatch = require('rolldown').watch
-    const rollupWatcher = rolldownWatch({
-      input: path.join(
-        this.srcDirs.behavior,
-        'scripts',
-        this.currentConfig?.script?.main || ''
-      ),
-      external: [
-        '@minecraft/server',
-        '@minecraft/server-ui',
-        ...(this.buildConfig?.rollupExternal ?? []),
-      ],
-      plugins: this.rollupPlugin!,
-      experimental: {
-        ...(this.cacheManager?.shouldUseIncrementalBuild()
-          ? { incrementalBuild: true }
-          : {}),
-      },
-      output: outputOptions,
-      watch: {
-        clearScreen: false,
-        include: path.join(this.srcDirs.behavior, 'scripts/**/*'),
-        exclude: [
-          path.join(this.baseBuildDir, 'node_modules/**/*'),
-          path.join(this.baseBuildDir, '.git/**/*'),
-          this.outdirs.behavior,
-          this.outdirs.resources,
-          this.outdirs.dist,
-        ],
-      } as Record<string, unknown>,
-    })
-    rollupWatcher.on('change', async (filePath: string) => {
-      Logger.i('Watcher', `file changed: ${filePath}, start rebuild`)
-    })
-    rollupWatcher.on('event', async (event: RolldownWatcherEvent) => {
-      if (event.code === 'ERROR') {
-        Logger.e('Watcher', `rollup error: ${event.error.stack || event.error}`)
-        showText(
-          'MBLER__ERR__ROLLUP: ' +
-            (event.error.stack || event.error) +
-            ' Log at ' +
-            Logger.LogFile
-        )
-      } else if (event.code === 'END') {
-        Logger.i('Watcher', `rebuild success`)
-      } else if (event.code === 'BUNDLE_END') {
-        // rolldown handles incremental build internally
-      }
-    })
-    return rollupWatcher
+    return await createRollupWatch(this.rollupCtx(), this.rollupPlugin)
   }
+
   private async onChange(filePath: string) {
     const isBundle = this.currentConfig?.build?.bundle !== false
     if (
@@ -636,50 +459,25 @@ class Build {
         path.join(this.srcDirs.behavior, 'scripts'),
         filePath
       )
-      await fs.cp(
+      await safeCopy(
         filePath,
-        path.join(this.outdirs.behavior, outputDir, relativePath),
-        { recursive: true, force: true }
+        path.join(this.outdirs.behavior, outputDir, relativePath)
       )
     }
     // if behavior or resources change, we can just copy the changed file instead of copy all files again.
-    if (isBehaviorChange || isResourcesChange) {
-      const handlerBP = async () => {
-        if (!this.srcDirs || !this.outdirs)
-          throw new Error(
-            `[build addon]: internal error: called before initialization`
-          )
-        const relativePath = path.relative(this.srcDirs.behavior, filePath)
-        await fs.cp(
-          path.join(this.srcDirs.behavior, relativePath),
-          path.join(this.outdirs.behavior, relativePath),
-          {
-            recursive: true,
-            force: true,
-          }
-        )
-      }
-      const handlerRP = async () => {
-        if (!this.srcDirs || !this.outdirs)
-          throw new Error(
-            `[build addon]: internal error: called before initialization`
-          )
-        const relativePath = path.relative(this.srcDirs.resources, filePath)
-        await fs.cp(
-          path.join(this.srcDirs.resources, relativePath),
-          path.join(this.outdirs.resources, relativePath),
-          {
-            recursive: true,
-            force: true,
-          }
-        )
-      }
-      if (isBehaviorChange) {
-        await handlerBP()
-      }
-      if (isResourcesChange) {
-        await handlerRP()
-      }
+    if (isBehaviorChange) {
+      const relativePath = path.relative(this.srcDirs.behavior, filePath)
+      await safeCopy(
+        path.join(this.srcDirs.behavior, relativePath),
+        path.join(this.outdirs.behavior, relativePath)
+      )
+    }
+    if (isResourcesChange) {
+      const relativePath = path.relative(this.srcDirs.resources, filePath)
+      await safeCopy(
+        path.join(this.srcDirs.resources, relativePath),
+        path.join(this.outdirs.resources, relativePath)
+      )
     }
     showText(
       `[${styleText('green', 'mbler')}] ${styleText('bgYellow', `file changed: ${filePath}`)}`
@@ -692,17 +490,29 @@ class Build {
       throw new Error(
         `[build addon]: internal error: called before initialization`
       )
-    const chokidar = chokidarWatch(this.baseBuildDir, {
-      ignored: [
-        this.outdirs.behavior,
-        this.outdirs.resources,
-        this.outdirs.dist,
-        path.join(this.baseBuildDir, 'node_modules'),
-        path.join(this.baseBuildDir, '.git'),
+    // Only watch what actually affects the build: the config file,
+    // package.json and the behavior/resources source trees.  Watching the
+    // whole project root made chokidar report unrelated paths (dist, caches,
+    // editor temp files) and triggered spurious copy attempts.
+    const chokidar = chokidarWatch(
+      [
+        path.join(this.baseBuildDir, BuildConfig.ConfigFile),
+        path.join(this.baseBuildDir, 'package.json'),
+        path.join(this.srcDirs.behavior, '**/*'),
+        path.join(this.srcDirs.resources, '**/*')
       ],
-      ignoreInitial: true,
-      interval: 100,
-    })
+      {
+        ignored: [
+          this.outdirs.behavior,
+          this.outdirs.resources,
+          this.outdirs.dist,
+          '**/node_modules/**',
+          '**/.git/**'
+        ],
+        ignoreInitial: true,
+        interval: 100
+      }
+    )
     const onChange = async (filePath: string) => {
       await this.onChange(filePath)
     }
@@ -783,36 +593,8 @@ class Build {
     // check run time
     if (!this.currentConfig || !this.baseBuildDir)
       throw new Error('[build data]: already initialized')
-    // source code dir
-    this.srcDirs = {
-      behavior: path.join(this.baseBuildDir, BuildConfig.behavior),
-      resources: path.join(this.baseBuildDir, BuildConfig.resources), // res
-    }
-    // output dir
-    if (this.currentConfig.outGameOnDev && process.env.BUILD_MODULE != 'release') {
-      showText(i18n.build.noBuildModuleRelease)
-      const gamePath = await GamePath.getPathWithASK()
-      const packName = (this.currentConfig.name ?? 'unknown').replace(/^@/, '').replace('/', '-')
-      this.outdirs = {
-        behavior: path.join(gamePath, 'development_behavior_packs', packName),
-        resources: path.join(gamePath, 'development_resource_packs', packName),
-        dist: this.currentConfig.outdir?.dist
-          ? join(this.baseBuildDir, this.currentConfig.outdir.dist)
-          : path.join(this.baseBuildDir, 'dist-pkg'),
-      }
-    } else {
-      this.outdirs = {
-        behavior: this.currentConfig.outdir?.behavior
-          ? join(this.baseBuildDir, this.currentConfig.outdir.behavior)
-          : path.join(this.baseBuildDir, 'dist/dep'),
-        resources: this.currentConfig.outdir?.resources
-          ? join(this.baseBuildDir, this.currentConfig.outdir.resources)
-          : path.join(this.baseBuildDir, 'dist/res'),
-        dist: this.currentConfig.outdir?.dist
-          ? join(this.baseBuildDir, this.currentConfig.outdir.dist)
-          : path.join(this.baseBuildDir, 'dist-pkg'),
-      }
-    }
+    this.srcDirs = resolveSourceDirs(this.baseBuildDir)
+    this.outdirs = await resolveOutDirs(this.currentConfig, this.baseBuildDir)
   }
 
   /**
@@ -821,72 +603,23 @@ class Build {
    * by inspecting the source directories.
    */
   private async handlerOtherAddon() {
-    if (!this.srcDirs)
+    if (!this.srcDirs || !this.outdirs)
       throw new Error(
         '[build addon]: internal error: called before initialization'
       )
     const isHasBp = await fileExists(this.srcDirs.behavior)
     if (!isHasBp)
       throw new Error('[build addon]: behavior source directory not found')
-    // init copy resources
-    const handlerBP = async () => {
-      if (!this.srcDirs || !this.outdirs)
-        throw new Error(
-          '[build addon]: internal error: called before initialization'
-        )
-      for (const f of await fs.readdir(this.srcDirs.behavior)) {
-        const fType = await this.fileType(path.join(this.srcDirs.behavior, f))
-        const includeType =
-          BuildConfig.includes.behavior[f] || BuildConfig.includes.public[f]
-        if (includeType == fType) {
-          await fs.cp(
-            path.join(this.srcDirs.behavior, f),
-            path.join(this.outdirs.behavior, f),
-            {
-              recursive: true,
-              force: true,
-            }
-          )
-        } else if (includeType == 'skip') {
-          continue
-        } else {
-          throw new Error(
-            `[build addon]: invalid file: ${path.join(this.srcDirs.behavior, f)}: type: ${fType}`
-          )
-        }
-      }
-    }
-    const handlerRP = async () => {
-      if (!this.srcDirs || !this.outdirs)
-        throw new Error(
-          '[build addon]: internal error: called before initialization'
-        )
-      for (const f of await fs.readdir(this.srcDirs.resources)) {
-        const fType = await this.fileType(path.join(this.srcDirs.resources, f))
-        const includeType =
-          BuildConfig.includes.resources[f] || BuildConfig.includes.public[f]
-        if (includeType == fType) {
-          await fs.cp(
-            path.join(this.srcDirs.resources, f),
-            path.join(this.outdirs.resources, f),
-            {
-              recursive: true,
-              force: true,
-            }
-          )
-        } else if (includeType == 'skip') {
-          continue
-        } else {
-          throw new Error(
-            `[build addon]: invalid file: ${path.join(this.srcDirs.resources, f)}: type: ${fType}`
-          )
-        }
-      }
-    }
     const tasks: Promise<void>[] = []
     if (await fileExists(this.srcDirs.behavior)) {
       this.module = 'behavior'
-      tasks.push(handlerBP())
+      tasks.push(
+        copyIncludedEntries(
+          this.srcDirs.behavior,
+          this.outdirs.behavior,
+          'behavior'
+        )
+      )
     }
     if (await fileExists(this.srcDirs.resources)) {
       if (this.module == 'behavior') {
@@ -894,7 +627,13 @@ class Build {
       } else {
         this.module = 'resources'
       }
-      tasks.push(handlerRP())
+      tasks.push(
+        copyIncludedEntries(
+          this.srcDirs.resources,
+          this.outdirs.resources,
+          'resources'
+        )
+      )
     }
     if (!this.module) {
       throw new Error(
