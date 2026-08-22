@@ -82,17 +82,53 @@ export class Input {
   static select<T extends string[]>(tip: string, arr: T): Promise<T[number]> {
     let index: number = 0
     let win = false
+    let blockRows = 0
 
-    console.log(
-      `\x1b[2K\x1b[47m\x1b[1m\x1b[30m${tip} ${i18n.commander.selectTip}   \x1b[0m\x1b[?25l`
-    )
-    console.log(Input.render(arr, index) + '\n\x1b[1A')
+    const stripAnsi = (s: string): string => {
+      let out = ''
+      let inSeq = false
+      for (const ch of s) {
+        if (ch === '\x1b') {
+          inSeq = true
+        } else if (inSeq) {
+          if (ch === 'm') inSeq = false
+        } else {
+          out += ch
+        }
+      }
+      return out
+    }
+    const visualWidth = (s: string): number => {
+      let w = 0
+      for (const ch of stripAnsi(s)) {
+        w += (ch.codePointAt(0) ?? 0) > 0xff ? 2 : 1
+      }
+      return w
+    }
+    const lineRows = (s: string): number =>
+      Math.max(1, Math.ceil(visualWidth(s) / (process.stdout.columns || 80)))
+
+    const draw = (first: boolean): void => {
+      const tipLine =
+        '\x1b[47m\x1b[1m\x1b[30m' +
+        `${tip} ${i18n.commander.selectTip}   ` +
+        '\x1b[0m'
+      const optionLine = Input.render(arr, index)
+      const rows = lineRows(tipLine) + lineRows(optionLine)
+      if (!first && blockRows > 0) {
+        process.stdout.write(`\x1b[${blockRows - 1}A\r\x1b[J`)
+      } else {
+        process.stdout.write('\x1b[2K\x1b[?25l')
+      }
+      process.stdout.write(tipLine + '\n' + optionLine)
+      blockRows = rows
+    }
 
     const handlerNext = () => {
       if (win) return
       index++
       if (index >= arr.length) index = 0
-      console.log(`\x1b[1A${Input.render(arr, index)}\n\x1b[1A`)
+      draw(false)
       click('n', {
         ctrl: false,
         alt: false,
@@ -100,6 +136,7 @@ export class Input {
     }
 
     return new Promise((resolve) => {
+      draw(true)
       click('n', {
         ctrl: false,
         alt: false,
@@ -109,7 +146,7 @@ export class Input {
         alt: false,
       }).then(() => {
         win = true
-        process.stdout.write('\x1b[?25h')
+        process.stdout.write('\x1b[?25h\n')
         resolve(arr[index]!)
       })
     })
