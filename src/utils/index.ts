@@ -156,6 +156,14 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
   let currstr = ''
   let tip = ''
   let show = true
+  let blockRows = 1
+  const visualWidth = (s: string): number => {
+    let w = 0
+    for (const ch of s) {
+      w += (ch.codePointAt(0) ?? 0) > 0xff ? 2 : 1
+    }
+    return w
+  }
   // 在输入时使用输入中间件
   Input.use(function (
     raw: string,
@@ -164,25 +172,18 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
     name: string
   ): void {
     if (typeof curr !== 'function') return
-    if (ctrl && (raw === 'return' || raw === 'enter')) {
+    if (!alt && (raw === 'return' || raw === 'enter')) {
       curr(currstr)
       curr = null
       currstr = ''
-      console.log('\n')
+      process.stdout.write('\n')
       return
     }
     if (ctrl || alt) return
-    if (raw) {
-      if (raw === 'return' || raw === 'enter') {
-        currstr += '\n'
-        refreshInput()
-        return
-      }
-      if (raw === 'backspace') {
-        currstr = currstr.slice(0, -1)
-        refreshInput()
-        return
-      }
+    if (raw === 'backspace') {
+      currstr = currstr.slice(0, -1)
+      refreshInput()
+      return
     }
     if (name && typeof name === 'string') {
       currstr += name
@@ -191,32 +192,29 @@ export const input = (function (): (t: string, g?: boolean) => Promise<string> {
   })
 
   function refreshInput(): void {
-    const lines = currstr.split('\n')
-    const lineCount = lines.length
-    if (lineCount > 1) {
-      process.stdout.write(`\x1b[${lineCount - 1}A`)
+    const text = show ? currstr : ''
+    const cols = process.stdout.columns || 80
+    const rows = Math.max(
+      1,
+      Math.ceil((visualWidth(tip) + visualWidth(text)) / cols)
+    )
+    if (blockRows > 1) {
+      process.stdout.write(`\x1b[${blockRows - 1}A\r\x1b[J`)
+    } else {
+      process.stdout.write('\r\x1b[2K')
     }
-    for (let i = 0; i < lineCount; i++) {
-      process.stdout.write(`\x1b[2K\r`)
-      if (i === 0) {
-        process.stdout.write(tip)
-      }
-      if (show) {
-        process.stdout.write(lines[i] || '')
-      }
-      if (i < lineCount - 1) {
-        process.stdout.write('\n')
-      }
-    }
+    process.stdout.write(tip + text)
+    blockRows = rows
   }
   /**
-   * 输入文本
+   * 输入文本（单行，Enter 提交）
    * @param{string} tip 提示
    * @param{boolean} show 是否显示输入
    */
   return async function (t: string = '', g: boolean = true): Promise<string> {
     return new Promise((resolve) => {
       flushOutputQueue().then(() => {
+        blockRows = 1
         show = g
         tip = t
         refreshInput()
