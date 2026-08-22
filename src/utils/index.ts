@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { MblerBuildConfig, MblerConfigData, MblerConfigOutdir, templateMblerConfig } from '../types'
 import { Input } from '../commander'
-import spawn from 'cross-spawn'
+import { spawn as cpSpawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
 import Logger from '../logger'
 import { pathToFileURL } from 'node:url'
@@ -226,6 +226,27 @@ export function isValidVersion(version: string): boolean {
     return false
   return true
 }
+/**
+ * Minimal cross-platform replacement for cross-spawn:
+ * Windows package-manager shims (.cmd/.bat) can only be launched through the
+ * shell, so the command line is rebuilt with conservative quoting there.
+ */
+export function resolveSpawnCommand(
+  file: string,
+  args: readonly string[]
+): { file: string; args: string[]; shell: boolean } {
+  if (process.platform !== 'win32') {
+    return { file, args: [...args], shell: false }
+  }
+  const cmdline = [file, ...args]
+    .map((arg) =>
+      /^[\w@%+=:,./\\~-]+$/.test(arg)
+        ? arg
+        : `"${arg.replaceAll('"', '')}"`
+    )
+    .join(' ')
+  return { file: cmdline, args: [], shell: true }
+}
 export function runCommand(
   param: string[],
   cwd: string,
@@ -243,10 +264,12 @@ export function runCommand(
       r(...argv)
     })
   )
-  const p = spawn(param[0] as string, param.slice(1), {
+  const cmd = resolveSpawnCommand(param[0] as string, param.slice(1))
+  const p = cpSpawn(cmd.file, cmd.args, {
     cwd: cwd,
     stdio: stdio,
     timeout: 1000 * 60 * 10,
+    shell: cmd.shell,
   })
   if (p.stdout) {
     p.stdout.on('data', (chunk: Buffer) => {

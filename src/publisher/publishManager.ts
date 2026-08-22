@@ -1,11 +1,12 @@
 import path from 'node:path'
+import { spawn as cpSpawn } from 'node:child_process'
 import {
   fileExists,
   findReadme,
   readFileAsJson,
   ReadProjectMblerConfig,
+  resolveSpawnCommand,
 } from '../utils'
-import spawn from 'cross-spawn'
 import { generateRelease } from '../build/release'
 import config from '../config'
 import { ConfigManager } from './configManager'
@@ -242,7 +243,11 @@ export class PublishManager {
     }
     const pm = (pkgData.packageManager as string)?.split('@')[0] || 'npm'
     await new Promise((resolve, reject) => {
-      const child = spawn(pm, ['run', 'build'], { cwd: projectPath })
+      const cmd = resolveSpawnCommand(pm, ['run', 'build'])
+      const child = cpSpawn(cmd.file, cmd.args, {
+        cwd: projectPath,
+        shell: cmd.shell,
+      })
       child.on('close', (code) => {
         if (code === 0) {
           resolve(void 0)
