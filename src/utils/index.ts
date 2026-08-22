@@ -1,6 +1,11 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
-import { MblerBuildConfig, MblerConfigData, MblerConfigOutdir, templateMblerConfig } from '../types'
+import {
+  MblerBuildConfig,
+  MblerConfigData,
+  MblerConfigOutdir,
+  templateMblerConfig,
+} from '../types'
 import { Input } from '../commander'
 import { spawn as cpSpawn } from 'node:child_process'
 import { BuildConfig } from '../build/config'
@@ -37,8 +42,14 @@ export async function ReadProjectMblerConfig(
   const config: MblerConfigData = {
     ...templateMblerConfig,
     ...file,
-    outdir: { ...templateMblerConfig.outdir, ...file.outdir } as MblerConfigOutdir,
-    build: { ...templateMblerConfig.build, ...file.build } as Partial<MblerBuildConfig>,
+    outdir: {
+      ...templateMblerConfig.outdir,
+      ...file.outdir,
+    } as MblerConfigOutdir,
+    build: {
+      ...templateMblerConfig.build,
+      ...file.build,
+    } as Partial<MblerBuildConfig>,
     archive: {
       ...templateMblerConfig.archive!,
       ...(file.archive ?? {}),
@@ -238,12 +249,17 @@ export function resolveSpawnCommand(
   if (process.platform !== 'win32') {
     return { file, args: [...args], shell: false }
   }
+  const unsafe = /[&|<>^%!"\r\n]/
   const cmdline = [file, ...args]
-    .map((arg) =>
-      /^[\w@%+=:,./\\~-]+$/.test(arg)
-        ? arg
-        : `"${arg.replaceAll('"', '')}"`
-    )
+    .map((arg) => {
+      if (/^[\w@+=:,./\\~-]+$/.test(arg)) return arg
+      if (unsafe.test(arg)) {
+        throw new Error(
+          `resolveSpawnCommand refused unsafe argument: ${JSON.stringify(arg)}`
+        )
+      }
+      return `"${arg}"`
+    })
     .join(' ')
   return { file: cmdline, args: [], shell: true }
 }
@@ -256,13 +272,13 @@ export function runCommand(
   let data = ''
   const promise = new Promise<{ code: number | null; data: string }>(
     (r) =>
-    (resolve = (...argv) => {
-      Logger.i(
-        'Utils: runCommand',
-        `run command: '${param.join(' ')}' return: ${JSON.stringify(argv[0])}`
-      )
-      r(...argv)
-    })
+      (resolve = (...argv) => {
+        Logger.i(
+          'Utils: runCommand',
+          `run command: '${param.join(' ')}' return: ${JSON.stringify(argv[0])}`
+        )
+        r(...argv)
+      })
   )
   const cmd = resolveSpawnCommand(param[0] as string, param.slice(1))
   const p = cpSpawn(cmd.file, cmd.args, {
