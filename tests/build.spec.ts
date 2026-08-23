@@ -1,13 +1,24 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, afterAll } from 'vitest'
 import sapi from '../src/build/sapi'
+import config from '../src/config'
 import { isValidVersion } from '../src/utils'
 import { generateRelease } from '../src/build/release'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import * as os from 'node:os'
 
+const tempDirs: string[] = []
+
+afterEach(() => {
+  for (const dir of tempDirs.splice(0)) {
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 function createTempDir(): string {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'mbler-test-'))
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mbler-test-'))
+  tempDirs.push(dir)
+  return dir
 }
 
 function createTestFile(
@@ -40,7 +51,6 @@ describe('generateRelease', () => {
       module: 'all',
     })
     expect(fs.existsSync(distPath)).toBe(false)
-    fs.rmSync(tmpDir, { recursive: true, force: true })
   })
 
   it('should package behavior module only', async () => {
@@ -64,7 +74,6 @@ describe('generateRelease', () => {
     expect(names).toContain('manifest.json')
     expect(names).toContain('scripts/main.js')
     expect(names).not.toContain('behavior/')
-    fs.rmSync(tmpDir, { recursive: true, force: true })
   })
 
   it('should package resources module only', async () => {
@@ -88,7 +97,6 @@ describe('generateRelease', () => {
     expect(names).toContain('manifest.json')
     expect(names).toContain('texts/en_US.lang')
     expect(names).not.toContain('resources/')
-    fs.rmSync(tmpDir, { recursive: true, force: true })
   })
 
   it('should package both behavior and resources with all module', async () => {
@@ -117,7 +125,6 @@ describe('generateRelease', () => {
     expect(names).toContain('behavior/scripts/main.js')
     expect(names).toContain('resources/manifest.json')
     expect(names).toContain('resources/texts/en_US.lang')
-    fs.rmSync(tmpDir, { recursive: true, force: true })
   })
 
   it('should package nested directories in all module', async () => {
@@ -145,7 +152,6 @@ describe('generateRelease', () => {
     expect(names).toContain('behavior/entities/player.json')
     expect(names).toContain('resources/textures/items/sword.png')
     expect(names).toContain('resources/texts/zh_CN.lang')
-    fs.rmSync(tmpDir, { recursive: true, force: true })
   })
 
   it('should throw when outdirs is missing', async () => {
@@ -159,6 +165,9 @@ describe('generateRelease', () => {
 })
 
 describe('sapiVersion', () => {
+  afterAll(() => {
+    fs.rmSync(path.join(config.tmpdir, '_sapi_version.json'), { force: true })
+  })
   it('should out vaild version', async () => {
     expect(
       isValidVersion(
