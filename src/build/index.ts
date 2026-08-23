@@ -174,17 +174,13 @@ class Build {
     // load data
     await this.loadData()
     // batch exec
-    await Promise.all([
-      (() => {
-        if (this.buildConfig?.clean !== false && this.outdirs) {
-          return Promise.all([
-            fs.rm(this.outdirs.behavior, { recursive: true, force: true }),
-            fs.rm(this.outdirs.resources, { recursive: true, force: true }),
-          ])
-        }
-      })(),
-      this.handlerOtherAddon(),
-    ])
+    if (this.buildConfig?.clean !== false && this.outdirs) {
+      await Promise.all([
+        fs.rm(this.outdirs.behavior, { recursive: true, force: true }),
+        fs.rm(this.outdirs.resources, { recursive: true, force: true }),
+      ])
+    }
+    await this.handlerOtherAddon()
     if (!this.isWatch) {
       progress.update(10)
       if (this.isDebug) {
