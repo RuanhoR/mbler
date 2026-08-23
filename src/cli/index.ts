@@ -18,6 +18,7 @@ import { loginCommand } from './login'
 import { profileCommand } from './profile'
 import { viewCommand } from './view'
 import { cacheCommand } from './cache'
+import { syncMcDepCommand } from './syncMcDep'
 
 function getMatchChance(a: string, b: string): number {
   let match = 0
@@ -271,6 +272,7 @@ const main = (function () {
     viewCommand,
     configCommand,
     cacheCommand,
+    syncMcDepCommand,
   ]
 
   const cmdMap: Record<string, CommandDef> = {}

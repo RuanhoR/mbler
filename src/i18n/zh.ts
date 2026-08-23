@@ -43,6 +43,8 @@ git https://github.com/RuanhoR/mbler/`,
       'mbler config get <key>\nmbler config set <key> <value>\nmbler config point <path>\nmbler config point get',
     cache:
       'mbler cache list\n  - 显示缓存占用\nmbler cache refresh sapi_version\n  - 刷新 sapi 版本缓存\nmbler cache sapi_version clear\n  - 清除 sapi 版本缓存',
+    'sync-mc-dep':
+      'mbler sync-mc-dep\n  - 从 mbler.config.js 检测 mcVersion 并写入匹配的 @minecraft/server + @minecraft/server-ui 版本到 package.json\nmbler sync-mc-dep -b\n  - 强制 beta 模式\nmbler sync-mc-dep -f\n  - 写入完整 SAPI 版本字符串（含预发布标签）',
   },
   init: {
     useUI: '使用UI模块? (y/n): ',

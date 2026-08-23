@@ -22,6 +22,7 @@ export const cmdList = [
   'view',
   'config',
   'cache',
+  'sync-mc-dep',
 ] as const
 type HelpCommand = (typeof cmdList)[number]
 export interface language {

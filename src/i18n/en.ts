@@ -38,6 +38,8 @@ export default {
       'mbler config get <key>\nmbler config set <key> <value>\nmbler config point <path>\nmbler config point get',
     cache:
       'mbler cache list\n  - Show cache usage\nmbler cache refresh sapi_version\n  - Refresh sapi version cache\nmbler cache sapi_version clear\n  - Clear sapi version cache',
+    'sync-mc-dep':
+      'mbler sync-mc-dep\n  - Detect mcVersion from mbler.config.js and write matching @minecraft/server + @minecraft/server-ui versions into package.json\nmbler sync-mc-dep -b\n  - Force beta mode\nmbler sync-mc-dep -f\n  - Write full SAPI version strings (including prerelease tags)',
   },
   init: {
     useUI: 'Use UI? (y/n): ',
