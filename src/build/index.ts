@@ -379,6 +379,41 @@ class Build {
     return await createRollupWatch(this.rollupCtx(), this.rollupPlugin)
   }
 
+  /** Serialises watch-mode file processing to prevent concurrent fs races. */
+  private changeQueue: Promise<void> = Promise.resolve()
+  /** Batch timer for debouncing rapid file events (git checkout, branch switch). */
+  private pendingChanges: Set<string> = new Set()
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+  private enqueueChange(filePath: string): void {
+    this.pendingChanges.add(filePath)
+    if (this.debounceTimer) clearTimeout(this.debounceTimer)
+    this.debounceTimer = setTimeout(() => {
+      const batch = [...this.pendingChanges]
+      this.pendingChanges.clear()
+      if (batch.length === 0) return
+      this.changeQueue = this.changeQueue
+        .then(() => this.processBatch(batch))
+        .catch(e => {
+          Logger.e('Watcher', `batch error: ${e instanceof Error ? e.stack : e}`)
+          showText(
+            `[${styleText('yellow', 'mbler')}] warning: batch copy error — see log`
+          )
+        })
+    }, 50)
+  }
+
+  private async processBatch(files: string[]): Promise<void> {
+    for (const filePath of files) {
+      try {
+        await this.onChange(filePath)
+      } catch (e) {
+        // isolate per-file failures so one bad file doesn't kill the watcher
+        Logger.e('Watcher', `error processing ${filePath}: ${e instanceof Error ? e.message : e}`)
+      }
+    }
+  }
+
   private async onChange(filePath: string) {
     const isBundle = this.currentConfig?.build?.bundle !== false
     if (
@@ -516,12 +551,11 @@ class Build {
         interval: 100
       }
     )
-    const onChange = async (filePath: string) => {
-      await this.onChange(filePath)
+    const onChange = (filePath: string) => {
+      this.enqueueChange(filePath)
     }
     chokidar.on('change', onChange)
     chokidar.on('add', onChange)
-    chokidar.on('addDir', onChange)
     if (isBundle && this.currentConfig?.script) {
       const rollupWatcher = await this.createRollupWatcher()
       this.watchers = {
