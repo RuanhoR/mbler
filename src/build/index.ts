@@ -21,7 +21,7 @@ import { BuildConfig } from './config'
 import { Progress } from './progress'
 import { BuildCacheManager } from './cache'
 import { generateArchives } from './archive'
-import { copyIncludedEntries, safeCopy } from './copy'
+import { copyIncludedEntries, safeCopy, ensureLanguagesJson } from './copy'
 import { resolveOutDirs, resolveSourceDirs } from './dirs'
 import { createRollupBuild, createRollupWatch, type RollupBuildContext } from './rollup'
 
@@ -614,7 +614,7 @@ class Build {
           this.srcDirs.behavior,
           this.outdirs.behavior,
           'behavior'
-        )
+        ).then(() => ensureLanguagesJson(this.outdirs.behavior))
       )
     }
     if (await fileExists(this.srcDirs.resources)) {
@@ -628,7 +628,7 @@ class Build {
           this.srcDirs.resources,
           this.outdirs.resources,
           'resources'
-        )
+        ).then(() => ensureLanguagesJson(this.outdirs.resources))
       )
     }
     if (!this.module) {

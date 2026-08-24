@@ -66,3 +66,27 @@ export async function copyIncludedEntries(
     }
   }
 }
+
+/**
+ * If a texts/ directory contains .lang files but no languages.json,
+ * generate one from the available .lang filenames.  Minecraft Bedrock
+ * requires this file to activate localization — without it all .lang
+ * entries are silently ignored and raw keys are displayed.
+ */
+export async function ensureLanguagesJson(destDir: string): Promise<void> {
+  const textsDir = path.join(destDir, 'texts');
+  try {
+    const files = await fs.readdir(textsDir);
+    const langFiles = files.filter(f => f.endsWith('.lang'));
+    if (langFiles.length === 0) return;
+    const langJsonPath = path.join(textsDir, 'languages.json');
+    try {
+      await fs.access(langJsonPath);
+      return; // already exists
+    } catch {}
+    const langs = langFiles.map(f => f.replace(/.lang$/, '')).sort();
+    await fs.writeFile(langJsonPath, JSON.stringify(langs), 'utf-8');
+  } catch {
+    // texts dir doesn't exist or can't be read — nothing to do
+  }
+}
