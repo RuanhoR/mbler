@@ -76,15 +76,14 @@ export class DevWsServer {
     )
 
     if (needsFullReload) {
-      this.broadcastCommand('/reload')
+      this.broadcastCommand('/reload all')
       console.log(
-        `[dev-ws] resource/manifest change detected → /reload sent to ${this.clients.size} client(s)`
+        `[dev-ws] resource/manifest change → /reload all sent to ${this.clients.size} client(s)`
       )
     } else {
-      this.broadcastCommand('/script profiler start')
-      this.broadcastCommand('/script profiler stop')
+      this.broadcastCommand('/reload')
       console.log(
-        `[dev-ws] script change → soft reload sent to ${this.clients.size} client(s)`
+        `[dev-ws] script change → /reload sent to ${this.clients.size} client(s)`
       )
     }
   }
