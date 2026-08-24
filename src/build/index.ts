@@ -22,7 +22,7 @@ import { Progress } from './progress'
 import { BuildCacheManager } from './cache'
 import { generateArchives } from './archive'
 import { DevWsServer } from './devWsServer'
-import { copyIncludedEntries, safeCopy, ensureLanguagesJson } from './copy'
+import { copyIncludedEntries, safeCopy, ensureLanguagesJson, validateAndCopyChangedFile } from './copy'
 import { resolveOutDirs, resolveSourceDirs } from './dirs'
 import { createRollupBuild, createRollupWatch, type RollupBuildContext } from './rollup'
 
@@ -462,19 +462,21 @@ class Build {
         path.join(this.outdirs.behavior, outputDir, relativePath)
       )
     }
-    // if behavior or resources change, we can just copy the changed file instead of copy all files again.
+    // if behavior or resources change, validate + copy the changed file
     if (isBehaviorChange) {
-      const relativePath = path.relative(this.srcDirs.behavior, filePath)
-      await safeCopy(
-        path.join(this.srcDirs.behavior, relativePath),
-        path.join(this.outdirs.behavior, relativePath)
+      await validateAndCopyChangedFile(
+        this.srcDirs.behavior,
+        this.outdirs.behavior,
+        filePath,
+        'behavior'
       )
     }
     if (isResourcesChange) {
-      const relativePath = path.relative(this.srcDirs.resources, filePath)
-      await safeCopy(
-        path.join(this.srcDirs.resources, relativePath),
-        path.join(this.outdirs.resources, relativePath)
+      await validateAndCopyChangedFile(
+        this.srcDirs.resources,
+        this.outdirs.resources,
+        filePath,
+        'resources'
       )
     }
     showText(

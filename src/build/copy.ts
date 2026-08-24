@@ -68,6 +68,55 @@ export async function copyIncludedEntries(
 }
 
 /**
+ * Validate and copy a single changed file in watch mode, using the same
+ * include-type validation as {@link copyIncludedEntries}.
+ * Returns true when the file was copied, false when skipped or source vanished.
+ */
+export async function validateAndCopyChangedFile(
+  srcRoot: string,
+  destRoot: string,
+  filePath: string,
+  moduleType: 'behavior' | 'resources'
+): Promise<boolean> {
+  const relativePath = path.relative(srcRoot, filePath)
+  if (!relativePath || relativePath.startsWith('..')) return false
+  const dest = path.join(destRoot, relativePath)
+
+  let srcExists: boolean
+  try {
+    await fs.stat(filePath)
+    srcExists = true
+  } catch {
+    // file was deleted — remove stale output if it exists, then skip
+    await fs.rm(dest, { recursive: true, force: true }).catch(() => {})
+    return false
+  }
+
+  void srcExists
+
+  const fType = await fileType(filePath)
+  const includes = BuildConfig.includes[moduleType]
+  const baseName = path.basename(relativePath).split(path.sep)[0] ?? ''
+  const topRelative = path.relative(srcRoot, filePath).split(path.sep)[0] ?? ''
+  const includeType =
+    includes[topRelative] || BuildConfig.includes.public[topRelative]
+
+  if (includeType === 'skip') return false
+
+  if (includeType !== undefined && includeType !== fType) {
+    throw new Error(
+      `[build addon]: invalid file: ${filePath}: type: ${fType}`
+    )
+  }
+
+  // For nested files under a validated top-level directory, just copy
+  await fs.mkdir(path.dirname(dest), { recursive: true })
+  await fs.cp(filePath, dest, { recursive: true, force: true })
+  void baseName
+  return true
+}
+
+/**
  * If a texts/ directory contains .lang files but no languages.json,
  * generate one from the available .lang filenames.  Minecraft Bedrock
  * requires this file to activate localization — without it all .lang
