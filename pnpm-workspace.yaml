@@ -1,3 +1,4 @@
 allowBuilds:
+  bufferutil: set this to true or false
   esbuild: true
   simple-git-hooks: true

@@ -21,6 +21,7 @@ import { BuildConfig } from './config'
 import { Progress } from './progress'
 import { BuildCacheManager } from './cache'
 import { generateArchives } from './archive'
+import { DevWsServer } from './devWsServer'
 import { copyIncludedEntries, safeCopy, ensureLanguagesJson } from './copy'
 import { resolveOutDirs, resolveSourceDirs } from './dirs'
 import { createRollupBuild, createRollupWatch, type RollupBuildContext } from './rollup'
@@ -123,6 +124,7 @@ class Build {
   private cacheManager: BuildCacheManager | null = null
   public init: boolean = false
   private buildConfig: Partial<MblerBuildConfig> | null = null
+  private devWs: DevWsServer | null = null
   /**
    * Which modules are present in the current project.
    * - "behavior" when only behavior code exists
@@ -478,6 +480,9 @@ class Build {
     showText(
       `[${styleText('green', 'mbler')}] ${styleText('bgYellow', `file changed: ${filePath}`)}`
     )
+    if (this.devWs) {
+      this.devWs.onBuildComplete([filePath])
+    }
   }
 
   private async createWatcher() {
@@ -526,6 +531,11 @@ class Build {
         chokidar,
         rollup: null,
       }
+    }
+
+    if (process.argv.includes('--enable-dev-ws') || process.env.MBLER_DEV_WS === 'true') {
+      this.devWs = new DevWsServer()
+      this.devWs.start()
     }
   }
 
@@ -614,7 +624,7 @@ class Build {
           this.srcDirs.behavior,
           this.outdirs.behavior,
           'behavior'
-        ).then(() => ensureLanguagesJson(this.outdirs.behavior))
+        ).then(() => ensureLanguagesJson(this.outdirs!.behavior))
       )
     }
     if (await fileExists(this.srcDirs.resources)) {
@@ -628,7 +638,7 @@ class Build {
           this.srcDirs.resources,
           this.outdirs.resources,
           'resources'
-        ).then(() => ensureLanguagesJson(this.outdirs.resources))
+        ).then(() => ensureLanguagesJson(this.outdirs!.resources))
       )
     }
     if (!this.module) {

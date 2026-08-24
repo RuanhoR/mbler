@@ -46,7 +46,8 @@
   "dependencies": {
     "adm-zip": "0.6.0",
     "chokidar": "5.0.0",
-    "mcbe-brarchive-ts": "^0.1.2"
+    "mcbe-brarchive-ts": "^0.1.2",
+    "ws": "^8.21.3"
   },
   "files": [
     "dist",
@@ -74,10 +75,12 @@
     "@types/babel__traverse": "7.28.0",
     "@types/node": "25.0.9",
     "@types/npm-registry-fetch": "8.0.9",
+    "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^4.1.9",
     "esbuild": "0.25.4",
     "eslint": "10.4.0",
     "globals": "17.0.0",
+    "mcws": "1.0.0-npm",
     "picocolors": "1.1.1",
     "prettier": "3.8.3",
     "rolldown-plugin-dts": "0.25.2",
