@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import { BuildConfig } from './config'
+import Logger from '../logger'
 
 /**
  * Determine whether a path refers to a regular file or a directory.
@@ -55,7 +56,7 @@ export async function copyIncludedEntries(
     if (includeType == fType) {
       await fs.cp(path.join(srcDir, f), path.join(destDir, f), {
         recursive: true,
-        force: true
+        force: true,
       })
     } else if (includeType == 'skip') {
       continue
@@ -104,9 +105,7 @@ export async function validateAndCopyChangedFile(
   if (includeType === 'skip') return false
 
   if (includeType !== undefined && includeType !== fType) {
-    throw new Error(
-      `[build addon]: invalid file: ${filePath}: type: ${fType}`
-    )
+    throw new Error(`[build addon]: invalid file: ${filePath}: type: ${fType}`)
   }
 
   // For nested files under a validated top-level directory, just copy
@@ -123,18 +122,20 @@ export async function validateAndCopyChangedFile(
  * entries are silently ignored and raw keys are displayed.
  */
 export async function ensureLanguagesJson(destDir: string): Promise<void> {
-  const textsDir = path.join(destDir, 'texts');
+  const textsDir = path.join(destDir, 'texts')
   try {
-    const files = await fs.readdir(textsDir);
-    const langFiles = files.filter(f => f.endsWith('.lang'));
-    if (langFiles.length === 0) return;
-    const langJsonPath = path.join(textsDir, 'languages.json');
+    const files = await fs.readdir(textsDir)
+    const langFiles = files.filter((f) => f.endsWith('.lang'))
+    if (langFiles.length === 0) return
+    const langJsonPath = path.join(textsDir, 'languages.json')
     try {
-      await fs.access(langJsonPath);
-      return; // already exists
-    } catch {}
-    const langs = langFiles.map(f => f.replace(/.lang$/, '')).sort();
-    await fs.writeFile(langJsonPath, JSON.stringify(langs), 'utf-8');
+      await fs.access(langJsonPath)
+      return // already exists
+    } catch (error) {
+      Logger.e('AssetCopy', String(error))
+    }
+    const langs = langFiles.map((f) => f.replace(/.lang$/, '')).sort()
+    await fs.writeFile(langJsonPath, JSON.stringify(langs), 'utf-8')
   } catch {
     // texts dir doesn't exist or can't be read — nothing to do
   }
