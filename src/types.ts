@@ -156,6 +156,8 @@ export interface MblerBuildConfig {
   clean?: boolean
   outputDir: string
   outputFilename: string
+  /** extra manifest dependencies, e.g. { "@minecraft/server-admin": "1.0.0-beta" } */
+  otherDeps?: Record<string, string>
   onEnd: (ctx: MblerConfigData) => void | Promise<void>
   onStart: (ctx: MblerConfigData) => void | Promise<void>
   onWarn: (ctx: MblerConfigData, warning: Error) => void | Promise<void>

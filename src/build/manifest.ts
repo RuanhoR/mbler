@@ -91,6 +91,12 @@ async function generateManifest(
         ),
       })
     }
+    const otherDeps = config.build?.otherDeps
+    if (otherDeps && typeof otherDeps === 'object') {
+      for (const [moduleName, version] of Object.entries(otherDeps)) {
+        manifest.dependencies.push({ module_name: moduleName, version })
+      }
+    }
   }
   return manifest
 }
