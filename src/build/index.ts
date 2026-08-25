@@ -554,11 +554,6 @@ class Build {
         interval: 100
       }
     )
-    chokidar.on('ready', () => {
-      console.log(
-        `[watcher DEBUG] watching ${chokidar.getWatched() ? JSON.stringify(chokidar.getWatched()) : '?'}`
-      )
-    })
     const onChange = (filePath: string) => {
       this.enqueueChange(filePath)
     }
