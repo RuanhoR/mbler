@@ -66,17 +66,17 @@ export function parseRawParams(
   while (i < raw.length) {
     const item = raw[i]!
     if (item.startsWith('-')) {
-      const eqIdx = item.indexOf('=')
+      const stripped = item.replace(/^-+/, '')
+      const eqIdx = stripped.indexOf('=')
       if (eqIdx !== -1) {
-        const key = item.slice(1, eqIdx)
-        opts[key] = item.slice(eqIdx + 1)
+        const key = stripped.slice(0, eqIdx)
+        opts[key] = stripped.slice(eqIdx + 1)
       } else {
-        const key = item.slice(1)
         if (i + 1 < raw.length && !raw[i + 1]!.startsWith('-')) {
           i++
-          opts[key] = raw[i]!
+          opts[stripped] = raw[i]!
         } else {
-          opts[key] = ''
+          opts[stripped] = ''
         }
       }
     } else {
