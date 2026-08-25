@@ -158,6 +158,10 @@ export interface MblerBuildConfig {
   outputFilename: string
   /** extra manifest dependencies, e.g. { "@minecraft/server-admin": "1.0.0-beta" } */
   otherDeps?: Record<string, string>
+  /** start a WebSocket server for in-game live reload */
+  devWs?: boolean
+  /** port for the dev WebSocket server (default 19145) */
+  devWsPort?: number
   onEnd: (ctx: MblerConfigData) => void | Promise<void>
   onStart: (ctx: MblerConfigData) => void | Promise<void>
   onWarn: (ctx: MblerConfigData, warning: Error) => void | Promise<void>

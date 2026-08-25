@@ -219,7 +219,17 @@ const main = (function () {
       aliases: [],
       description: i18n.help.watch,
       args: [],
-      options: [],
+      options: [
+        {
+          name: 'enable-dev-ws',
+          description: 'Start a WebSocket server for in-game live reload (/connect ws://localhost:<port>)',
+        },
+        {
+          name: 'dev-ws-port',
+          alias: 'p',
+          description: 'Port for the dev WebSocket server (default: 19145)',
+        },
+      ],
       async handler(ctx) {
         const isDebug = process.env.DEBUG == 'true'
         if (isDebug) {
@@ -257,7 +267,15 @@ const main = (function () {
           }),
         ])
         const watch = result[0]
-        return watch(result[1], ctx.workDir) as number
+        const cfg = result[1]
+        if (!cfg.build) cfg.build = {}
+        if (ctx.opts['enable-dev-ws'] !== undefined) {
+          cfg.build.devWs = true
+        }
+        if (ctx.opts['dev-ws-port']) {
+          cfg.build.devWsPort = parseInt(ctx.opts['dev-ws-port'], 10)
+        }
+        return watch(cfg, ctx.workDir) as number
       },
     },
     initCommand,

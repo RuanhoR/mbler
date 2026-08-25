@@ -569,8 +569,9 @@ class Build {
       }
     }
 
-    if (process.argv.includes('--enable-dev-ws') || process.env.MBLER_DEV_WS === 'true') {
-      this.devWs = new DevWsServer()
+    const devWsEnabled = this.buildConfig?.devWs === true
+    if (devWsEnabled) {
+      this.devWs = new DevWsServer(this.buildConfig?.devWsPort ?? 19145)
       this.devWs.start()
     }
   }
