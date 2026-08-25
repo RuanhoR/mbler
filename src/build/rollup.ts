@@ -136,7 +136,8 @@ export async function createRollupBuild(
 /** Start a rolldown watch session re-using the plugins built by {@link createRollupBuild}. */
 export async function createRollupWatch(
   ctx: RollupBuildContext,
-  plugin: Plugin[]
+  plugin: Plugin[],
+  onRebuild?: () => void
 ): Promise<RolldownWatcher> {
   const { currentConfig, srcDirs, outdirs, buildConfig } = ctx
   const output = resolveScriptOutput(currentConfig, buildConfig)
@@ -190,6 +191,7 @@ export async function createRollupWatch(
       )
     } else if (event.code === 'END') {
       Logger.i('Watcher', `rebuild success`)
+      onRebuild?.()
     } else if (event.code === 'BUNDLE_END') {
       // rolldown handles incremental build internally
     }

@@ -376,7 +376,11 @@ class Build {
       throw new Error(
         `[build addon]: internal error: called before initialization`
       )
-    return await createRollupWatch(this.rollupCtx(), this.rollupPlugin)
+    return await createRollupWatch(this.rollupCtx(), this.rollupPlugin, () => {
+      if (this.devWs) {
+        this.devWs.onBuildComplete(['scripts/rebuild'])
+      }
+    })
   }
 
   /** Serialises watch-mode file processing to prevent concurrent fs races. */
