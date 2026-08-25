@@ -525,7 +525,6 @@ class Build {
       this.devWs.onBuildComplete([filePath])
     }
   }
-
   private async createWatcher() {
     const isBundle = this.currentConfig?.build?.bundle !== false
     if (!this.srcDirs || !this.outdirs || (isBundle && !this.rollupPlugin))
@@ -540,8 +539,8 @@ class Build {
       [
         path.join(this.baseBuildDir, BuildConfig.ConfigFile),
         path.join(this.baseBuildDir, 'package.json'),
-        path.join(this.srcDirs.behavior, '**/*'),
-        path.join(this.srcDirs.resources, '**/*')
+        this.srcDirs.behavior,
+        this.srcDirs.resources
       ],
       {
         ignored: [
@@ -555,6 +554,11 @@ class Build {
         interval: 100
       }
     )
+    chokidar.on('ready', () => {
+      console.log(
+        `[watcher DEBUG] watching ${chokidar.getWatched() ? JSON.stringify(chokidar.getWatched()) : '?'}`
+      )
+    })
     const onChange = (filePath: string) => {
       this.enqueueChange(filePath)
     }

@@ -167,13 +167,13 @@ export async function createRollupWatch(
     output: outputOptions,
     watch: {
       clearScreen: false,
-      include: path.join(srcDirs.behavior, 'scripts/**/*'),
+      include: path.join(srcDirs.behavior, 'scripts/**/*').replace(/\\/g, '/'),
       exclude: [
-        path.join(ctx.baseBuildDir, 'node_modules/**/*'),
-        path.join(ctx.baseBuildDir, '.git/**/*'),
-        outdirs.behavior,
-        outdirs.resources,
-        outdirs.dist
+        path.join(ctx.baseBuildDir, 'node_modules/**/*').replace(/\\/g, '/'),
+        path.join(ctx.baseBuildDir, '.git/**/*').replace(/\\/g, '/'),
+        outdirs.behavior.replace(/\\/g, '/'),
+        outdirs.resources.replace(/\\/g, '/'),
+        outdirs.dist.replace(/\\/g, '/')
       ]
     } as Record<string, unknown>
   })
