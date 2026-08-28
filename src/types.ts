@@ -181,7 +181,7 @@ export interface MblerConfigData {
   version?: string // version, like be "0.0.1-beta", fallback to package.json
   mcVersion: string // use mcVersion, be like "1.21.100"
   script?: MblerConfigScript // sapi option
-  minify?: 'oxc' | 'terser' | 'esbuild' // use minify
+  minify?: 'oxc' | 'terser' | 'esbuild' | 'none' // use minify, "none" = disable minify
   archive?: MblerArchiveConfig // brarchive packaging config
   build?: Partial<MblerBuildConfig> // build config
 }

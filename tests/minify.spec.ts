@@ -43,6 +43,15 @@ describe('minify type', () => {
       minify: 'esbuild',
     }
     expect(config3.minify).toBe('esbuild')
+
+    const config4: MblerConfigData = {
+      name: 'test',
+      description: 'test',
+      version: '0.0.1',
+      mcVersion: '1.21.100',
+      minify: 'none',
+    }
+    expect(config4.minify).toBe('none')
   })
 
   it('should allow undefined minify', () => {

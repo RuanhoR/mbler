@@ -56,7 +56,9 @@ export async function createRollupBuild(
   }
   if (currentConfig.minify) {
     if (
-      !['oxc', 'terser', 'esbuild', undefined].includes(currentConfig.minify)
+      !['oxc', 'terser', 'esbuild', 'none', undefined].includes(
+        currentConfig.minify
+      )
     ) {
       throw new TypeError(
         'ERR: [mbler]: mbler.config.js include invalid minify option: ' +
@@ -70,7 +72,7 @@ export async function createRollupBuild(
       // esbuild (need install esbuild in user's project)
       plugin.push(require('./minify').esbuildPlugin(ctx.baseBuildDir))
     }
-    // (minify: oxc) handle at write option
+    // (minify: oxc) handle at write option, (minify: none) skip minify
   }
   if (buildConfig?.rollupPlugins) {
     plugin.push(...buildConfig.rollupPlugins)
