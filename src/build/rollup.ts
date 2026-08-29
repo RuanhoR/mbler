@@ -89,8 +89,10 @@ export async function createRollupBuild(
         sourcemap: false,
         ts: await import('typescript')
       }
-      const rolldownPlugin = require('@mbler/mcx-core').rolldownPlugin
-      plugin.push(rolldownPlugin(pluginConfig, outdirs))
+      const mcxCore = require('@mbler/mcx-core')
+      // @mbler/mcx-core >= 1.1.5-dev.1 requires the host to inject the fs module
+      mcxCore.setGlobalFS(require('node:fs'))
+      plugin.push(mcxCore.rolldownPlugin(pluginConfig, outdirs))
     } catch (err) {
       throw new Error(
         `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`,

@@ -199,9 +199,11 @@ const main = (function () {
             return r
           }),
           ReadProjectMblerConfig(ctx.workDir).then((r) => {
-            // perf: preload @mbler/mcx-core
+            // perf: preload @mbler/mcx-core (fs must be injected since 1.1.5-dev.1)
             if (r.script?.lang == 'mcx') {
-              import('@mbler/mcx-core')
+              import('@mbler/mcx-core').then((m) =>
+                m.setGlobalFS(require('node:fs'))
+              )
             }
             if (isDebug)
               console.debug(
