@@ -222,11 +222,8 @@ class Build {
         if (path.extname(output) !== 'js')
           output =
             output.slice(0, output.length - path.extname(output).length) + '.js'
-        if (this.buildConfig?.outputFilename)
-          output = this.buildConfig.outputFilename
-        const outputDir = this.buildConfig?.outputDir || 'scripts'
         const writeOptions: Record<string, unknown> = {
-          file: join(path.join(this.outdirs.behavior, outputDir), output),
+          file: join(path.join(this.outdirs.behavior, 'scripts'), output),
           format: 'esm',
           sourcemap: false,
         }
@@ -237,8 +234,7 @@ class Build {
       } else {
         // bundle: false – skip rollup, copy source scripts directly
         const srcScriptDir = path.join(this.srcDirs!.behavior, 'scripts')
-        const outputDir = this.buildConfig?.outputDir || 'scripts'
-        const outPath = path.join(this.outdirs!.behavior, outputDir)
+        const outPath = path.join(this.outdirs!.behavior, 'scripts')
         if (await fileExists(srcScriptDir)) {
           await fs.cp(srcScriptDir, outPath, { recursive: true, force: true })
         }
@@ -491,14 +487,13 @@ class Build {
     }
     // if bundle: false and a script file changed, copy it directly
     if (isScriptsChange) {
-      const outputDir = this.buildConfig?.outputDir || 'scripts'
       const relativePath = path.relative(
         path.join(this.srcDirs.behavior, 'scripts'),
         filePath
       )
       await safeCopy(
         filePath,
-        path.join(this.outdirs.behavior, outputDir, relativePath)
+        path.join(this.outdirs.behavior, 'scripts', relativePath)
       )
     }
     // if behavior or resources change, validate + copy the changed file

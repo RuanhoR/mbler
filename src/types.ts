@@ -154,8 +154,6 @@ export interface MblerBuildConfig {
   cachePath: string
   bundle: boolean
   clean?: boolean
-  outputDir: string
-  outputFilename: string
   /** extra manifest dependencies, e.g. { "@minecraft/server-admin": "1.0.0-beta" } */
   otherDeps?: Record<string, string>
   /** start a WebSocket server for in-game live reload */
@@ -172,6 +170,119 @@ export interface MblerArchiveConfig {
   exclude?: string[] // subdirectory glob patterns to skip (e.g. "textures/**")
   concurrency?: number // max directories archived in parallel
 }
+/** resource pack scope */
+export enum MblerPackScope {
+  /** any scope (default) */
+  Any = 'any',
+  /** world-specified resource pack */
+  World = 'world',
+  /** global resources */
+  Global = 'global'
+}
+/** extra pack capabilities (format_version 2+) */
+export enum MblerManifestCapability {
+  /** Education Edition features */
+  Chemistry = 'chemistry',
+  /** Editor features, allows importing @minecraft/server-editor */
+  EditorExtension = 'editorExtension',
+  /** HTML UI, unavailable since 1.18.10.28 */
+  ExperimentalCustomUI = 'experimental_custom_ui',
+  /** Vibrant Visuals PBR features via MERS */
+  Pbr = 'pbr',
+  /** raytracing PBR features */
+  Raytraced = 'raytraced',
+  /** allow eval / new Function inside scripts */
+  ScriptEval = 'script_eval'
+}
+/** addon setting control types */
+export enum MblerManifestSettingType {
+  Label = 'label',
+  Input = 'input',
+  Toggle = 'toggle',
+  Slider = 'slider',
+  Dropdown = 'dropdown'
+}
+/** package product type */
+export enum MblerManifestProductType {
+  /** part of an addon — behavior packs won't disable achievements */
+  Addon = 'addon'
+}
+export interface MblerManifestSubpack {
+  name: string // subpack display name
+  folder_name: string // subpack folder name
+  memory_tier: number // RAM tier (>= 0)
+  memory_performance_tier?: number // optimal platform tier (0-5)
+}
+export type MblerManifestSetting =
+  | { type: MblerManifestSettingType.Label; text?: string }
+  | {
+      type: MblerManifestSettingType.Input
+      text?: string
+      name: string
+      default?: string
+    }
+  | {
+      type: MblerManifestSettingType.Toggle
+      text?: string
+      name: string
+      default?: boolean
+    }
+  | {
+      type: MblerManifestSettingType.Slider
+      text?: string
+      name: string
+      min?: number
+      max?: number
+      step?: number
+      default?: number
+    }
+  | {
+      type: MblerManifestSettingType.Dropdown
+      text?: string
+      name: string
+      options?: Array<string | { text: string; name: string }>
+      default?: string
+    }
+export interface MblerManifestMetadata {
+  authors?: string[] // package authors
+  license?: string // package license
+  url?: string // package url
+  product_type?: MblerManifestProductType // product type
+}
+export type MblerManifestDependency =
+  | {
+      uuid: string // dependency pack uuid
+      version: string | number[] // dependency pack version
+      name?: string // dependency pack name
+      module_name?: undefined
+    }
+  | {
+      module_name?: string // script module name
+      uuid?: string // script module uuid
+      version: string // script module version, "beta" supported since 1.21.120
+    }
+export interface MblerManifestConfig {
+  /** resource pack scope */
+  pack_scope?: MblerPackScope
+  /** forbid using this pack in other players' worlds or servers */
+  platform_locked?: boolean
+  /** world template base game version */
+  base_game_version?: string
+  /** world template uses random seed */
+  allow_random_seed?: boolean
+  /** world template forbids changing world options by default */
+  lock_template_options?: boolean
+  /** extra capabilities, merged with the auto MblerManifestCapability.ScriptEval */
+  capabilities?: MblerManifestCapability[]
+  /** extra dependencies (pack uuid form or script module form), appended after sapi deps */
+  dependencies?: MblerManifestDependency[]
+  /** available subpacks */
+  subpacks?: MblerManifestSubpack[]
+  /** addon settings shown in game */
+  settings?: MblerManifestSetting[]
+  /** package metadata, generated_with is auto-filled with the mbler version */
+  metadata?: MblerManifestMetadata
+}
 export interface MblerConfigData {
   name?: string // addon name (package scope, e.g. "@scope/name"), fallback to package.json
   displayName?: string // display name shown in manifest (falls back to name)
@@ -182,6 +293,7 @@ export interface MblerConfigData {
   mcVersion: string // use mcVersion, be like "1.21.100"
   script?: MblerConfigScript // sapi option
   minify?: 'oxc' | 'terser' | 'esbuild' | 'none' // use minify, "none" = disable minify
+  manifest?: MblerManifestConfig // full manifest.json customization
   archive?: MblerArchiveConfig // brarchive packaging config
   build?: Partial<MblerBuildConfig> // build config
 }
@@ -211,8 +323,6 @@ export const templateMblerConfig: MblerConfigData = {
     rollupPlugins: [],
     cache: 'auto',
     bundle: true,
-    outputDir: 'scripts',
-    outputFilename: '',
     onEnd: () => {},
     onStart: () => {},
     onWarn: () => {},
@@ -228,27 +338,35 @@ export interface ManifestData {
     name: string
     description: string
     uuid: string
-    version: number[]
-    min_engine_version: number[]
+    version: number[] | string
+    min_engine_version?: number[] | string
+    pack_scope?: 'any' | 'world' | 'global'
+    platform_locked?: boolean
+    base_game_version?: number[] | string
+    allow_random_seed?: boolean
+    lock_template_options?: boolean
   }
   modules: Array<{
-    type: 'script' | 'data' | 'resources'
+    type:
+      | 'script'
+      | 'data'
+      | 'resources'
+      | 'world_template'
+      | 'skin_pack'
+      | 'persona_piece'
     uuid: string
     description?: string
-    version: number[]
+    version: number[] | string
     language?: string
     entry?: string
   }>
-  dependencies?: Array<{
-    module_name: string
-    version: string
-  }>
-  subpack?: Array<{
-    folder_name: string
-    name: string
-    memory_tier: number
-  }>
+  dependencies?: Array<MblerManifestDependency>
   capabilities?: string[]
+  subpacks?: MblerManifestSubpack[]
+  settings?: MblerManifestSetting[]
+  metadata?: MblerManifestMetadata & {
+    generated_with?: Record<string, Array<number[] | string>>
+  }
 }
 export interface npmFetchData {
   name: string

@@ -23,16 +23,12 @@ export interface RollupBuildContext {
   cacheManager: BuildCacheManager | null
 }
 
-function resolveScriptOutput(
-  config: MblerConfigData,
-  buildConfig: Partial<MblerBuildConfig> | null
-): string {
+function resolveScriptOutput(config: MblerConfigData): string {
   let output = config.script?.main
   if (!output) output = 'index.js'
   if (path.extname(output) !== 'js') {
     output = output.slice(0, output.length - path.extname(output).length) + '.js'
   }
-  if (buildConfig?.outputFilename) output = buildConfig.outputFilename
   return output
 }
 
@@ -144,10 +140,9 @@ export async function createRollupWatch(
   onRebuild?: () => void
 ): Promise<RolldownWatcher> {
   const { currentConfig, srcDirs, outdirs, buildConfig } = ctx
-  const output = resolveScriptOutput(currentConfig, buildConfig)
-  const outputDir = buildConfig?.outputDir || 'scripts'
+  const output = resolveScriptOutput(currentConfig)
   const outputOptions: Record<string, unknown> = {
-    file: join(path.join(outdirs.behavior, outputDir), output),
+    file: join(path.join(outdirs.behavior, 'scripts'), output),
     format: 'esm',
     sourcemap: false
   }
