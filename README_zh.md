@@ -43,6 +43,29 @@ pnpm create mbler
 pnpm build
 ```
 
+## Dev WS Server
+
+`mbler watch` 可以启动一个 WebSocket 服务器，将重建结果实时推送到游戏内客户端：
+
+```bash
+mbler watch --enable-dev-ws                            # 默认端口：19145
+mbler watch --enable-dev-ws --dev-ws-port 20000
+```
+
+在游戏中通过 `/connect ws://localhost:19145` 连接后，每次重新构建都会自动触发游戏内热重载。
+
+## Build Cache
+
+通过 `mbler.config.js` 的 `build.cache` 字段开启（默认 `auto`）：
+
+```js
+export default defineConfig({
+  build: { cache: 'file' }
+})
+```
+
+缓存条目通过内容哈希 + mtime 双重校验，开启缓存时会同时启用 Rolldown 增量构建。模式：`none`、`memory`、`file`（`filesystem`/`auto` 会归并为 `file`）。
+
 ## 示例项目
 
 [Bedwars Addon](https://github.com/RuanhoR/mcbe-bedwars-addon) | [RedStonePlugin Addon: Place, Cut](https://github.com/RuanhoR/mcbe-redstoneplugin-addon) | [Luckly Block Addon](https://github.com/RuanhoR/LuckBlock)

@@ -43,6 +43,29 @@ pnpm create mbler
 pnpm build
 ```
 
+## Dev WS Server
+
+`mbler watch` can start a WebSocket server that pushes reloads to the in-game client:
+
+```bash
+mbler watch --enable-dev-ws                            # default port: 19145
+mbler watch --enable-dev-ws --dev-ws-port 20000
+```
+
+Connect in-game via `/connect ws://localhost:19145`, then every rebuild triggers a live reload inside Minecraft.
+
+## Build Cache
+
+Enable via the `build.cache` option in `mbler.config.js` (default `auto`):
+
+```js
+export default defineConfig({
+  build: { cache: 'file' }
+})
+```
+
+Cache entries are validated by content hash + mtime, and Rolldown incremental builds are enabled when caching is on. Modes: `none`, `memory`, `file` (`filesystem`/`auto` fall back to `file`).
+
 ## Example Project
 
 [Bedwars Addon](https://github.com/RuanhoR/mcbe-bedwars-addon) | [RedStonePlugin Addon: Place, Cut](https://github.com/RuanhoR/mcbe-redstoneplugin-addon) | [Luckly Block Addon](https://github.com/RuanhoR/LuckBlock)
