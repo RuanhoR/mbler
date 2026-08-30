@@ -1,4 +1,5 @@
 import { argv } from 'node:process'
+import fs from 'node:fs'
 import { cmdList } from '../types'
 import i18n from '../i18n'
 import Logger from '../logger'
@@ -56,18 +57,12 @@ const main = (function () {
   let currentWDManager: WorkDirManager
 
   const importBuild = async () => {
-    const { build } =
-      typeof require == 'function'
-        ? require('mbler/build')
-        : await import('mbler/build')
+    const { build } = await import('mbler/build')
     return build as (typeof import('mbler/build'))['build']
   }
 
   const importWatch = async () => {
-    const { watch } =
-      typeof require == 'function'
-        ? require('mbler/build')
-        : await import('mbler/build')
+    const { watch } = await import('mbler/build')
     return watch
   }
 
@@ -170,25 +165,6 @@ const main = (function () {
       options: [],
       async handler(ctx) {
         const isDebug = process.env.DEBUG == 'true'
-        if (isDebug) {
-          const Module = require('module')
-          const originalRequire = Module.prototype.require
-          Module.prototype.require = function (id: string) {
-            const isCached = !!Module._cache[id]
-            const start = performance.now()
-            const result = originalRequire.call(this, id)
-            const duration = performance.now() - start
-
-            const status = isCached ? '[CACHED]' : '[FIRST]'
-            if (duration > 5) {
-              console.log(
-                `[mbler Module load DEBUG]: ${status} [${duration.toFixed(2)}ms] ${id}`
-              )
-            }
-
-            return result
-          }
-        }
         const startTime = performance.now()
         const result = await Promise.all([
           importBuild().then((r) => {
@@ -201,9 +177,7 @@ const main = (function () {
           ReadProjectMblerConfig(ctx.workDir).then((r) => {
             // perf: preload @mbler/mcx-core (fs must be injected since 1.1.5-dev.1)
             if (r.script?.lang == 'mcx') {
-              import('@mbler/mcx-core').then((m) =>
-                m.setGlobalFS(require('node:fs'))
-              )
+              import('@mbler/mcx-core').then((m) => m.setGlobalFS(fs))
             }
             if (isDebug)
               console.debug(
@@ -234,23 +208,6 @@ const main = (function () {
       ],
       async handler(ctx) {
         const isDebug = process.env.DEBUG == 'true'
-        if (isDebug) {
-          const Module = require('module')
-          const originalRequire = Module.prototype.require
-          Module.prototype.require = function (id: string) {
-            const isCached = !!Module._cache[id]
-            const start = performance.now()
-            const result = originalRequire.call(this, id)
-            const duration = performance.now() - start
-            const status = isCached ? '[CACHED]' : '[FIRST]'
-            if (duration > 5) {
-              console.log(
-                `[mbler Module load DEBUG]: ${status} [${duration.toFixed(2)}ms] ${id}`
-              )
-            }
-            return result
-          }
-        }
         const startTime = performance.now()
         const result = await Promise.all([
           importWatch().then((r) => {
@@ -277,7 +234,7 @@ const main = (function () {
         if (ctx.opts['dev-ws-port']) {
           cfg.build.devWsPort = parseInt(ctx.opts['dev-ws-port'], 10)
         }
-        return watch(cfg, ctx.workDir) as number
+        return await watch(cfg, ctx.workDir)
       },
     },
     initCommand,

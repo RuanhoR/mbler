@@ -258,7 +258,7 @@ class Build {
       }
     }
     if (process.env.BUILD_MODULE == 'release') {
-      const generateRelease = require('./release').generateRelease
+      const { generateRelease } = await import('./release')
       await generateRelease({
         outdirs: this.outdirs,
         module: this.module,
@@ -586,7 +586,7 @@ class Build {
       behavior: {} as ManifestData,
       resources: {} as ManifestData,
     }
-    const generateManifest = require('./manifest').default
+    const generateManifest = (await import('./manifest')).default
     const loadOtherManifest = async (moduleType: 'behavior' | 'resources') => {
       const filePath = path.join(this.srcDirs![moduleType], 'manifest.json')
       if (await fileExists(filePath)) {

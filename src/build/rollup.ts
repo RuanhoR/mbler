@@ -7,8 +7,10 @@ import {
   type RolldownWatcherEvent,
   type RolldownOptions,
 } from 'rolldown'
+import fs from 'node:fs'
 import type { CompileOpt } from '@mbler/mcx-types'
 import Logger from '../logger'
+import { terserPlugin, esbuildPlugin } from './minify'
 import { fileExists, join, showText } from '../utils'
 import type { BuildCacheManager } from './cache'
 import type { MblerBuildConfig, MblerConfigData } from '../types'
@@ -63,10 +65,10 @@ export async function createRollupBuild(
     }
     if (currentConfig.minify === 'terser') {
       // terser (need install terser in user's project)
-      plugin.push(require('./minify').terserPlugin(ctx.baseBuildDir))
+      plugin.push(terserPlugin(ctx.baseBuildDir))
     } else if (currentConfig.minify === 'esbuild') {
       // esbuild (need install esbuild in user's project)
-      plugin.push(require('./minify').esbuildPlugin(ctx.baseBuildDir))
+      plugin.push(esbuildPlugin(ctx.baseBuildDir))
     }
     // (minify: oxc) handle at write option, (minify: none) skip minify
   }
@@ -85,9 +87,9 @@ export async function createRollupBuild(
         sourcemap: false,
         ts: await import('typescript')
       }
-      const mcxCore = require('@mbler/mcx-core')
+      const mcxCore = await import('@mbler/mcx-core')
       // @mbler/mcx-core >= 1.1.5-dev.1 requires the host to inject the fs module
-      mcxCore.setGlobalFS(require('node:fs'))
+      mcxCore.setGlobalFS(fs)
       plugin.push(mcxCore.rolldownPlugin(pluginConfig, outdirs))
     } catch (err) {
       throw new Error(
@@ -129,8 +131,8 @@ export async function createRollupBuild(
       }
     })
   }
-  const buildBundle = require('rolldown').rolldown
-  return { plugins: plugin, build: await buildBundle(rollupOption) }
+  const { rolldown } = await import('rolldown')
+  return { plugins: plugin, build: await rolldown(rollupOption) }
 }
 
 /** Start a rolldown watch session re-using the plugins built by {@link createRollupBuild}. */
@@ -149,7 +151,7 @@ export async function createRollupWatch(
   if (currentConfig.minify === 'oxc') {
     outputOptions.minify = true
   }
-  const rolldownWatch = require('rolldown').watch
+  const { watch: rolldownWatch } = await import('rolldown')
   const rollupWatcher = rolldownWatch({
     input: path.join(srcDirs.behavior, 'scripts', currentConfig.script?.main || ''),
     external: [

@@ -1,7 +1,6 @@
 import { env } from 'node:process'
-import type AdmZip from 'adm-zip'
+import AdmZip from 'adm-zip'
 function Release() {
-  const AdmZip = require('adm-zip')
   function createFullZip(dir: string): AdmZip {
     const zip = new AdmZip()
     zip.addLocalFolder(dir)

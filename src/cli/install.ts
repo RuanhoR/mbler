@@ -1,5 +1,6 @@
 import path from 'node:path'
 import fs from 'node:fs/promises'
+import AdmZip from 'adm-zip'
 import i18n from '../i18n'
 import config from '../config'
 import { GamePath } from '../publisher/GamePath'
@@ -99,7 +100,6 @@ export const installCommand = defineCommand({
         version,
         path.join(tmpDir, 'package.zip')
       )
-      const AdmZip = require('adm-zip')
       const zip = new AdmZip(path.join(tmpDir, 'package.zip'))
       zip.extractAllTo(tmpDir, true)
 

@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'rolldown'
 import { dts } from 'rolldown-plugin-dts'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import * as path from 'node:path'
 import { execSync } from 'node:child_process'
 
@@ -23,6 +23,17 @@ const external = [
 
 const isRelease = process.env.BUILD_MODULE === 'release'
 
+// clean stale dist output before the first bundle writes (both bundles share ./dist)
+let distCleaned = false
+const rmOldDist = {
+  name: 'rm-old-dist',
+  buildStart() {
+    if (distCleaned) return
+    distCleaned = true
+    rmSync(path.join(import.meta.dirname, 'dist'), { recursive: true, force: true })
+  }
+}
+
 const shared = /** @type {const} */ ({
   platform: 'node',
   external,
@@ -43,6 +54,7 @@ export default defineConfig([
       },
     ],
     plugins: [
+      rmOldDist,
       dts()
     ]
   },
@@ -59,6 +71,7 @@ export default defineConfig([
       },
     ],
     plugins: [
+      rmOldDist,
       dts()
     ]
   }
