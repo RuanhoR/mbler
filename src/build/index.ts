@@ -24,7 +24,13 @@ import { generateArchives } from './archive'
 import { DevWsServer } from './devWsServer'
 import { copyIncludedEntries, safeCopy, ensureLanguagesJson, validateAndCopyChangedFile } from './copy'
 import { resolveOutDirs, resolveSourceDirs } from './dirs'
-import { createRollupBuild, createRollupWatch, type RollupBuildContext } from './rollup'
+import {
+  createRollupBuild,
+  createRollupWatch,
+  isScriptSourceFile,
+  transformScripts,
+  type RollupBuildContext
+} from './rollup'
 
 class Build {
   currentConfig: MblerConfigData | null = null
@@ -232,12 +238,9 @@ class Build {
         }
         await rBuild.write(writeOptions)
       } else {
-        // bundle: false – skip rollup, copy source scripts directly
-        const srcScriptDir = path.join(this.srcDirs!.behavior, 'scripts')
-        const outPath = path.join(this.outdirs!.behavior, 'scripts')
-        if (await fileExists(srcScriptDir)) {
-          await fs.cp(srcScriptDir, outPath, { recursive: true, force: true })
-        }
+        // bundle: false – run each script file through rolldown on its own
+        // (transpile TS/mcx + minify) instead of bundling or plain copying
+        await transformScripts(this.rollupCtx())
       }
     }
     if (!this.isWatch) {
@@ -404,17 +407,32 @@ class Build {
   }
 
   private async processBatch(files: string[]): Promise<void> {
+    let rebuildScripts = false
     for (const filePath of files) {
       try {
-        await this.onChange(filePath)
+        if (await this.onChange(filePath)) rebuildScripts = true
       } catch (e) {
         // isolate per-file failures so one bad file doesn't kill the watcher
         Logger.e('Watcher', `error processing ${filePath}: ${e instanceof Error ? e.message : e}`)
       }
     }
+    if (rebuildScripts) {
+      try {
+        // bundle: false – script sources are handled by a full rolldown
+        // transform pass, so a batch of changes triggers a single rebuild
+        await transformScripts(this.rollupCtx())
+        this.devWs?.onBuildComplete(['scripts/rebuild'])
+      } catch (e) {
+        Logger.e('Watcher', `scripts rebuild error: ${e instanceof Error ? e.stack : e}`)
+      }
+    }
   }
 
-  private async onChange(filePath: string) {
+  /**
+   * Handle a single watched file change.
+   * Returns true when the change requires a bundle:false scripts rebuild.
+   */
+  private async onChange(filePath: string): Promise<boolean> {
     const isBundle = this.currentConfig?.build?.bundle !== false
     if (
       !this.srcDirs ||
@@ -434,9 +452,9 @@ class Build {
     const isPkgChange =
       path.relative(path.join(this.baseBuildDir, 'package.json'), filePath) ===
       ''
-    const isScriptsChange =
-      !isBundle &&
-      this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
+    const isScriptsDir =
+      !isBundle && this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
+    const isScriptSrcChange = isScriptsDir && isScriptSourceFile(filePath)
     const isBehaviorChange =
       this.isParent(this.srcDirs.behavior, filePath) &&
       !this.isParent(path.join(this.srcDirs.behavior, 'scripts'), filePath)
@@ -482,11 +500,13 @@ class Build {
             this.watchers.rollup.close()
           }
           this.watchers.rollup = null
+          await transformScripts(this.rollupCtx())
         }
       }
     }
-    // if bundle: false and a script file changed, copy it directly
-    if (isScriptsChange) {
+    // if bundle: false, non-script assets inside scripts/ are copied as-is;
+    // script sources are rebuilt in bulk after the batch (see processBatch)
+    if (isScriptsDir && !isScriptSrcChange) {
       const relativePath = path.relative(
         path.join(this.srcDirs.behavior, 'scripts'),
         filePath
@@ -516,9 +536,11 @@ class Build {
     showText(
       `[${styleText('green', 'mbler')}] ${styleText('bgYellow', `file changed: ${filePath}`)}`
     )
+    if (isScriptSrcChange) return true
     if (this.devWs) {
       this.devWs.onBuildComplete([filePath])
     }
+    return false
   }
   private async createWatcher() {
     const isBundle = this.currentConfig?.build?.bundle !== false

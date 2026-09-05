@@ -1,8 +1,8 @@
 import path from 'node:path'
 import {
   type Plugin,
+  type PreRenderedChunk,
   type RolldownBuild,
-  type RolldownLog,
   type RolldownWatcher,
   type RolldownWatcherEvent,
   type RolldownOptions,
@@ -34,24 +34,71 @@ function resolveScriptOutput(config: MblerConfigData): string {
   return output
 }
 
+const SCRIPT_SOURCE_EXTS = new Set([
+  '.js',
+  '.mjs',
+  '.cjs',
+  '.ts',
+  '.mts',
+  '.cts',
+  '.tsx',
+  '.jsx',
+  '.mcx',
+])
+const DECLARATION_FILE_RE = /\.d\.[cm]?ts$/i
+
+function isDeclarationFile(file: string): boolean {
+  return DECLARATION_FILE_RE.test(file)
+}
+
+export function isScriptSourceFile(file: string): boolean {
+  if (isDeclarationFile(file)) return false
+  return SCRIPT_SOURCE_EXTS.has(path.extname(file).toLowerCase())
+}
+
 /**
- * Create (but do not write) the rolldown bundle for the project's script.
- * Returns the plugins array so watchers can re-use it, plus the build handle.
+ * Output name of a script file relative to the scripts dir:
+ * index.ts => index.js, Event.mcx => Event.mcx.js, plain .js stays as-is.
+ * Unknown extensions (assets inside scripts/) keep their original name.
  */
-export async function createRollupBuild(
-  ctx: RollupBuildContext
-): Promise<{ plugins: Plugin[]; build?: RolldownBuild }> {
-  const { currentConfig, srcDirs, outdirs, buildConfig } = ctx
-  if (!currentConfig.script) return { plugins: [] }
-  const main = path.join(srcDirs.behavior, 'scripts', currentConfig.script.main)
-  if (!(await fileExists(main))) {
-    throw new Error(`[build addon]: main script not found: ${main}`)
+export function mapScriptOutputName(relPath: string): string {
+  const normalized = relPath.replace(/\\/g, '/')
+  const ext = path.extname(normalized).toLowerCase()
+  if (!SCRIPT_SOURCE_EXTS.has(ext)) return normalized
+  const base = normalized.slice(0, normalized.length - ext.length)
+  return ext === '.mcx' ? `${base}.mcx.js` : `${base}.js`
+}
+
+async function collectScriptEntries(
+  dir: string
+): Promise<{ scripts: string[]; assets: string[] }> {
+  const scripts: string[] = []
+  const assets: string[] = []
+  const walk = async (cur: string): Promise<void> => {
+    for (const entry of await fs.promises.readdir(cur, { withFileTypes: true })) {
+      const abs = path.join(cur, entry.name)
+      if (entry.isDirectory()) {
+        await walk(abs)
+      } else if (entry.isFile()) {
+        if (isDeclarationFile(entry.name)) continue
+        if (isScriptSourceFile(entry.name)) {
+          scripts.push(path.relative(dir, abs))
+        } else {
+          assets.push(path.relative(dir, abs))
+        }
+      }
+    }
   }
+  await walk(dir)
+  return { scripts, assets }
+}
+
+async function collectScriptPlugins(
+  ctx: RollupBuildContext,
+  moduleDir: string
+): Promise<Plugin[]> {
+  const { currentConfig, buildConfig } = ctx
   const plugin: Plugin[] = []
-  const moduleDir = path.join(ctx.baseBuildDir, 'node_modules')
-  if (!(await fileExists(moduleDir))) {
-    throw new Error(`[build addon]: node_modules not found: ${moduleDir}`)
-  }
   if (currentConfig.minify) {
     if (
       !['oxc', 'terser', 'esbuild', 'none', undefined].includes(
@@ -76,6 +123,9 @@ export async function createRollupBuild(
     plugin.push(...buildConfig.rollupPlugins)
   }
   if (currentConfig.script?.lang == 'mcx') {
+    if (!(await fileExists(moduleDir))) {
+      throw new Error(`[build addon]: node_modules not found: ${moduleDir}`)
+    }
     try {
       const tsconfigPath = path.join(ctx.baseBuildDir, 'tsconfig.json')
       if (!(await fileExists(tsconfigPath))) {
@@ -90,7 +140,7 @@ export async function createRollupBuild(
       const mcxCore = await import('@mbler/mcx-core')
       // @mbler/mcx-core >= 1.1.5-dev.1 requires the host to inject the fs module
       mcxCore.setGlobalFS(fs)
-      plugin.push(mcxCore.rolldownPlugin(pluginConfig, outdirs))
+      plugin.push(mcxCore.rolldownPlugin(pluginConfig, ctx.outdirs))
     } catch (err) {
       throw new Error(
         `[build addon]: mcx plugin is required but '@mbler/mcx-core' could not be loaded: ${err}`,
@@ -98,6 +148,44 @@ export async function createRollupBuild(
       )
     }
   }
+  if (buildConfig?.onEnd) {
+    plugin.push({
+      name: 'build-end-plugin',
+      buildEnd: () => {
+        return buildConfig.onEnd?.(currentConfig)
+      }
+    })
+  }
+  return plugin
+}
+
+function makeOnWarn(ctx: RollupBuildContext): NonNullable<RolldownOptions['onwarn']> {
+  const { currentConfig, buildConfig } = ctx
+  return (warning, _defaultHandler) => {
+    const msg =
+      typeof warning === 'string' ? warning : warning.message || 'Unknown warning'
+    buildConfig?.onWarn?.(currentConfig, new Error(msg))
+  }
+}
+
+/**
+ * Create (but do not write) the rolldown bundle for the project's script.
+ * Returns the plugins array so watchers can re-use it, plus the build handle.
+ */
+export async function createRollupBuild(
+  ctx: RollupBuildContext
+): Promise<{ plugins: Plugin[]; build?: RolldownBuild }> {
+  const { currentConfig, srcDirs, buildConfig } = ctx
+  if (!currentConfig.script) return { plugins: [] }
+  const main = path.join(srcDirs.behavior, 'scripts', currentConfig.script.main)
+  if (!(await fileExists(main))) {
+    throw new Error(`[build addon]: main script not found: ${main}`)
+  }
+  const moduleDir = path.join(ctx.baseBuildDir, 'node_modules')
+  if (!(await fileExists(moduleDir))) {
+    throw new Error(`[build addon]: node_modules not found: ${moduleDir}`)
+  }
+  const plugin = await collectScriptPlugins(ctx, moduleDir)
   const rollupOption: RolldownOptions = {
     input: main,
     external: [
@@ -110,29 +198,79 @@ export async function createRollupBuild(
       ...(ctx.cacheManager?.shouldUseIncrementalBuild()
         ? { incrementalBuild: true }
         : {})
-    }
-  }
-  if (buildConfig?.onWarn) {
-    const onWarn: (
-      warning: RolldownLog | string,
-      defaultHandler: (warning: string | (() => string)) => void
-    ) => void = (warning, _defaultHandler) => {
-      const msg =
-        typeof warning === 'string' ? warning : warning.message || 'Unknown warning'
-      buildConfig.onWarn?.(currentConfig, new Error(msg))
-    }
-    rollupOption.onwarn = onWarn
-  }
-  if (buildConfig?.onEnd) {
-    plugin.push({
-      name: 'build-end-plugin',
-      buildEnd: () => {
-        return buildConfig.onEnd?.(currentConfig)
-      }
-    })
+    },
+    ...(buildConfig?.onWarn ? { onwarn: makeOnWarn(ctx) } : {})
   }
   const { rolldown } = await import('rolldown')
   return { plugins: plugin, build: await rolldown(rollupOption) }
+}
+
+/**
+ * bundle: false mode — instead of bundling, run every script source file
+ * through rolldown on its own (TS/mcx transpile + minify) and emit one
+ * output file per source file, e.g. index.ts => index.js and
+ * Event.mcx => Event.mcx.js. Project-internal imports stay imports; bare
+ * imports (@minecraft/server, node_modules) stay external.
+ */
+export async function transformScripts(ctx: RollupBuildContext): Promise<void> {
+  const { currentConfig, srcDirs, outdirs, buildConfig } = ctx
+  if (!currentConfig.script) return
+  const scriptsDir = path.join(srcDirs.behavior, 'scripts')
+  const scriptsOutDir = path.join(outdirs.behavior, 'scripts')
+  const { scripts, assets } = await collectScriptEntries(scriptsDir)
+  if (scripts.length === 0 && assets.length === 0) return
+  const plugins = await collectScriptPlugins(
+    ctx,
+    path.join(ctx.baseBuildDir, 'node_modules')
+  )
+  const input: Record<string, string> = {}
+  for (const rel of scripts) {
+    input[rel.replace(/\\/g, '/')] = path.join(scriptsDir, rel)
+  }
+  const chunkName = (chunk: PreRenderedChunk): string => {
+    if (chunk.facadeModuleId) {
+      const rel = path.relative(scriptsDir, chunk.facadeModuleId)
+      if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) {
+        return mapScriptOutputName(rel)
+      }
+    }
+    return mapScriptOutputName(chunk.name)
+  }
+  const outputOptions: Record<string, unknown> = {
+    dir: scriptsOutDir,
+    format: 'esm',
+    sourcemap: false,
+    preserveModules: true,
+    preserveModulesRoot: scriptsDir,
+    entryFileNames: chunkName,
+    chunkFileNames: chunkName,
+    minify: currentConfig.minify === 'oxc'
+  }
+  if (scripts.length > 0) {
+    const { rolldown } = await import('rolldown')
+    const bundle = await rolldown({
+      input,
+      external: (id, parentId) => {
+        if (!id.startsWith('.') && !path.isAbsolute(id)) return true
+        let abs = id
+        if (!path.isAbsolute(abs)) {
+          if (!parentId) return true
+          abs = path.resolve(path.dirname(parentId), abs)
+        }
+        const rel = path.relative(scriptsDir, abs)
+        return !rel || rel.startsWith('..') || path.isAbsolute(rel)
+      },
+      plugins,
+      ...(buildConfig?.onWarn ? { onwarn: makeOnWarn(ctx) } : {})
+    })
+    await bundle.write(outputOptions)
+  }
+  // non-script files inside scripts/ (e.g. json) keep their original name
+  for (const rel of assets) {
+    const dest = path.join(scriptsOutDir, rel)
+    await fs.promises.mkdir(path.dirname(dest), { recursive: true })
+    await fs.promises.cp(path.join(scriptsDir, rel), dest, { force: true })
+  }
 }
 
 /** Start a rolldown watch session re-using the plugins built by {@link createRollupBuild}. */
