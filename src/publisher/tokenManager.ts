@@ -44,13 +44,11 @@ export class TokenManager {
     }
     try {
       const base = await ConfigManager.getRegistry()
-      const result = await fetch(
-        `${base}/token/${token}/verify`,
-        {
-          method: 'GET',
-          credentials: 'omit',
-        }
-      )
+      const result = await fetch(`${base}/token/${token}/verify`, {
+        method: 'GET',
+        credentials: 'omit',
+        signal: AbortSignal.timeout(30_000),
+      })
       const body = (await result.json().catch(() => ({}))) as {
         data?: PMNXProfile
         code?: number

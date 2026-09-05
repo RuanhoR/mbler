@@ -5,7 +5,7 @@ vi.stubGlobal('fetch', mockFetch)
 
 vi.mock('../../src/config', () => ({
   default: {
-    tmpdir: '/tmp/.mbler',
+    dataDir: '/tmp/.mbler',
   },
 }))
 

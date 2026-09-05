@@ -5,7 +5,7 @@ import i18n from '../i18n'
 import config from '../config'
 import { GamePath } from '../publisher/GamePath'
 import { ConfigManager } from '../publisher/configManager'
-import { showText, compareVersion, isValidVersion } from '../utils'
+import { showText, compareVersion, isValidVersion, sanitizeFileName } from '../utils'
 import { InstallManager } from '../publisher/installManager'
 import { defineCommand } from './command'
 
@@ -89,7 +89,7 @@ export const installCommand = defineCommand({
       }
 
       const tmpDir = path.join(
-        config.tmpdir,
+        config.dataDir,
         'tmp_mbler_install',
         `${Date.now()}`
       )
@@ -143,9 +143,7 @@ export const installCommand = defineCommand({
         throw new Error(i18n.install.noValidAddon)
       }
 
-      const safe = (s: string) =>
-        s.replace(/[\\/]/g, '-').replace(/\.\./g, '')
-      const id = `${safe(scope.slice(1))}-${safe(name)}-${safe(version)}`
+      const id = `${sanitizeFileName(scope.slice(1))}-${sanitizeFileName(name)}-${sanitizeFileName(version)}`
       const installed =
         (await ConfigManager.getKey<Array<Record<string, unknown>>>(
           'installedPackages'

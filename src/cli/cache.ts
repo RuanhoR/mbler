@@ -24,7 +24,7 @@ export const cacheCommand = defineCommand({
     const { action, subaction } = ctx.args
 
     if (action === 'list') {
-      const sapiFile = join(config.tmpdir, '_sapi_version.json')
+      const sapiFile = join(config.dataDir, '_sapi_version.json')
       let size = 0
       try {
         size = (await stat(sapiFile)).size
@@ -44,7 +44,7 @@ export const cacheCommand = defineCommand({
 
     if (action === 'sapi_version' && subaction === 'clear') {
       const { rm } = await import('node:fs/promises')
-      const sapiFile = join(config.tmpdir, '_sapi_version.json')
+      const sapiFile = join(config.dataDir, '_sapi_version.json')
       await rm(sapiFile, { force: true })
       showText('sapi_version cache cleared')
       return 0

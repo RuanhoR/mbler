@@ -5,6 +5,7 @@ import {
   isValidVersion,
   stringToNumberArray,
   join,
+  sanitizeFileName,
 } from '../src/utils/index'
 import { BuildConfig } from '../src/build/config'
 import i18n from '../src/i18n'
@@ -120,5 +121,25 @@ describe('i18n', () => {
     ;(expect(i18n.commander).toBeDefined(),
       expect(i18n.config).toBeDefined(),
       expect(i18n.description).toBeDefined())
+  })
+})
+
+describe('sanitizeFileName', () => {
+  it('keeps normal identifiers unchanged', () => {
+    expect(sanitizeFileName('scope-name')).toBe('scope-name')
+    expect(sanitizeFileName('1.0.0')).toBe('1.0.0')
+    expect(sanitizeFileName('@scope/pkg')).toBe('@scope-pkg')
+  })
+
+  it('replaces path separators with dashes', () => {
+    expect(sanitizeFileName('a/b')).toBe('a-b')
+    const bs = String.fromCharCode(92)
+    expect(sanitizeFileName(`a${bs}b`)).toBe('a-b')
+  })
+
+  it('strips dot-dot traversal segments', () => {
+    expect(sanitizeFileName('../../etc')).toBe('--etc')
+    expect(sanitizeFileName('..')).toBe('')
+    expect(sanitizeFileName('a..b')).toBe('ab')
   })
 })

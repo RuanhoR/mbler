@@ -1,9 +1,9 @@
 import { mkdir, stat, writeFile, readFile, rm } from 'node:fs/promises'
-import { homedir } from 'node:os'
 import i18n from './../i18n'
 import path from 'node:path'
 import { fileExists } from '../utils'
 import Logger from '../logger'
+import config from '../config'
 import { cwd } from 'node:process'
 async function tryMkdir(point: string): Promise<boolean> {
   try {
@@ -15,9 +15,9 @@ async function tryMkdir(point: string): Promise<boolean> {
 }
 export default class WorkDirManager {
   private currentWorkPoint: string | null = null
-  private enabledPath = path.join(homedir(), '.cache/mbler/workdir_enabled.db')
+  private enabledPath = path.join(config.dataDir, 'workdir_enabled.db')
   constructor(
-    private cacheDir: string = path.join(homedir(), '.cache/mbler/mp.db')
+    private cacheDir: string = path.join(config.dataDir, 'mp.db')
   ) {}
   async isDisabled(): Promise<boolean> {
     try {

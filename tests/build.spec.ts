@@ -166,7 +166,7 @@ describe('generateRelease', () => {
 
 describe('sapiVersion', () => {
   afterAll(() => {
-    fs.rmSync(path.join(config.tmpdir, '_sapi_version.json'), { force: true })
+    fs.rmSync(path.join(config.dataDir, '_sapi_version.json'), { force: true })
   })
   it('should out vaild version', async () => {
     expect(

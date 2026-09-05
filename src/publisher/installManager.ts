@@ -17,7 +17,8 @@ export class InstallManager {
   ) {
     const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/download`
+      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/download`,
+      { signal: AbortSignal.timeout(120_000) }
     )
     if (!response.ok) {
       throw new Error(
@@ -33,7 +34,8 @@ export class InstallManager {
   ): Promise<MNXPackageInfoResult> {
     const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/info`
+      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/info`,
+      { signal: AbortSignal.timeout(30_000) }
     )
     const data = (await response.json()) as {
       code: number
@@ -53,7 +55,8 @@ export class InstallManager {
   ): Promise<MNXPackageVersionInfoResult> {
     const base = await ConfigManager.getRegistry()
     const response = await fetch(
-      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/info`
+      `${base}/package/${this.encodeScope(scope)}/${this.encodePart(name)}/v/${this.encodePart(version)}/info`,
+      { signal: AbortSignal.timeout(30_000) }
     )
     if (!response.ok) {
       throw new Error(

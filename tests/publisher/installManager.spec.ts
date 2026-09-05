@@ -11,6 +11,7 @@ vi.mock('node:fs/promises', () => ({
 
 vi.mock('../../src/config', () => ({
   default: {
+    dataDir: '/tmp/.mbler',
     defaultPmnxBASE: 'https://d.pmnx.qzz.io',
   },
 }))
@@ -32,7 +33,8 @@ describe('InstallManager', () => {
 
       await InstallManager.download('@scope', 'mypkg', '1.0.0', '/tmp/out.zip')
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://d.pmnx.qzz.io/package/%40scope/mypkg/v/1.0.0/download'
+        'https://d.pmnx.qzz.io/package/%40scope/mypkg/v/1.0.0/download',
+        { signal: expect.any(AbortSignal) }
       )
       expect(mockWriteFile).toHaveBeenCalledWith(
         '/tmp/out.zip',
@@ -49,12 +51,14 @@ describe('InstallManager', () => {
 
       await InstallManager.download('scope', 'pkg', '1.0.0', '/tmp/o.zip')
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('%40scope')
+        expect.stringContaining('%40scope'),
+        { signal: expect.any(AbortSignal) }
       )
 
       await InstallManager.download('@scope2', 'pkg', '1.0.0', '/tmp/o.zip')
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('%40scope2')
+        expect.stringContaining('%40scope2'),
+        { signal: expect.any(AbortSignal) }
       )
     })
 
@@ -86,7 +90,8 @@ describe('InstallManager', () => {
       const result = await InstallManager.info('@scope', 'mypkg')
       expect(result).toEqual(mockData)
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://d.pmnx.qzz.io/package/%40scope/mypkg/info'
+        'https://d.pmnx.qzz.io/package/%40scope/mypkg/info',
+        { signal: expect.any(AbortSignal) }
       )
     })
 

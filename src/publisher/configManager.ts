@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { chmod } from 'node:fs/promises'
 import { fileExists, writeJSON, readFileAsJson as readJSON } from '../utils'
 import config from '../config'
 import { readFile } from 'node:fs/promises'
@@ -19,6 +20,14 @@ export class ConfigManager {
   private static cacheTTL = 5000
   private static lastAccess = 0
   private static currentConfigPath = ''
+  /** The global config holds the auth token — keep it user-only. */
+  private static async secureWrite(
+    configPath: string,
+    data: unknown
+  ): Promise<void> {
+    await writeJSON(configPath, data)
+    await chmod(configPath, 0o600).catch(() => {})
+  }
   private static async acquireLock(): Promise<void> {
     while (this.lockPromise) {
       await this.lockPromise
@@ -62,23 +71,23 @@ export class ConfigManager {
   }
   private static async ensureConfigFile(configPath: string): Promise<void> {
     if (!(await fileExists(configPath))) {
-      await writeJSON(configPath, {})
+      await this.secureWrite(configPath, {})
       return
     }
     try {
       const data = await readJSON<Record<string, unknown>>(configPath)
       if (!data || typeof data !== 'object' || Array.isArray(data)) {
-        await writeJSON(configPath, {})
+        await this.secureWrite(configPath, {})
       }
     } catch {
-      await writeJSON(configPath, {})
+      await this.secureWrite(configPath, {})
     }
   }
 
   private static async saveCacheToFile(configPath: string): Promise<void> {
     try {
       await this.acquireLock()
-      await writeJSON(configPath, this.cacheValue)
+      await this.secureWrite(configPath, this.cacheValue)
       this.lastAccess = Date.now()
       this.releaseLock()
     } catch (error) {
@@ -89,15 +98,15 @@ export class ConfigManager {
   static async getConfigPoint(): Promise<string> {
     try {
       const file = await readFile(
-        path.join(config.tmpdir, '_config_point.json')
+        path.join(config.dataDir, '_config_point.json')
       )
       const configPoint = JSON.parse(file.toString())
       return configPoint.point
     } catch {
       if (!(await fileExists(this.defaultConfigPoint))) {
-        await writeJSON(this.defaultConfigPoint, {})
+        await this.secureWrite(this.defaultConfigPoint, {})
       }
-      await writeJSON(path.join(config.tmpdir, '_config_point.json'), {
+      await writeJSON(path.join(config.dataDir, '_config_point.json'), {
         point: this.defaultConfigPoint,
         update: new Date(),
       })
@@ -106,9 +115,9 @@ export class ConfigManager {
   }
   static async setConfigPoint(point: string) {
     if (!(await fileExists(point))) {
-      await writeJSON(point, {})
+      await this.secureWrite(point, {})
     }
-    await writeJSON(path.join(config.tmpdir, '_config_point.json'), {
+    await writeJSON(path.join(config.dataDir, '_config_point.json'), {
       point,
       update: new Date(),
     })
@@ -153,7 +162,7 @@ export class ConfigManager {
   static async init(defaultConfig: Record<string, unknown> = {}) {
     const configPath = await this.getConfigPoint()
     if (!(await fileExists(configPath))) {
-      await writeJSON(configPath, defaultConfig)
+      await this.secureWrite(configPath, defaultConfig)
     }
   }
 

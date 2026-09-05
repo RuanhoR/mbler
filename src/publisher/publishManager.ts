@@ -11,7 +11,7 @@ import { generateRelease } from '../build/release'
 import config from '../config'
 import { ConfigManager } from './configManager'
 import { PublishMetadata } from '../types'
-import { readFile, stat as fsStat } from 'node:fs/promises'
+import { mkdir, readFile, stat as fsStat, rm } from 'node:fs/promises'
 import { TokenManager } from './tokenManager'
 import i18n from '../i18n'
 
@@ -50,7 +50,12 @@ export class PublishManager {
     const pkgData = await readFileAsJson<Record<string, unknown>>(
       path.join(projectPath, 'package.json')
     )
-    const outputPath = path.join(config.tmpdir, 'mbler/0b09/release.zip')
+    const outputPath = path.join(
+      config.dataDir,
+      'release',
+      `${Date.now()}`,
+      'release.zip'
+    )
     process.env.BUILD_MODULE = 'release'
     const option: Parameters<typeof generateRelease>[0] = {
       outdirs: {
@@ -104,6 +109,7 @@ export class PublishManager {
       throw new Error(i18n.publish.metadataInvalid)
     }
 
+    await mkdir(path.dirname(outputPath), { recursive: true })
     await generateRelease(option)
     onProgress(70)
 
@@ -114,8 +120,14 @@ export class PublishManager {
     )
 
     onMessage(i18n.publish.publishToMarket)
-    const session = await PublishManager.createSession(metadata)
-    await PublishManager.publishToMarketplace(outputPath, session)
+    try {
+      const session = await PublishManager.createSession(metadata)
+      await PublishManager.publishToMarketplace(outputPath, session)
+    } finally {
+      await rm(path.dirname(outputPath), { recursive: true, force: true }).catch(
+        () => {}
+      )
+    }
     onProgress(100)
     onMessage(i18n.publish.publishSuccess)
     onMessage(
@@ -139,6 +151,7 @@ export class PublishManager {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        signal: AbortSignal.timeout(30_000),
       }
     )
     if (!response.ok) {
@@ -167,6 +180,7 @@ export class PublishManager {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(metadata),
+        signal: AbortSignal.timeout(30_000),
       }
     )
     const session = (await response.json()) as {
@@ -205,6 +219,7 @@ export class PublishManager {
           Authorization: `Bearer ${token}`,
         },
         body: formData,
+        signal: AbortSignal.timeout(120_000),
       }
     )
     const result = (await response.json()) as { data: unknown }

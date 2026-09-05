@@ -1,7 +1,7 @@
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import i18n from '../i18n'
-import { showText } from '../utils'
+import { showText, sanitizeFileName } from '../utils'
 import { GamePath } from '../publisher/GamePath'
 import { ConfigManager } from '../publisher/configManager'
 import { defineCommand } from './command'
@@ -49,7 +49,8 @@ export const uninstallCommand = defineCommand({
     }
 
     try {
-      const id = `${parsed.scope.slice(1)}-${parsed.name}-${parsed.version}`
+      const safe = sanitizeFileName
+      const id = `${safe(parsed.scope.slice(1))}-${safe(parsed.name)}-${safe(parsed.version)}`
       const behaviorDir = path.join(gamePoint, 'behavior_packs', id)
       const resourceDir = path.join(gamePoint, 'resource_packs', id)
 

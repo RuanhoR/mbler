@@ -128,6 +128,15 @@ export function stringToNumberArray(str: string): [number, number, number] {
     .map((s) => parseInt(s, 10))
     .slice(0, 3) as [number, number, number]
 }
+
+/**
+ * Make untrusted package identifiers (scope/name/version) safe to embed in a
+ * filesystem path: separators become dashes and dot-dot segments are stripped,
+ * so the result can never traverse out of the destination directory.
+ */
+export function sanitizeFileName(s: string): string {
+  return s.replace(/[\\/]/g, '-').replace(/\.\./g, '')
+}
 export async function writeJSON(
   filePath: string,
   data: unknown

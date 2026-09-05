@@ -31,7 +31,7 @@ vi.mock('../../src/build/release', () => ({
 
 vi.mock('../../src/config', () => ({
   default: {
-    tmpdir: '/tmp/.mbler',
+    dataDir: '/tmp/.mbler',
     defaultPmnxBASE: 'https://d.pmnx.qzz.io',
   },
 }))

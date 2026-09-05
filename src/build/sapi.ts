@@ -21,7 +21,9 @@ const Sapi = function (): {
   const MAX_RETRIES = 3
 
   async function json(path: string, attempt = 1) {
-    const r = await fetch('https://registry.npmjs.com' + path)
+    const r = await fetch('https://registry.npmjs.com' + path, {
+      signal: AbortSignal.timeout(30_000),
+    })
     if (!r.ok && attempt < MAX_RETRIES) {
       await sleep(1000 * attempt)
       return json(path, attempt + 1)
@@ -29,7 +31,7 @@ const Sapi = function (): {
     return await r.json()
   }
 
-  const cacheFile = path.join(config.tmpdir, '_sapi_version.json')
+  const cacheFile = path.join(config.dataDir, '_sapi_version.json')
   let cacheData: Array<{
     version: string
     server: cacheValue
@@ -121,7 +123,7 @@ const Sapi = function (): {
 
     const cacheWithMeta = [{ _cachedAt: new Date().toISOString() }, ...arr]
 
-    await fs.promises.mkdir(config.tmpdir, { recursive: true }).catch(() => {})
+    await fs.promises.mkdir(config.dataDir, { recursive: true }).catch(() => {})
     await fs.promises.writeFile(cacheFile, JSON.stringify(cacheWithMeta, null, 2), 'utf-8')
   }
 
@@ -141,7 +143,7 @@ const Sapi = function (): {
 
     if (!cacheData) {
       throw new Error(
-        'unable to load SAPI version data. Check network connectivity or delete ~/.mbler/_sapi_version.json and try again.'
+        'unable to load SAPI version data. Check network connectivity or delete ~/.cache/mbler/_sapi_version.json and try again.'
       )
     }
 

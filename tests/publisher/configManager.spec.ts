@@ -4,6 +4,7 @@ const mockFileExists = vi.hoisted(() => vi.fn())
 const mockWriteJSON = vi.hoisted(() => vi.fn())
 const mockReadJSON = vi.hoisted(() => vi.fn())
 const mockReadFile = vi.hoisted(() => vi.fn())
+const mockChmod = vi.hoisted(() => vi.fn())
 
 vi.mock('../../src/utils', async (importOriginal) => {
   const actual = await importOriginal()
@@ -17,11 +18,12 @@ vi.mock('../../src/utils', async (importOriginal) => {
 
 vi.mock('node:fs/promises', () => ({
   readFile: mockReadFile,
+  chmod: mockChmod,
 }))
 
 vi.mock('../../src/config', () => ({
   default: {
-    tmpdir: '/tmp/.mbler',
+    dataDir: '/tmp/.mbler',
     defaultPmnxBASE: 'https://d.pmnx.qzz.io',
   },
 }))
@@ -46,6 +48,7 @@ function resetState() {
 describe('ConfigManager', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockChmod.mockResolvedValue(undefined)
     resetState()
   })
 
