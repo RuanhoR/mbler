@@ -86,3 +86,17 @@ export function parseRawParams(
   }
   return { params, opts }
 }
+
+/** Map declared option aliases (e.g. `-f`) to their long names (e.g. `full`). */
+export function resolveOptionAliases(
+  def: CommandDef,
+  opts: Record<string, string>
+): Record<string, string> {
+  const resolved: Record<string, string> = { ...opts }
+  for (const opt of def.options) {
+    if (opt.alias !== undefined && opt.alias in opts) {
+      resolved[opt.name] = opts[opt.name] ?? opts[opt.alias]!
+    }
+  }
+  return resolved
+}

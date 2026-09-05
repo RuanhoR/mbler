@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { defineCommand, parseArgs, parseRawParams } from '../../src/cli/command'
+import {
+  defineCommand,
+  parseArgs,
+  parseRawParams,
+  resolveOptionAliases,
+} from '../../src/cli/command'
 
 describe('defineCommand', () => {
   it('should return the same command def', () => {
@@ -182,5 +187,45 @@ describe('parseRawParams', () => {
     const result = parseRawParams(['cmd', 'arg', '-x'])
     expect(result.params).toEqual(['cmd', 'arg'])
     expect(result.opts).toEqual({ x: '' })
+  })
+})
+
+describe('resolveOptionAliases', () => {
+  const def = defineCommand({
+    name: 'test',
+    aliases: [],
+    description: 'test',
+    args: [],
+    options: [
+      { name: 'full', alias: 'f', description: 'full' },
+      { name: 'beta', alias: 'b', description: 'beta' },
+      { name: 'tag', description: 'no alias' },
+    ],
+    handler: () => 0,
+  })
+
+  it('maps short aliases to long option names', () => {
+    const raw = parseRawParams(['test', '-f', '-b'])
+    const opts = resolveOptionAliases(def, raw.opts)
+    expect(opts.full).toBe('')
+    expect(opts.beta).toBe('')
+  })
+
+  it('maps alias values and prefers the long name when both are given', () => {
+    const raw = parseRawParams(['test', '-f', 'value', '--full', 'other'])
+    const opts = resolveOptionAliases(def, raw.opts)
+    expect(opts.full).toBe('other')
+  })
+
+  it('leaves options without aliases untouched', () => {
+    const raw = parseRawParams(['test', '-tag', 'beta'])
+    const opts = resolveOptionAliases(def, raw.opts)
+    expect(opts.tag).toBe('beta')
+  })
+
+  it('keeps unknown options as-is', () => {
+    const raw = parseRawParams(['test', '-x', '1'])
+    const opts = resolveOptionAliases(def, raw.opts)
+    expect(opts.x).toBe('1')
   })
 })

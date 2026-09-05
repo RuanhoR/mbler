@@ -6,7 +6,7 @@ import Logger from '../logger'
 import { ReadProjectMblerConfig, flushOutputQueue, showText } from '../utils'
 import path from 'node:path'
 import WorkDirManager from './WorkDirManager'
-import { CommandDef, parseArgs, parseRawParams } from './command'
+import { CommandDef, parseArgs, parseRawParams, resolveOptionAliases } from './command'
 import { configCommand } from './config'
 import { initCommand } from './init'
 import { versionCommand } from './version'
@@ -292,7 +292,8 @@ const main = (function () {
     }
 
     const args = parseArgs(def, raw.params.slice(1))
-    const code = await def.handler({ args, opts: raw.opts, workDir })
+    const opts = resolveOptionAliases(def, raw.opts)
+    const code = await def.handler({ args, opts, workDir })
     await flushOutputQueue()
     process.exitCode = code
     if (process.stdin.isTTY) process.stdin.setRawMode(false)
