@@ -28,6 +28,7 @@ pnpm install            # also installs git hooks (simple-git-hooks)
 pnpm build              # rolldown -c
 pnpm test               # pretest (gen:version) + vitest run
 pnpm lint               # eslint src/
+pnpm lint:fix           # eslint src/ --fix
 pnpm type-check         # tsc --noEmit
 pnpm check              # gen:version + lint + test + type-check
 pnpm format             # prettier ./src ./example --write

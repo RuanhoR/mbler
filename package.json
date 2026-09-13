@@ -35,6 +35,7 @@
     "cli": "node bin/mbler.js",
     "build": "rolldown -c",
     "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
     "gen:version": "node scripts/gen-version.mjs",
     "pretest": "pnpm gen:version",
     "test": "vitest run",

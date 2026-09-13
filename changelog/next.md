@@ -13,3 +13,18 @@ This changelog tracks changes committed after the v0.3.0 release tag.
 - **fix(cli)**: Sanitized `uninstall` package id against path traversal; shared `sanitizeFileName` helper now also used by `install` (`e016b5b`)
 - **fix**: Added fetch timeouts (30s, 120s for downloads/uploads) across sapi and publisher network calls (`e016b5b`)
 - **fix**: Global config file now written with 0600 permissions; persistent state moved from the shared temp dir to the per-user data dir (`%LOCALAPPDATA%\mbler` on Windows, `~/Library/Caches/mbler` on macOS, `~/.cache/mbler` on Linux); publish release zip uses a unique per-run directory and is cleaned up after upload (`e016b5b`)
+
+### 2026-08-31
+
+- **refactor(build)**: Dropped `require()` calls in favor of static ESM imports; added `rm-old-dist` rolldown plugin that clears stale dist output before builds (`a361217`)
+- **fix**: Removed unused config (`fb55e5d`)
+- **docs**: Added dev WebSocket server and build cache intro to README/README_zh (`7c855a3`)
+
+### 2026-09-05
+
+- **feat(build)**: Added tests for no-bundle mode (`bf195f7`)
+- **fix(cli)**: Resolved option aliases to long names (`a7c6666`)
+
+### 2026-09-06
+
+- **chore(release)**: Bump 0.3.1-rc.1 (`c4f95f8`)
