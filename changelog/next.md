@@ -2,6 +2,11 @@
 
 This changelog tracks changes committed after the v0.3.0 release tag.
 
+### 2026-10-25
+
+- **chore(deps)**: Require `@mbler/mcx-core` >=1.1.5-rc.4 — mcx script errors (parse, traversal and TS syntax errors) are now reported at their original `.mcx` positions instead of positions inside the TS-transpiled output; the LucklyBlock trailing `luckBlock.` case reports `[ts error]: Identifier expected.` at `blocks.mcx:26:10` (`fd6ae95` in mcx-core)
+- **chore(release)**: Bump 0.3.1-rc.2
+
 ### 2026-08-29
 
 - **feat(build)**: Inject fs into mcx-core (`c2b4e09`)
