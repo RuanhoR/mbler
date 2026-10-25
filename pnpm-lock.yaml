@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@mbler/mcx-core':
-        specifier: '>=1.1.5-rc.1'
-        version: 1.1.5-rc.1(@minecraft/server-ui@2.2.0-beta.1.26.30-preview.30(@minecraft/common@1.3.0)(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)))(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33))
+        specifier: '>=1.1.5-rc.4'
+        version: 1.1.5-rc.4(@minecraft/server-ui@2.2.0-beta.1.26.30-preview.30(@minecraft/common@1.3.0)(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)))(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33))
       adm-zip:
         specifier: 0.6.0
         version: 0.6.0
@@ -397,8 +397,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@mbler/mcx-core@1.1.5-rc.1':
-    resolution: {integrity: sha512-OyrLIJgEcMPEk0TC3tzL3ouIncR+jajCncY2oPPUV2W7wBY6/sbl7aWkIj2lvU4sjcHZAM6eyYLlcMdfV2zqlg==}
+  '@mbler/mcx-core@1.1.5-rc.4':
+    resolution: {integrity: sha512-d/q7QBGb2Ql08NVJdb8mRfw6xEGcMyKgALH03Q9KujS4P+8twkef1EwLluWzoGgpLcAUYqSG4rVESeTIUnnchg==}
 
   '@mbler/mcx-types@0.0.4-rc.2':
     resolution: {integrity: sha512-bDrDlMVre7S/raeKikk2AGRZ0cYk4laPsLgoYDiMZGvptohVwQM9MY6f/yHSsqqT3ZimQrvwOFGHKZvtb80b5Q==}
@@ -1815,7 +1815,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@mbler/mcx-core@1.1.5-rc.1(@minecraft/server-ui@2.2.0-beta.1.26.30-preview.30(@minecraft/common@1.3.0)(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)))(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33))':
+  '@mbler/mcx-core@1.1.5-rc.4(@minecraft/server-ui@2.2.0-beta.1.26.30-preview.30(@minecraft/common@1.3.0)(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)))(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33))':
     dependencies:
       '@babel/generator': 7.28.5
       '@babel/parser': 7.28.5
