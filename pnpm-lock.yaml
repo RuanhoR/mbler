@@ -34,8 +34,8 @@ importers:
         specifier: 10.0.1
         version: 10.0.1(eslint@10.4.0)
       '@mbler/mcx-types':
-        specifier: 0.0.4-rc.2
-        version: 0.0.4-rc.2(@minecraft/vanilla-data@1.26.33)
+        specifier: 0.0.4-rc.9
+        version: 0.0.4-rc.9(@minecraft/server-ui@2.2.0-beta.1.26.30-preview.30(@minecraft/common@1.3.0)(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)))(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33))
       '@types/adm-zip':
         specifier: 0.5.7
         version: 0.5.7
@@ -400,10 +400,6 @@ packages:
   '@mbler/mcx-core@1.1.5-rc.4':
     resolution: {integrity: sha512-d/q7QBGb2Ql08NVJdb8mRfw6xEGcMyKgALH03Q9KujS4P+8twkef1EwLluWzoGgpLcAUYqSG4rVESeTIUnnchg==}
 
-  '@mbler/mcx-types@0.0.4-rc.2':
-    resolution: {integrity: sha512-bDrDlMVre7S/raeKikk2AGRZ0cYk4laPsLgoYDiMZGvptohVwQM9MY6f/yHSsqqT3ZimQrvwOFGHKZvtb80b5Q==}
-    engines: {node: '>=20'}
-
   '@mbler/mcx-types@0.0.4-rc.9':
     resolution: {integrity: sha512-1y1m1LlB7AKA9BEc5Wg13Xyb0YtA25bRXD6ihflVmsdgAGUzCKMbz1c9at6WP+8kyxtMt1g4JzGwt0icRoeF6g==}
     engines: {node: '>=20'}
@@ -414,19 +410,11 @@ packages:
   '@minecraft/common@1.3.0':
     resolution: {integrity: sha512-GLT8USFhvEyeTTFHZAgszbrnoT007hmXmK+aO4l+2A1up9/zwZ+4e8R8F0KcKrCWDjLEqkOJtPow0hQCcNJ++Q==}
 
-  '@minecraft/server-ui@2.0.0':
-    resolution: {integrity: sha512-K1xFK1OEJSNfIgyRElaoxDTW/nbEqjBp1YnUdyPCs4kGDglwoXNyFz3wzMOkvT04CJXSifZGcTJeWda4C6OkXw==}
-
   '@minecraft/server-ui@2.2.0-beta.1.26.30-preview.30':
     resolution: {integrity: sha512-kWxZfh/ahHImD9oDtCYqaSXHPc2xfHOFu5GR2tZvLyjLliq7FP/K7P8ml4c/W4kHh87qbvX2dgJpxgitWlskZA==}
     peerDependencies:
       '@minecraft/common': ^1.0.0
       '@minecraft/server': ^2.0.0 || ^2.9.0-beta.1.26.30-preview.30
-
-  '@minecraft/server@2.0.0':
-    resolution: {integrity: sha512-X2LmT82eO0oCjOFaFgg6zoGenAUSyrG+YvIbe7/FSPj9hpMt4BtOIs7axoQUUvMx2NNbq8uEsnQadMMrDDBmUA==}
-    peerDependencies:
-      '@minecraft/vanilla-data': '>=1.20.70'
 
   '@minecraft/server@2.9.0-beta.1.26.30-preview.21':
     resolution: {integrity: sha512-zZ0ZqnYH1TF5Zp1uvHUZ1Ncf3v+EWuf92ufqPZdWxzCOSSYNTWYStY/VBzTLL1qFkiokiO4Sox90zmCe+lJwAw==}
@@ -1830,14 +1818,6 @@ snapshots:
       - '@minecraft/server'
       - '@minecraft/server-ui'
 
-  '@mbler/mcx-types@0.0.4-rc.2(@minecraft/vanilla-data@1.26.33)':
-    dependencies:
-      '@minecraft/server': 2.0.0(@minecraft/vanilla-data@1.26.33)
-      '@minecraft/server-ui': 2.0.0(@minecraft/vanilla-data@1.26.33)
-      '@volar/language-core': 2.4.28
-    transitivePeerDependencies:
-      - '@minecraft/vanilla-data'
-
   '@mbler/mcx-types@0.0.4-rc.9(@minecraft/server-ui@2.2.0-beta.1.26.30-preview.30(@minecraft/common@1.3.0)(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)))(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33))':
     dependencies:
       '@minecraft/server': 2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)
@@ -1845,22 +1825,10 @@ snapshots:
 
   '@minecraft/common@1.3.0': {}
 
-  '@minecraft/server-ui@2.0.0(@minecraft/vanilla-data@1.26.33)':
-    dependencies:
-      '@minecraft/common': 1.3.0
-      '@minecraft/server': 2.0.0(@minecraft/vanilla-data@1.26.33)
-    transitivePeerDependencies:
-      - '@minecraft/vanilla-data'
-
   '@minecraft/server-ui@2.2.0-beta.1.26.30-preview.30(@minecraft/common@1.3.0)(@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33))':
     dependencies:
       '@minecraft/common': 1.3.0
       '@minecraft/server': 2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)
-
-  '@minecraft/server@2.0.0(@minecraft/vanilla-data@1.26.33)':
-    dependencies:
-      '@minecraft/common': 1.3.0
-      '@minecraft/vanilla-data': 1.26.33
 
   '@minecraft/server@2.9.0-beta.1.26.30-preview.21(@minecraft/common@1.3.0)(@minecraft/vanilla-data@1.26.33)':
     dependencies:

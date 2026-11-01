@@ -2,6 +2,11 @@
 
 This changelog tracks changes committed after the v0.3.0 release tag.
 
+### 2026-11-01
+
+- **chore(deps)**: Bump dev `@mbler/mcx-types` to 0.0.4-rc.9 — matches the version `@mbler/mcx-core` itself depends on, so mbler type-checks against the same types the compiler ships
+- **chore(release)**: Bump 0.3.1-rc.3
+
 ### 2026-10-25
 
 - **chore(deps)**: Require `@mbler/mcx-core` >=1.1.5-rc.4 — mcx script errors (parse, traversal and TS syntax errors) are now reported at their original `.mcx` positions instead of positions inside the TS-transpiled output; the LucklyBlock trailing `luckBlock.` case reports `[ts error]: Identifier expected.` at `blocks.mcx:26:10` (`fd6ae95` in mcx-core)
