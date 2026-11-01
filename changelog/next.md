@@ -5,7 +5,7 @@ This changelog tracks changes committed after the v0.3.0 release tag.
 ### 2026-11-01
 
 - **chore(deps)**: Bump dev `@mbler/mcx-types` to 0.0.4-rc.9 — matches the version `@mbler/mcx-core` itself depends on, so mbler type-checks against the same types the compiler ships
-- **chore(release)**: Bump 0.3.1-rc.3
+- **chore(release)**: Bump 0.3.1-rc.4
 
 ### 2026-10-25
 
