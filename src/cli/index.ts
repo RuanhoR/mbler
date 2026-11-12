@@ -177,6 +177,9 @@ const main = (function () {
           ReadProjectMblerConfig(ctx.workDir).then((r) => {
             // perf: preload @mbler/mcx-core (fs must be injected since 1.1.5-dev.1)
             if (r.script?.lang == 'mcx') {
+              // Intentional fire-and-forget preload: overlaps with the
+              // importBuild() import above; rollup.ts re-injects setGlobalFS
+              // before the builder runs, so we must not await here.
               import('@mbler/mcx-core').then((m) => m.setGlobalFS(fs))
             }
             if (isDebug)

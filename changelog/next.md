@@ -2,6 +2,32 @@
 
 This changelog tracks changes committed after the v0.3.0 release tag.
 
+### 2026-11-12
+
+- **feat(config)**: `mbler.config.js` now accepts `mcxPlugin` (one plugin object, a plugin factory, or an array of either), forwarded to `@mbler/mcx-core` through `CompileOpt.mcxPlugin` when `script.lang === 'mcx'`. Together with the new compiler plugin hooks in mcx-core this enables custom layout / custom root tags. Exported types: `MblerMcxPlugin`, `MblerMcxPluginInput`, `MblerMcxPluginOption`, `MblerMcxPluginContext`, `MblerMcxTagHandler`, `MblerMcxTagNode`, `MblerMcxHookResult`, `MblerMcxCompileOpt`.
+- **feat(watch)**: A changed `mcxPlugin` identity triggers a script rebuild in watch mode.
+
+```js
+// mbler.config.js
+export default defineConfig({
+  description: 'demo',
+  mcVersion: '1.21.100',
+  script: { lang: 'mcx', main: 'index.ts' },
+  mcxPlugin: {
+    name: 'my-layout',
+    tags: {
+      Layout(node, ctx) {
+        ctx.addImport("import { render } from 'my-layout-runtime'")
+        ctx.addExport('layout', JSON.stringify(node.arr))
+        ctx.setType('layout')
+      },
+    },
+    onTransform(ctx) { /* inspect ctx.nodes / return JS to replace the module */ },
+    onThrow(error, ctx) { /* return JS to recover from a compile error */ },
+  },
+})
+```
+
 ### 2026-11-01
 
 - **chore(deps)**: Bump dev `@mbler/mcx-types` to 0.0.4-rc.9 — matches the version `@mbler/mcx-core` itself depends on, so mbler type-checks against the same types the compiler ships

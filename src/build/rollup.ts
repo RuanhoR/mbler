@@ -13,7 +13,11 @@ import Logger from '../logger'
 import { terserPlugin, esbuildPlugin } from './minify'
 import { fileExists, join, showText } from '../utils'
 import type { BuildCacheManager } from './cache'
-import type { MblerBuildConfig, MblerConfigData } from '../types'
+import type {
+  MblerBuildConfig,
+  MblerConfigData,
+  MblerMcxPluginOption,
+} from '../types'
 import type { OutDirs, SourceDirs } from './dirs'
 
 export interface RollupBuildContext {
@@ -23,6 +27,30 @@ export interface RollupBuildContext {
   outdirs: OutDirs
   buildConfig: Partial<MblerBuildConfig> | null
   cacheManager: BuildCacheManager | null
+}
+
+/**
+ * `@mbler/mcx-types` in the installed toolchain may predate `CompileOpt.mcxPlugin`,
+ * so the field is added through a local intersection instead of a cast.
+ */
+export type McxCompileOpt = CompileOpt & {
+  mcxPlugin?: MblerMcxPluginOption | undefined
+}
+
+/** Build the compiler options handed to `@mbler/mcx-core`'s rolldownPlugin. */
+export function createMcxCompileOpt(
+  config: MblerConfigData,
+  moduleDir: string,
+  tsconfigPath: string,
+  ts: typeof import('typescript')
+): McxCompileOpt {
+  return {
+    moduleDir,
+    tsconfigPath,
+    sourcemap: false,
+    ts,
+    ...(config.mcxPlugin ? { mcxPlugin: config.mcxPlugin } : {}),
+  }
 }
 
 function resolveScriptOutput(config: MblerConfigData): string {
@@ -131,12 +159,12 @@ async function collectScriptPlugins(
       if (!(await fileExists(tsconfigPath))) {
         throw new Error(`[build addon]: tsconfig.json not found: ${tsconfigPath}`)
       }
-      const pluginConfig: CompileOpt = {
-        moduleDir: moduleDir,
-        tsconfigPath: tsconfigPath,
-        sourcemap: false,
-        ts: await import('typescript')
-      }
+      const pluginConfig = createMcxCompileOpt(
+        currentConfig,
+        moduleDir,
+        tsconfigPath,
+        await import('typescript')
+      )
       const mcxCore = await import('@mbler/mcx-core')
       // @mbler/mcx-core >= 1.1.5-dev.1 requires the host to inject the fs module
       mcxCore.setGlobalFS(fs)

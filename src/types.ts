@@ -283,6 +283,103 @@ export interface MblerManifestConfig {
   /** package metadata, generated_with is auto-filled with the mbler version */
   metadata?: MblerManifestMetadata
 }
+/** position inside an .mcx source file */
+export interface MblerMcxPosition {
+  line: number
+  column: number
+}
+export interface MblerMcxLoc {
+  start: MblerMcxPosition
+  end: MblerMcxPosition
+}
+export interface MblerMcxTagChild {
+  type: string
+  data?: string
+  name?: string
+  arr?: Record<string, string | boolean>
+  content?: MblerMcxTagChild[]
+  loc?: MblerMcxLoc
+}
+/** root tag node of an .mcx file, as seen by compiler plugins */
+export interface MblerMcxTagNode {
+  name: string
+  arr: Record<string, string | boolean>
+  content: MblerMcxTagChild[]
+  loc: MblerMcxLoc
+  type: 'TagNode'
+  start?: MblerMcxTagChild
+  end?: MblerMcxTagChild | null
+}
+export type MblerMcxHookResult = void | string
+export interface MblerMcxCompileOpt {
+  moduleDir: string
+  tsconfigPath: string
+  sourcemap: boolean
+  basedir?: string
+  ts?: unknown
+  mcxLanguagePlugin?: unknown
+  mcxPlugin?: MblerMcxPluginOption | undefined
+}
+export interface MblerMcxPluginContext {
+  id: string
+  source: string
+  code: string
+  nodes: MblerMcxTagNode[]
+  opt: MblerMcxCompileOpt
+  output: { dist: string; behavior: string; resources: string }
+  plugins: MblerMcxPlugin[]
+  tag(name: string): MblerMcxTagNode | undefined
+  tags(name: string): MblerMcxTagNode[]
+  registerTag(name: string, handler: MblerMcxTagHandler): void
+  addImport(code: string): void
+  addStatement(code: string): void
+  addExport(name: string, expression: string): void
+  setType(type: string): void
+  error(message: string, loc?: MblerMcxPosition): never
+}
+export type MblerMcxTagHandler = (
+  node: MblerMcxTagNode,
+  ctx: MblerMcxPluginContext
+) => MblerMcxHookResult | Promise<MblerMcxHookResult>
+/**
+ * Compiler plugin passed straight to `@mbler/mcx-core`. It mirrors the
+ * `McxPlugin` type exported by mcx-core; keep hook names in sync with it.
+ * A string returned from a hook replaces the generated module code.
+ */
+export interface MblerMcxPlugin {
+  name: string
+  /** handlers for custom root tags, keyed by tag name */
+  tags?: Record<string, MblerMcxTagHandler>
+  /** before the built-in transform; return JS code to replace the whole output */
+  onTransform?: (
+    ctx: MblerMcxPluginContext
+  ) => MblerMcxHookResult | Promise<MblerMcxHookResult>
+  /** after the built-in transform; return JS code to replace the result */
+  onTransformed?: (
+    code: string,
+    ctx: MblerMcxPluginContext
+  ) => MblerMcxHookResult | Promise<MblerMcxHookResult>
+  /** when compilation or transformation throws; return JS code to recover */
+  onThrow?: (
+    error: Error,
+    ctx: MblerMcxPluginContext
+  ) => MblerMcxHookResult | Promise<MblerMcxHookResult>
+  onBuildStart?: () => void | Promise<void>
+  onBuildEnd?: () => void | Promise<void>
+}
+/**
+ * A plugin instance or a factory returning one. Factories are called (with no
+ * arguments) by mcx-core while resolving the plugin list, so both
+ * `mcxPlugin: [jsonui(), other()]` and `mcxPlugin: [jsonui, other]` work.
+ */
+export type MblerMcxPluginInput = MblerMcxPlugin | (() => MblerMcxPlugin)
+/**
+ * Value accepted by `mbler.config.js`'s `mcxPlugin`: one plugin/factory, a flat
+ * array, or nested arrays of them (flattened in order by mcx-core).
+ */
+export type MblerMcxPluginOption =
+  | MblerMcxPluginInput
+  | (MblerMcxPluginInput | MblerMcxPluginInput[])[]
 export interface MblerConfigData {
   name?: string // addon name (package scope, e.g. "@scope/name"), fallback to package.json
   displayName?: string // display name shown in manifest (falls back to name)
@@ -296,6 +393,8 @@ export interface MblerConfigData {
   manifest?: MblerManifestConfig // full manifest.json customization
   archive?: MblerArchiveConfig // brarchive packaging config
   build?: Partial<MblerBuildConfig> // build config
+  /** @mbler/mcx-core compiler plugins (custom root tags / transform hooks) */
+  mcxPlugin?: MblerMcxPluginOption | undefined
 }
 export const templateMblerConfig: MblerConfigData = {
   name: '',
@@ -319,6 +418,7 @@ export const templateMblerConfig: MblerConfigData = {
     exclude: [],
     concurrency: 16,
   },
+  mcxPlugin: undefined,
   build: {
     rollupPlugins: [],
     cache: 'auto',

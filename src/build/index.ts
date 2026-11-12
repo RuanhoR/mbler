@@ -225,7 +225,7 @@ class Build {
         // write script
         let output = this.currentConfig.script?.main
         if (!output) output = 'index.js'
-        if (path.extname(output) !== 'js')
+        if (path.extname(output) !== '.js')
           output =
             output.slice(0, output.length - path.extname(output).length) + '.js'
         const writeOptions: Record<string, unknown> = {
@@ -485,7 +485,8 @@ class Build {
           'script',
           'outdir',
           'build',
-        ])
+        ]) ||
+        oldConfig.mcxPlugin !== this.currentConfig.mcxPlugin
       ) {
         const newIsBundle = this.currentConfig.build?.bundle !== false
         if (newIsBundle && this.watchers.rollup) {
