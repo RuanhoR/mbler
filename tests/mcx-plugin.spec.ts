@@ -7,10 +7,16 @@ import {
   existsSync,
   mkdirSync,
 } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { createMcxCompileOpt, createRollupBuild } from '../src/build/rollup'
 import type { RollupBuildContext } from '../src/build/rollup'
 import { ReadProjectMblerConfig } from '../src/utils'
+import {
+  MCX_COMPLETION_MANIFEST,
+  collectCompletionContributions,
+  writeCompletionManifest,
+} from '../src/build/completion'
 import { templateMblerConfig } from '../src/types'
 import type { MblerConfigData, MblerMcxPlugin } from '../src/types'
 
@@ -151,5 +157,70 @@ describe('mbler.config.js mcxPlugin', () => {
     expect(mockRolldownPlugin.mock.calls[0]?.[0]).toMatchObject({
       mcxPlugin: plugin,
     })
+  })
+})
+
+const completionPlugin: MblerMcxPlugin = {
+  name: 'with-completion',
+  completion: {
+    name: 'with-completion',
+    rootTags: ['Widget'],
+    tags: [
+      {
+        name: 'Widget',
+        detail: 'Custom widget',
+        attributes: [{ name: 'kind', detail: 'Widget kind', values: ['a', 'b'] }],
+      },
+    ],
+  },
+}
+
+describe('mcx completion manifest', () => {
+  it('collects contributions only for mcx projects', () => {
+    const config: MblerConfigData = {
+      description: 'demo',
+      mcVersion: '1.21.100',
+      script: { lang: 'mcx', main: 'index.ts' },
+      mcxPlugin: [completionPlugin, { name: 'no-completion' }],
+    }
+    expect(collectCompletionContributions(config).map(item => item.name)).toEqual([
+      'with-completion',
+    ])
+    expect(
+      collectCompletionContributions({ ...config, script: { lang: 'ts', main: 'index.ts' } })
+    ).toEqual([])
+  })
+
+  it('resolves plugin factories', () => {
+    const config: MblerConfigData = {
+      description: 'demo',
+      mcVersion: '1.21.100',
+      script: { lang: 'mcx', main: 'index.ts' },
+      mcxPlugin: [() => completionPlugin],
+    }
+    expect(collectCompletionContributions(config)).toHaveLength(1)
+  })
+
+  it('writes and removes .mbler/mcx-completion.json', async () => {
+    const dir = makeTempDir()
+    const config: MblerConfigData = {
+      description: 'demo',
+      mcVersion: '1.21.100',
+      script: { lang: 'mcx', main: 'index.ts' },
+      mcxPlugin: completionPlugin,
+    }
+    const file = await writeCompletionManifest(config, dir)
+    expect(file).toBe(path.join(dir, MCX_COMPLETION_MANIFEST))
+    const manifest = JSON.parse(
+      await readFile(file as string, 'utf-8')
+    ) as { version: number; contributions: { name: string }[] }
+    expect(manifest.version).toBe(1)
+    expect(manifest.contributions[0]?.name).toBe('with-completion')
+
+    await writeCompletionManifest(
+      { description: 'demo', mcVersion: '1.21.100', script: { lang: 'mcx', main: 'index.ts' } },
+      dir
+    )
+    expect(existsSync(file as string)).toBe(false)
   })
 })

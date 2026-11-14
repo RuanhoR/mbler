@@ -18,6 +18,7 @@ import {
 } from '../utils'
 import { styleText } from 'node:util'
 import { BuildConfig } from './config'
+import { writeCompletionManifest } from './completion'
 import { Progress } from './progress'
 import { BuildCacheManager } from './cache'
 import { generateArchives } from './archive'
@@ -181,6 +182,8 @@ class Build {
       await this.buildConfig.onStart(this.currentConfig)
     // load data
     await this.loadData()
+    // publish compiler-plugin completions for the language server
+    await writeCompletionManifest(this.currentConfig, this.baseBuildDir)
     // batch exec
     if (this.buildConfig?.clean !== false && this.outdirs) {
       await Promise.all([

@@ -346,10 +346,43 @@ export type MblerMcxTagHandler = (
  * `McxPlugin` type exported by mcx-core; keep hook names in sync with it.
  * A string returned from a hook replaces the generated module code.
  */
+/** Attribute offered by editor completion. Mirrors mcx-core's type. */
+export interface MblerMcxCompletionAttribute {
+  name: string
+  detail?: string
+  insertText?: string
+  values?: string[]
+  documentation?: string
+}
+/** Tag offered by editor completion. Mirrors mcx-core's type. */
+export interface MblerMcxCompletionTag {
+  name: string
+  detail?: string
+  children?: string[]
+  attributes?: MblerMcxCompletionAttribute[]
+  extends?: string[]
+  container?: boolean
+  snippet?: string
+  documentation?: string
+}
+/**
+ * Completion data a plugin contributes to editors. mbler collects these into
+ * `.mbler/mcx-completion.json`, which the MCX language server reads.
+ */
+export interface MblerMcxCompletionContribution {
+  name: string
+  rootTags?: string[]
+  tags?: MblerMcxCompletionTag[]
+  attributeSets?: Record<string, MblerMcxCompletionAttribute[]>
+  scriptLangs?: string[]
+}
+
 export interface MblerMcxPlugin {
   name: string
   /** handlers for custom root tags, keyed by tag name */
   tags?: Record<string, MblerMcxTagHandler>
+  /** tags/attributes this plugin adds to editor completion */
+  completion?: MblerMcxCompletionContribution
   /** before the built-in transform; return JS code to replace the whole output */
   onTransform?: (
     ctx: MblerMcxPluginContext
